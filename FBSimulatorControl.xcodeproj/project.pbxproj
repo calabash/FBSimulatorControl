@@ -3156,18 +3156,24 @@
 					};
 					AAC8B22A1CEC51120034A865 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = FYD86LA7RE;
 					};
 					AAC8B2331CEC51120034A865 = {
 						CreatedOnToolsVersion = 7.3.1;
 					};
+					E66DC04E390C419500000000 = {
+						DevelopmentTeam = FYD86LA7RE;
+					};
 					EE4F0D2F1C91B7DA00608E89 = {
 						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = FYD86LA7RE;
 					};
 					EE4F0D381C91B7DB00608E89 = {
 						CreatedOnToolsVersion = 7.2.1;
 					};
 					EEBD600D1C90628F00298A07 = {
 						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = FYD86LA7RE;
 					};
 					EEBD60161C90628F00298A07 = {
 						CreatedOnToolsVersion = 7.2.1;
@@ -3637,6 +3643,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA46E431C0CB92A009D6452 /* FBSimulatorControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Debug;
 		};
@@ -3656,6 +3664,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA46E431C0CB92A009D6452 /* FBSimulatorControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Profile;
 		};
@@ -3672,6 +3682,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA46E431C0CB92A009D6452 /* FBSimulatorControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Release;
 		};
@@ -3709,6 +3721,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Debug;
 		};
@@ -3716,6 +3730,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Profile;
 		};
@@ -3723,6 +3739,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Release;
 		};
@@ -3754,6 +3772,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE4F0DDA1C91B88500608E89 /* XCTestBootstrap.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Debug;
 		};
@@ -3761,6 +3781,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE4F0DDA1C91B88500608E89 /* XCTestBootstrap.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Profile;
 		};
@@ -3768,6 +3790,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE4F0DDA1C91B88500608E89 /* XCTestBootstrap.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Release;
 		};
@@ -3820,6 +3844,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEBD60341C9062E900298A07 /* FBControlCore.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Debug;
 		};
@@ -3827,6 +3853,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEBD60341C9062E900298A07 /* FBControlCore.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Profile;
 		};
@@ -3834,6 +3862,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEBD60341C9062E900298A07 /* FBControlCore.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
 			};
 			name = Release;
 		};
