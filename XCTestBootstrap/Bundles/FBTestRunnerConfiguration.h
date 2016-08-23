@@ -102,4 +102,14 @@
  */
 - (FBTestRunnerConfiguration *)build;
 
+/**
+ @return Default arguments
+ */
++ (NSArray *)defaultBuildAttributes;
+
+/**
+ @return Default environment for a test
+ */
++ (NSDictionary *)defaultBuildEnvironment;
+
 @end
