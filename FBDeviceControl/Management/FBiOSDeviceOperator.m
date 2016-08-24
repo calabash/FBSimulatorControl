@@ -266,6 +266,12 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 {
   NSAssert(error, @"error is required for hub commands");
   NSString *remotePath = [self applicationPathForApplicationWithBundleID:bundleID error:error];
+
+    if (remotePath == nil) {
+        @throw [NSException exceptionWithName:@"Invalid BundleID"
+                                       reason:@"App is not currently installed"
+                                     userInfo:@{@"bundleID" : bundleID ?: @""}];
+    }
   NSDictionary *options = @{@"StartSuspendedKey" : @NO};
   SEL aSelector = NSSelectorFromString(@"launchSuspendedProcessWithDevicePath:bundleIdentifier:environment:arguments:options:");
   NSNumber *PID =
@@ -294,7 +300,7 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 - (BOOL)killApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
   pid_t PID = [self processIDWithBundleID:bundleID error:error];
-  if (!PID) {
+  if (PID < 1) {
     return NO;
   }
   return [self killProcessWithID:PID error:error];

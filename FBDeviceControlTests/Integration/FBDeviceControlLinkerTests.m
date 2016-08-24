@@ -19,18 +19,11 @@
 
 @implementation FBDeviceControlLinkerTests
 
+- (void)setUp {
+    self.continueAfterFailure = NO;
+}
+
 - (void)testTheTest {
-    FBCodeSignCommand *codesigner = [FBCodeSignCommand codeSignCommandWithIdentityName:@"iPhone Developer: Chris Fuentes (G7R46E5NX7)"];
-    
-    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8b1/Xcode-beta.app/Contents/Developer", YES);
-    
-    FBDeviceTestPreparationStrategy *testPrepareStrategy =
-    [FBDeviceTestPreparationStrategy strategyWithTestRunnerApplicationPath:@"/Users/chrisf/calabash-xcuitest-server/Products/ipa/DeviceAgent/CBX-Runner.app"
-                                                       applicationDataPath:@"/Users/chrisf/scratch/appData.xcappdata"
-                                                            testBundlePath:@"/Users/chrisf/calabash-xcuitest-server/Products/ipa/DeviceAgent/CBX-Runner.app/PlugIns/CBX.xctest"
-                                                    pathToXcodePlatformDir:@"/Users/chrisf/Xcodes/8b1/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform"
-                                                          workingDirectory:@"/Users/chrisf"];
-    
     NSError *err;
     FBDevice *device = [[FBDeviceSet defaultSetWithLogger:nil
                                                     error:&err] deviceWithUDID:@"49a29c9e61998623e7909e35e8bae50dd07ef85f"];
@@ -39,20 +32,21 @@
         NSLog(@"Error creating device operator: %@", err);
         return;
     }
-    device.deviceOperator.codesignProvider = codesigner;
     
-    FBXCTestRunStrategy *testRunStrategy = [FBXCTestRunStrategy strategyWithDeviceOperator:device.deviceOperator
-                                                                       testPrepareStrategy:testPrepareStrategy
-                                                                                  reporter:nil
-                                                                                    logger:nil];
-    NSError *innerError = nil;
-    [testRunStrategy startTestManagerWithAttributes:@[] environment:@{} error:&innerError];
+    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8b6/Xcode-beta.app/Contents/Developer", 1);
     
-    if (!innerError) {
-        [[NSRunLoop mainRunLoop] run];
-    } else {
-        NSLog(@"Err: %@", innerError);
-    }
+    NSUUID *sessionID = [[NSUUID alloc] initWithUUIDString:@"BEEFBABE-FEED-BABE-BEEF-CAFEBEEFFACE"];
+    [FBXCTestRunStrategy startTestManagerForDeviceOperator:device.deviceOperator
+                                            runnerBundleID:@"com.apple.test.DeviceAgent-Runner"
+                                                 sessionID:sessionID
+                                            withAttributes:[FBTestRunnerConfigurationBuilder defaultBuildAttributes]
+                                               environment:[FBTestRunnerConfigurationBuilder defaultBuildEnvironment]
+                                                  reporter:nil
+                                                    logger:nil
+                                                     error:&err];
+    
+    XCTAssertNil(err, @"%@", err);
+    [[NSRunLoop mainRunLoop] run];
 }
 
 + (void)initialize
