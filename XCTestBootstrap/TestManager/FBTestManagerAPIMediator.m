@@ -135,8 +135,12 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
   [[[FBRunLoopSpinner new]
     timeout:timeout]
    spinUntilTrue:^BOOL{
-     return self.daemonConnection.hasFinishedExecution && self.bundleConnection.hasFinishedExecution;
+       return [self testingHasFinished];
    }];
+}
+
+- (BOOL)testingHasFinished {
+    return self.daemonConnection.hasFinishedExecution && self.bundleConnection.hasFinishedExecution;
 }
 
 #pragma mark Reporting

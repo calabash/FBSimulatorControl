@@ -70,6 +70,10 @@
   return [self.mediator waitUntilTestRunnerAndTestManagerDaemonHaveFinishedExecutionWithTimeout:timeout];
 }
 
+- (BOOL)testingHasFinished {
+    return [self.mediator testingHasFinished];
+}
+
 - (NSString *)description
 {
   return [NSString stringWithFormat:
