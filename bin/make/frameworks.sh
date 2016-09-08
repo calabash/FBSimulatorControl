@@ -23,41 +23,46 @@ else
 fi
 
 BUILD_DIR="build"
+PRODUCTS_DIR="Products/Framworks"
+CONFIGURATION=Release
+
+mkdir -p "${PRODUCTS_DIR}"
+
 XC_PROJECT="FBSimulatorControl.xcodeproj"
 
-xcrun xcodebuild \
-  -SYMROOT="${BUILD_DIR}" \
-  -OBJROOT="${BUILD_DIR}" \
-  -project ${XC_PROJECT} \
-  -target XCTestBootstrap \
-  -configuration Release \
-  -sdk macosx \
-  build | $XC_PIPE
+function strip_framework() {
+  local FRAMEWORK_PATH="${BUILD_DIR}/Build/Products/${CONFIGURATION}/${1}"
+  if [ -d "$FRAMEWORK_PATH" ]; then
+    rm -r "$FRAMEWORK_PATH"
+  fi
+}
 
-xcrun xcodebuild \
-  -SYMROOT="${BUILD_DIR}" \
-  -OBJROOT="${BUILD_DIR}" \
-  -project ${XC_PROJECT} \
-  -target FBSimulatorControl \
-  -configuration Release \
-  -sdk macosx \
-  build | $XC_PIPE
+function framework_build() {
+  local target="${1}"
+  xcrun xcodebuild \
+    DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
+    ENABLE_TESTABILITY=NO \
+    GCC_OPTIMIZATION_LEVEL=s \
+    -SYMROOT="${BUILD_DIR}" \
+    -OBJROOT="${BUILD_DIR}" \
+    -project "${XC_PROJECT}" \
+    -target "${target}" \
+    -configuration "${CONFIGURATION}" \
+    -sdk macosx \
+    build | $XC_PIPE
+}
 
-xcrun xcodebuild \
-  -SYMROOT="${BUILD_DIR}" \
-  -OBJROOT="${BUILD_DIR}" \
-  -project ${XC_PROJECT} \
-  -target FBDeviceControl \
-  -configuration Release \
-  -sdk macosx \
-  build | $XC_PIPE
+framework_build XCTestBootstrap
+framework_build FBSimulatorControl
+framework_build FBDeviceControl
+framework_build FBControlCore
 
-xcrun xcodebuild \
-  -SYMROOT="${BUILD_DIR}" \
-  -OBJROOT="${BUILD_DIR}" \
-  -project ${XC_PROJECT} \
-  -target FBControlCore \
-  -configuration Release \
-  -sdk macosx \
-  build | $XC_PIPE
+# See the Frameworks.xcconfig file for why this is necessary.
+strip_framework "FBSimulatorControlKit.framework/Versions/Current/Frameworks/FBSimulatorControl.framework"
+strip_framework "FBSimulatorControlKit.framework/Versions/Current/Frameworks/FBDeviceControl.framework"
+strip_framework "FBSimulatorControl.framework/Versions/Current/Frameworks/XCTestBootstrap.framework"
+strip_framework "FBSimulatorControl.framework/Versions/Current/Frameworks/FBControlCore.framework"
+strip_framework "FBDeviceControl.framework/Versions/Current/Frameworks/XCTestBootstrap.framework"
+strip_framework "FBDeviceControl.framework/Versions/Current/Frameworks/FBControlCore.framework"
+strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/FBControlCore.framework"
 
