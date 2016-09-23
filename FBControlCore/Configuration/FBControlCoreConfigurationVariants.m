@@ -320,44 +320,6 @@
 
 @end
 
-@implementation FBControlCoreConfiguration_Device_iPhone7
-
-- (NSString *)deviceName
-{
-  return @"iPhone 7";
-}
-
-- (NSString *)deviceArchitecture
-{
-  return @"arm64";
-}
-
-- (NSString *)simulatorArchitecture
-{
-  return @"x86_64";
-}
-
-@end
-
-@implementation FBControlCoreConfiguration_Device_iPhone7Plus
-
-- (NSString *)deviceName
-{
-  return @"iPhone 7 Plus";
-}
-
-- (NSString *)deviceArchitecture
-{
-  return @"arm64";
-}
-
-- (NSString *)simulatorArchitecture
-{
-  return @"x86_64";
-}
-
-@end
-
 @implementation FBControlCoreConfiguration_Device_iPad_Base
 
 - (NSString *)deviceName
@@ -699,54 +661,6 @@
 
 @end
 
-@implementation FBControlCoreConfiguration_Device_AppleWatchSeries2_38mm
-
-- (NSString *)deviceName
-{
-  return @"Apple Watch Series 2 - 38mm";
-}
-
-- (NSSet<NSString *> *)productTypes
-{
-  return [NSSet setWithArray:@[@"Watch2,1"]];
-}
-
-- (NSString *)deviceArchitecture
-{
-  return @"armv7";
-}
-
-- (NSString *)simulatorArchitecture
-{
-  return @"i386";
-}
-
-@end
-
-@implementation FBControlCoreConfiguration_Device_AppleWatchSeries2_42mm
-
-- (NSString *)deviceName
-{
-  return @"Apple Watch Series 2 - 42mm";
-}
-
-- (NSSet<NSString *> *)productTypes
-{
-  return [NSSet setWithArray:@[@"Watch2,2"]];
-}
-
-- (NSString *)deviceArchitecture
-{
-  return @"armv7";
-}
-
-- (NSString *)simulatorArchitecture
-{
-  return @"i386";
-}
-
-@end
-
 #pragma mark OS Versions
 
 @implementation FBControlCoreConfiguration_OS_Base
@@ -1020,8 +934,6 @@
       FBControlCoreConfiguration_Device_iPhone6S.new,
       FBControlCoreConfiguration_Device_iPhone6SPlus.new,
       FBControlCoreConfiguration_Device_iPhoneSE.new,
-      FBControlCoreConfiguration_Device_iPhone7.new,
-      FBControlCoreConfiguration_Device_iPhone7Plus.new,
       FBControlCoreConfiguration_Device_iPad2.new,
       FBControlCoreConfiguration_Device_iPadRetina.new,
       FBControlCoreConfiguration_Device_iPadAir.new,
@@ -1031,9 +943,7 @@
       FBControlCoreConfiguration_Device_iPadAir2.new,
       FBControlCoreConfiguration_Device_AppleWatch38mm.new,
       FBControlCoreConfiguration_Device_AppleWatch42mm.new,
-      FBControlCoreConfiguration_Device_AppleTV1080p.new,
-      FBControlCoreConfiguration_Device_AppleWatchSeries2_38mm.new,
-      FBControlCoreConfiguration_Device_AppleWatchSeries2_42mm.new,
+      FBControlCoreConfiguration_Device_AppleTV1080p.new
     ];
   });
   return deviceConfigurations;
