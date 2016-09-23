@@ -30,17 +30,16 @@
 + (instancetype)forDevice:(FBDevice *)device;
 
 /**
-<<<<<<< HEAD
  Exposing this due to a bug with -(FBProductBundle *)applicationBundleWithBundleID:error"
  https://github.com/facebook/FBSimulatorControl/issues/279
  */
 
 - (id<DVTApplication>)installedApplicationWithBundleIdentifier:(NSString *)bundleID;
-=======
+
+/*
  * Update marker to point to the end of previous console string so the next
  * fetch will begin from the right place.
  */
 - (void)markPreviousEnd:(NSString *)consoleString;
 
->>>>>>> facebook/master
 @end

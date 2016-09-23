@@ -147,20 +147,23 @@
                 fail:error];
     }
     
-    // Attach to the XCTest Test Runner host Process.
-    FBTestManager *testManager = [FBTestManager testManagerWithOperator:deviceOperator
-                                                          testRunnerPID:testRunnerProcessID
-                                                      sessionIdentifier:sessionID
-                                                               reporter:reporter
-                                                                 logger:logger];
+    FBTestManagerContext *context =
+        [FBTestManagerContext contextWithTestRunnerPID:testRunnerProcessID
+                                    testRunnerBundleID:bundleID
+                                     sessionIdentifier:sessionID];
     
-    if (![testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout error:error]) {
+    // Attach to the XCTest Test Runner host Process.
+    FBTestManager *testManager = [FBTestManager testManagerWithContext:context
+                                                              operator:deviceOperator
+                                                              reporter:reporter
+                                                                logger:logger];
+    
+    if (![testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout]) {
         return
         [[[XCTestBootstrapError describe:@"Failed connect to test runner or test manager daemon"]
           causedBy:innerError]
          fail:error];
     }
-    NSLog(@"[%@ %@] => %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), testManager);
     return testManager;
 }
 #pragma mark Private

@@ -36,9 +36,7 @@
     NSLog(@"Creating %@ for %@", NSStringFromClass(self.class), @{
                                                                   @"applicationPath" : applicationPath,
                                                                   @"applicationDataPath" : applicationDataPath,
-                                                                  @"testBundlePath" : testBundlePath,
-                                                                  @"pathToXcodePlatformDir" : pathToXcodePlatformDir,
-                                                                  @"workingDirectory" : workingDirectory
+                                                                  @"testLaunchConfiguration" : testLaunchConfiguration
                                                                   });
   return
   [self strategyWithApplicationPath:applicationPath
@@ -110,13 +108,12 @@
 
   // Load XCTest bundle
   NSUUID *sessionIdentifier = [NSUUID UUID];
-  FBTestBundle *testBundle = [[[[[FBTestBundleBuilder builderWithFileManager:self.fileManager]
-    withBundlePath:self.testBundlePath]
+  FBTestBundle *testBundle = [[[[[[FBTestBundleBuilder builderWithFileManager:self.fileManager]
+                                  withBundlePath:self.testLaunchConfiguration.testBundlePath]
                                withCodesignProvider:deviceOperator.codesignProvider]
-
-    withSessionIdentifier:sessionIdentifier]
-    withUITesting:self.testLaunchConfiguration.shouldInitializeUITesting]
-    buildWithError:&innerError];
+                                withSessionIdentifier:sessionIdentifier]
+                               withUITesting:self.testLaunchConfiguration.shouldInitializeUITesting]
+                              buildWithError:&innerError];
 
   if (!testBundle) {
     return
