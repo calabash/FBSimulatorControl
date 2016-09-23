@@ -158,11 +158,12 @@
                                                               reporter:reporter
                                                                 logger:logger];
     
-    if (![testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout]) {
-        return
-        [[[XCTestBootstrapError describe:@"Failed connect to test runner or test manager daemon"]
-          causedBy:innerError]
-         fail:error];
+    FBTestManagerResult *result = [testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout];
+    if (result) {
+        return [[[XCTestBootstrapError
+                 describeFormat:@"Test Manager Connection Failed: %@", result.description]
+                causedBy:result.error]
+               fail:error];
     }
     return testManager;
 }

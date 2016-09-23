@@ -26,14 +26,14 @@
 - (void)testTheTest {
     NSError *err;
     FBDevice *device = [[FBDeviceSet defaultSetWithLogger:nil
-                                                    error:&err] deviceWithUDID:@"49a29c9e61998623e7909e35e8bae50dd07ef85f"];
+                                                    error:&err] deviceWithUDID:@"718ab8dbee0173b3f9ebfb01c5688b89221702c6"];
     
     if (err) {
         NSLog(@"Error creating device operator: %@", err);
         return;
     }
     
-    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8b6/Xcode-beta.app/Contents/Developer", 1);
+    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8.1/Xcode-beta.app/Contents/Developer", 1);
     
     NSUUID *sessionID = [[NSUUID alloc] initWithUUIDString:@"BEEFBABE-FEED-BABE-BEEF-CAFEBEEFFACE"];
     [FBXCTestRunStrategy startTestManagerForDeviceOperator:device.deviceOperator
