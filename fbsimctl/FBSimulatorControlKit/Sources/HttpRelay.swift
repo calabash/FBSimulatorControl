@@ -9,77 +9,136 @@
 
 import Foundation
 import FBSimulatorControl
-import Swifter
 
-private class HttpEventReporter : EventReporter, JSONDescribeable {
+extension HttpRequest {
+  func jsonBody() throws -> JSON {
+    return try JSON.fromData(self.body)
+  }
+}
+
+enum ResponseKeys : String {
+  case Success = "success"
+  case Failure = "failure"
+  case Status = "status"
+  case Message = "message"
+  case Events = "events"
+  case Subject = "subject"
+}
+
+private class HttpEventReporter : EventReporter {
   var events: [EventReporterSubject] = []
 
-  private func report(subject: EventReporterSubject) {
+  fileprivate func report(_ subject: EventReporterSubject) {
     self.events.append(subject)
   }
 
   var jsonDescription: JSON { get {
-    return JSON.JArray(self.events.map { $0.jsonDescription })
+    return JSON.jArray(self.events.map { $0.jsonDescription })
   }}
 
-  static func errorResponse(errorMessage: String?) -> HttpResponse {
-    let json = JSON.JDictionary([
-      "status" : JSON.JString("failure"),
-      "message": JSON.JString(errorMessage ?? "Unknown Error")
+  static func errorResponse(_ errorMessage: String?) -> HttpResponse {
+    let json = JSON.jDictionary([
+      ResponseKeys.Status.rawValue : JSON.jString(ResponseKeys.Failure.rawValue),
+      ResponseKeys.Message.rawValue : JSON.jString(errorMessage ?? "Unknown Error")
     ])
-    return HttpResponse.BadRequest(.Json(json.decode()))
+    return HttpResponse.internalServerError(json.data)
   }
 
-  func interactionResultResponse(result: CommandResult) -> HttpResponse {
+  func interactionResultResponse(_ result: CommandResult) -> HttpResponse {
     switch result {
-    case .Failure(let string):
-      let json = JSON.JDictionary([
-        "status" : JSON.JString("failure"),
-        "message": JSON.JString(string),
-        "events" : self.jsonDescription
+    case .failure(let string):
+      let json = JSON.jDictionary([
+        ResponseKeys.Status.rawValue : JSON.jString(ResponseKeys.Failure.rawValue),
+        ResponseKeys.Message.rawValue : JSON.jString(string),
+        ResponseKeys.Events.rawValue : self.jsonDescription
       ])
-      return HttpResponse.BadRequest(.Json(json.decode()))
-    case .Success:
-      let json = JSON.JDictionary([
-        "status" : JSON.JString("success"),
-        "events" : self.jsonDescription
-      ])
-      return HttpResponse.OK(.Json(json.decode()))
+      return HttpResponse.internalServerError(json.data)
+    case .success(let subject):
+      var dictionary = [
+        ResponseKeys.Status.rawValue : JSON.jString(ResponseKeys.Success.rawValue),
+        ResponseKeys.Events.rawValue : self.jsonDescription
+      ]
+      if let subject = subject {
+        dictionary[ResponseKeys.Subject.rawValue] = subject.jsonDescription
+      }
+      let json = JSON.jDictionary(dictionary)
+      return HttpResponse.ok(json.data)
     }
   }
 }
 
 extension ActionPerformer {
-  func dispatchAction(action: Action, queryOverride: FBiOSTargetQuery? = nil, formatOverride: FBiOSTargetFormat? = nil) -> HttpResponse {
+  func dispatchAction(_ action: Action, queryOverride: FBiOSTargetQuery? = nil, formatOverride: FBiOSTargetFormat? = nil) -> HttpResponse {
     let reporter = HttpEventReporter()
-    var result = CommandResult.Success
-    dispatch_sync(dispatch_get_main_queue()) {
+    var result: CommandResult? = nil
+    DispatchQueue.main.sync {
       result = self.perform(reporter, action: action, queryOverride: queryOverride)
     }
 
-    return reporter.interactionResultResponse(result)
+    return reporter.interactionResultResponse(result!)
   }
 }
 
-enum HttpMethod {
-  case GET
-  case POST
+enum HttpMethod : String {
+  case GET = "GET"
+  case POST = "POST"
 }
 
-struct HttpRoute {
-  let method: HttpMethod
-  let endpoint: String
-  let actionParser: JSON throws -> Action
+struct ActionRoute {
+  enum Handler {
+    case constant(Action)
+    case parser((JSON) throws -> Action)
+  }
 
-  func mount(server: Swifter.HttpServer, performer: ActionPerformer) {
-    let actionParser = self.actionParser
-    let handler: Swifter.HttpRequest -> Swifter.HttpResponse = { request in
-      do {
-        let json = try HttpRoute.jsonBodyFromRequest(request)
+  let method: HttpMethod
+  let endpoint: EventName
+  let handler: Handler
+
+  static func post(_ endpoint: EventName, handler: @escaping (JSON) throws -> Action) -> ActionRoute {
+    return ActionRoute(method: HttpMethod.POST, endpoint: endpoint, handler: Handler.parser(handler))
+  }
+
+  static func get(_ endpoint: EventName, action: Action) -> ActionRoute {
+    return ActionRoute(method: HttpMethod.GET, endpoint: endpoint, handler: Handler.constant(action))
+  }
+
+  fileprivate var pathHandler:(HttpRequest)throws -> FBiOSTargetQuery? { get {
+    return { request in
+      guard let queryPath = request.pathComponents.dropFirst().first , request.pathComponents.count == 3 else {
+        return nil
+      }
+      return FBiOSTargetQuery.udids([
+        try FBiOSTargetQuery.parseUDIDToken(queryPath)
+      ])
+    }
+  }}
+
+  fileprivate var bodyHandler:(HttpRequest)throws -> (Action, FBiOSTargetQuery?) { get {
+    switch self.handler {
+    case .constant(let action):
+      return { _ in (action, nil) }
+    case .parser(let actionParser):
+      return { request in
+        let json = try request.jsonBody()
         let action = try actionParser(json)
-        let query = try? FBiOSTargetQuery.inflateFromJSON(json.getValue("simulators").decode())
-        return performer.dispatchAction(action, queryOverride: query)
+        let query = try? FBiOSTargetQuery.inflate(fromJSON: json.getValue("simulators").decode())
+        return (action, query)
+      }
+    }
+  }}
+
+  fileprivate func requestHandler(_ performer: ActionPerformer) -> (HttpRequest) -> HttpResponse {
+    let bodyHandler = self.bodyHandler
+    let pathHandler = self.pathHandler
+
+    return { request in
+      do {
+        let pathQuery = try pathHandler(request)
+        let (action, bodyQuery) = try bodyHandler(request)
+        return performer.dispatchAction(action, queryOverride: pathQuery ?? bodyQuery)
       } catch let error as JSONError {
+        return HttpEventReporter.errorResponse(error.description)
+      } catch let error as ParseError {
         return HttpEventReporter.errorResponse(error.description)
       } catch let error as NSError {
         return HttpEventReporter.errorResponse(error.description)
@@ -87,24 +146,18 @@ struct HttpRoute {
         return HttpEventReporter.errorResponse(nil)
       }
     }
-
-    switch self.method {
-    case .GET:
-      server.GET["/" + self.endpoint] = handler
-    case .POST:
-      server.POST["/" + self.endpoint] = handler
-    }
   }
 
-  static func jsonBodyFromRequest(request: HttpRequest) throws -> JSON {
-    let body = request.body
-    let data = NSData(bytes: body, length: body.count)
-    return try JSON.fromData(data)
+  func httpRoutes(_ performer: ActionPerformer) -> [HttpRoute] {
+    return [
+      HttpRoute(method: self.method.rawValue, path: "/.*/" + self.endpoint.rawValue, handler: self.requestHandler(performer)),
+      HttpRoute(method: self.method.rawValue, path: "/" + self.endpoint.rawValue, handler: self.requestHandler(performer)),
+    ]
   }
 }
 
 class HttpRelay : Relay {
-  struct Error : ErrorType, CustomStringConvertible {
+  struct HttpError : Error, CustomStringConvertible {
     let message: String
 
     var description: String { get {
@@ -113,21 +166,24 @@ class HttpRelay : Relay {
   }
 
   let portNumber: in_port_t
-  let httpServer: Swifter.HttpServer
+  let httpServer: HttpServer
   let performer: ActionPerformer
 
   init(portNumber: in_port_t, performer: ActionPerformer) {
     self.portNumber = portNumber
     self.performer = performer
-    self.httpServer = Swifter.HttpServer()
+
+    self.httpServer = HttpServer(
+      port: portNumber,
+      routes: HttpRelay.actionRoutes.flatMap { $0.httpRoutes(performer) }
+    )
   }
 
   func start() throws {
     do {
-      self.registerRoutes()
-      try self.httpServer.start(self.portNumber)
-    } catch {
-      throw HttpRelay.Error(message: "An Error occurred starting the HTTP Server on Port \(self.portNumber)")
+      try self.httpServer.start()
+    } catch let error as NSError {
+      throw HttpRelay.HttpError(message: "An Error occurred starting the HTTP Server on Port \(self.portNumber): \(error.description)")
     }
   }
 
@@ -135,118 +191,131 @@ class HttpRelay : Relay {
     self.httpServer.stop()
   }
 
-  private var clearKeychainRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "clear_keychain") { json in
+  fileprivate static var clearKeychainRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.ClearKeychain) { json in
       let bundleID = try json.getValue("bundle_id").getString()
-      return Action.ClearKeychain(bundleID)
+      return Action.clearKeychain(bundleID)
     }
   }}
 
-  private var diagnoseRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "diagnose") { json in
-      let query = try FBSimulatorDiagnosticQuery.inflateFromJSON(json.decode())
-      return Action.Diagnose(query, DiagnosticFormat.Content)
+  fileprivate static var configRoute: ActionRoute { get {
+    return ActionRoute.get(EventName.Config, action: Action.config)
+  }}
+
+  fileprivate static var diagnoseRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Diagnose) { json in
+      let query = try FBSimulatorDiagnosticQuery.inflate(fromJSON: json.decode())
+      return Action.diagnose(query, DiagnosticFormat.Content)
     }
   }}
 
-  private var openRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "open") { json in
+  fileprivate static var launchRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Launch) { json in
+      if let agentLaunch = try? FBAgentLaunchConfiguration.inflate(fromJSON: json.decode()) {
+        return Action.launchAgent(agentLaunch)
+      }
+      if let appLaunch = try? FBApplicationLaunchConfiguration.inflate(fromJSON: json.decode()) {
+        return Action.launchApp(appLaunch)
+      }
+
+      throw JSONError.parse("Could not parse \(json) either an Agent or App Launch")
+    }
+  }}
+
+  fileprivate static var listRoute: ActionRoute { get {
+    return ActionRoute.get(EventName.List, action: Action.list)
+  }}
+
+  fileprivate static var openRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Open) { json in
       let urlString = try json.getValue("url").getString()
-      guard let url = NSURL(string: urlString) else {
-        throw JSONError.Parse("\(urlString) is not a valid URL")
+      guard let url = URL(string: urlString) else {
+        throw JSONError.parse("\(urlString) is not a valid URL")
       }
-      return Action.Open(url)
+      return Action.open(url)
     }
   }}
 
-  private var recordRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "record") { json in
+  fileprivate static var recordRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Record) { json in
       let start = try json.getValue("start").getBool()
-      return Action.Record(start)
+      return Action.record(start)
     }
   }}
 
-  private var launchRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "launch") { json in
-      if let agentLaunch = try? FBAgentLaunchConfiguration.inflateFromJSON(json.decode()) {
-        return Action.LaunchAgent(agentLaunch)
-      }
-      if let appLaunch = try? FBApplicationLaunchConfiguration.inflateFromJSON(json.decode()) {
-        return Action.LaunchApp(appLaunch)
-      }
-
-      throw JSONError.Parse("Could not parse \(json) either an Agent or App Launch")
+  fileprivate static var relaunchRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Relaunch) { json in
+      let launchConfiguration = try FBApplicationLaunchConfiguration.inflate(fromJSON: json.decode())
+      return Action.relaunch(launchConfiguration)
     }
   }}
 
-  private var relaunchRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "relaunch") { json in
-      let launchConfiguration = try FBApplicationLaunchConfiguration.inflateFromJSON(json.decode())
-      return Action.Relaunch(launchConfiguration)
+  fileprivate static var searchRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Search) { json in
+      let search = try FBBatchLogSearch.inflate(fromJSON: json.decode())
+      return Action.search(search)
     }
   }}
 
-  private var searchRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "search") { json in
-      let search = try FBBatchLogSearch.inflateFromJSON(json.decode())
-      return Action.Search(search)
+  fileprivate static var setLocationRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.SetLocation) { json in
+      let latitude = try json.getValue("latitude").getNumber().doubleValue
+      let longitude = try json.getValue("longitude").getNumber().doubleValue
+      return Action.setLocation(latitude, longitude)
     }
   }}
 
-  private var tapRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: EventName.Tap.rawValue) { json in
+  fileprivate static var tapRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Tap) { json in
       let x = try json.getValue("x").getNumber().doubleValue
       let y = try json.getValue("y").getNumber().doubleValue
-      return Action.Tap(x, y)
+      return Action.tap(x, y)
     }
   }}
 
-  private var terminateRoute: HttpRoute { get {
-    return HttpRoute(method: HttpMethod.POST, endpoint: "terminate") { json in
+  fileprivate static var terminateRoute: ActionRoute { get {
+    return ActionRoute.post(EventName.Terminate) { json in
       let bundleID = try json.getValue("bundle_id").getString()
-      return Action.Terminate(bundleID)
+      return Action.terminate(bundleID)
     }
   }}
 
-  private var uploadRoute: HttpRoute { get {
-    let jsonToDiagnostics: JSON throws -> [FBDiagnostic] = { json in
+  fileprivate static var uploadRoute: ActionRoute { get {
+    let jsonToDiagnostics:(JSON)throws -> [FBDiagnostic] = { json in
       switch json {
-      case .JArray(let array):
+      case .jArray(let array):
         let diagnostics = try array.map { jsonDiagnostic in
-          return try FBDiagnostic.inflateFromJSON(jsonDiagnostic.decode())
+          return try FBDiagnostic.inflate(fromJSON: jsonDiagnostic.decode())
         }
         return diagnostics
-      case .JDictionary:
-        let diagnostic = try FBDiagnostic.inflateFromJSON(json.decode())
+      case .jDictionary:
+        let diagnostic = try FBDiagnostic.inflate(fromJSON: json.decode())
         return [diagnostic]
       default:
-        throw JSONError.Parse("Unparsable Diagnostic")
+        throw JSONError.parse("Unparsable Diagnostic")
       }
     }
 
-    return HttpRoute(method: HttpMethod.POST, endpoint: "upload") { json in
-      return Action.Upload(try jsonToDiagnostics(json))
+    return ActionRoute.post(EventName.Upload) { json in
+      return Action.upload(try jsonToDiagnostics(json))
     }
   }}
 
-  private var routes: [HttpRoute] { get {
+  fileprivate static var actionRoutes: [ActionRoute] { get {
     return [
       self.clearKeychainRoute,
+      self.configRoute,
       self.diagnoseRoute,
       self.launchRoute,
+      self.listRoute,
       self.openRoute,
       self.recordRoute,
       self.relaunchRoute,
       self.searchRoute,
+      self.setLocationRoute,
       self.tapRoute,
       self.terminateRoute,
-      self.uploadRoute
+      self.uploadRoute,
     ]
   }}
-
-  private func registerRoutes() {
-    for route in self.routes {
-      route.mount(self.httpServer, performer: self.performer)
-    }
-  }
 }

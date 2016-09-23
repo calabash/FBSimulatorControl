@@ -305,12 +305,60 @@
 
 - (NSSet<NSString *> *)productTypes
 {
-  return [NSSet setWithArray:@[@"iPhone8,2"]];
+  return [NSSet setWithArray:@[@"iPhone8,4"]];
 }
 
 - (NSString *)deviceArchitecture
 {
   return @"arm64";
+}
+
+- (NSString *)simulatorArchitecture
+{
+  return @"x86_64";
+}
+
+@end
+
+@implementation FBControlCoreConfiguration_Device_iPhone7
+
+- (NSString *)deviceName
+{
+  return @"iPhone 7";
+}
+
+- (NSSet<NSString *> *)productTypes
+{
+  return [NSSet setWithArray:@[@"iPhone9,1", @"iPhone9,3"]];
+}
+
+- (NSString *)deviceArchitecture
+{
+  return @"arm64";
+}
+
+- (NSString *)simulatorArchitecture
+{
+  return @"x86_64";
+}
+
+@end
+
+@implementation FBControlCoreConfiguration_Device_iPhone7Plus
+
+- (NSString *)deviceName
+{
+  return @"iPhone 7 Plus";
+}
+
+- (NSString *)deviceArchitecture
+{
+  return @"arm64";
+}
+
+- (NSSet<NSString *> *)productTypes
+{
+  return [NSSet setWithArray:@[@"iPhone9,2", @"iPhone9,4"]];
 }
 
 - (NSString *)simulatorArchitecture
@@ -661,6 +709,54 @@
 
 @end
 
+@implementation FBControlCoreConfiguration_Device_AppleWatchSeries2_38mm
+
+- (NSString *)deviceName
+{
+  return @"Apple Watch Series 2 - 38mm";
+}
+
+- (NSSet<NSString *> *)productTypes
+{
+  return [NSSet setWithArray:@[@"Watch2,1"]];
+}
+
+- (NSString *)deviceArchitecture
+{
+  return @"armv7";
+}
+
+- (NSString *)simulatorArchitecture
+{
+  return @"i386";
+}
+
+@end
+
+@implementation FBControlCoreConfiguration_Device_AppleWatchSeries2_42mm
+
+- (NSString *)deviceName
+{
+  return @"Apple Watch Series 2 - 42mm";
+}
+
+- (NSSet<NSString *> *)productTypes
+{
+  return [NSSet setWithArray:@[@"Watch2,2"]];
+}
+
+- (NSString *)deviceArchitecture
+{
+  return @"armv7";
+}
+
+- (NSString *)simulatorArchitecture
+{
+  return @"i386";
+}
+
+@end
+
 #pragma mark OS Versions
 
 @implementation FBControlCoreConfiguration_OS_Base
@@ -814,6 +910,15 @@
 
 @end
 
+@implementation FBControlCoreConfiguration_iOS_10_1
+
+- (NSString *)name
+{
+  return @"iOS 10.1";
+}
+
+@end
+
 @implementation FBControlCoreConfiguration_tvOS_Base
 
 - (NSString *)name
@@ -861,6 +966,15 @@
 - (NSString *)name
 {
   return @"tvOS 10.0";
+}
+
+@end
+
+@implementation FBControlCoreConfiguration_tvOS_10_1
+
+- (NSString *)name
+{
+  return @"tvOS 10.1";
 }
 
 @end
@@ -916,6 +1030,15 @@
 
 @end
 
+@implementation FBControlCoreConfiguration_watchOS_3_1
+
+- (NSString *)name
+{
+  return @"watchOS 3.1";
+}
+
+@end
+
 @implementation FBControlCoreConfigurationVariants
 
 #pragma mark Lookup Tables
@@ -934,6 +1057,8 @@
       FBControlCoreConfiguration_Device_iPhone6S.new,
       FBControlCoreConfiguration_Device_iPhone6SPlus.new,
       FBControlCoreConfiguration_Device_iPhoneSE.new,
+      FBControlCoreConfiguration_Device_iPhone7.new,
+      FBControlCoreConfiguration_Device_iPhone7Plus.new,
       FBControlCoreConfiguration_Device_iPad2.new,
       FBControlCoreConfiguration_Device_iPadRetina.new,
       FBControlCoreConfiguration_Device_iPadAir.new,
@@ -943,7 +1068,9 @@
       FBControlCoreConfiguration_Device_iPadAir2.new,
       FBControlCoreConfiguration_Device_AppleWatch38mm.new,
       FBControlCoreConfiguration_Device_AppleWatch42mm.new,
-      FBControlCoreConfiguration_Device_AppleTV1080p.new
+      FBControlCoreConfiguration_Device_AppleTV1080p.new,
+      FBControlCoreConfiguration_Device_AppleWatchSeries2_38mm.new,
+      FBControlCoreConfiguration_Device_AppleWatchSeries2_42mm.new,
     ];
   });
   return deviceConfigurations;
@@ -968,14 +1095,17 @@
       FBControlCoreConfiguration_iOS_9_3_1.new,
       FBControlCoreConfiguration_iOS_9_3_2.new,
       FBControlCoreConfiguration_iOS_10_0.new,
+      FBControlCoreConfiguration_iOS_10_1.new,
       FBControlCoreConfiguration_tvOS_9_0.new,
       FBControlCoreConfiguration_tvOS_9_1.new,
       FBControlCoreConfiguration_tvOS_9_2.new,
       FBControlCoreConfiguration_tvOS_10_0.new,
+      FBControlCoreConfiguration_tvOS_10_1.new,
       FBControlCoreConfiguration_watchOS_2_0.new,
       FBControlCoreConfiguration_watchOS_2_1.new,
       FBControlCoreConfiguration_watchOS_2_2.new,
       FBControlCoreConfiguration_watchOS_3_0.new,
+      FBControlCoreConfiguration_watchOS_3_1.new,
     ];
   });
   return OSConfigurations;

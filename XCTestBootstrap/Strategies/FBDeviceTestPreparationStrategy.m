@@ -14,6 +14,7 @@
 #import "FBProductBundle.h"
 #import "FBTestBundle.h"
 #import "FBTestConfiguration.h"
+#import "FBTestLaunchConfiguration.h"
 #import "FBTestRunnerConfiguration.h"
 #import "NSFileManager+FBFileManager.h"
 #import "FBCodeSignCommand.h"
@@ -22,17 +23,15 @@
 @interface FBDeviceTestPreparationStrategy ()
 @property (nonatomic, copy) NSString *applicationPath;
 @property (nonatomic, copy) NSString *applicationDataPath;
-@property (nonatomic, copy) NSString *testBundlePath;
+@property (nonatomic, copy) FBTestLaunchConfiguration *testLaunchConfiguration;
 @property (nonatomic, strong) id<FBFileManager> fileManager;
 @end
 
 @implementation FBDeviceTestPreparationStrategy
 
-+ (instancetype)strategyWithTestRunnerApplicationPath:(NSString *)applicationPath
-                                  applicationDataPath:(NSString *)applicationDataPath
-                                       testBundlePath:(NSString *)testBundlePath
-                               pathToXcodePlatformDir:(NSString *)pathToXcodePlatformDir
-                                     workingDirectory:(NSString *)workingDirectory
++ (instancetype)strategyWithApplicationPath:(NSString *)applicationPath
+                        applicationDataPath:(NSString *)applicationDataPath
+                    testLaunchConfiguration:(FBTestLaunchConfiguration *)testLaunchConfiguration;
 {
     NSLog(@"Creating %@ for %@", NSStringFromClass(self.class), @{
                                                                   @"applicationPath" : applicationPath,
@@ -42,30 +41,22 @@
                                                                   @"workingDirectory" : workingDirectory
                                                                   });
   return
-  [self strategyWithTestRunnerApplicationPath:applicationPath
-                          applicationDataPath:applicationDataPath
-                               testBundlePath:testBundlePath
-                       pathToXcodePlatformDir:pathToXcodePlatformDir
-                             workingDirectory:workingDirectory
-                                  fileManager:[NSFileManager defaultManager]];
+  [self strategyWithApplicationPath:applicationPath
+                applicationDataPath:applicationDataPath
+            testLaunchConfiguration:testLaunchConfiguration
+                        fileManager:[NSFileManager defaultManager]];
 }
 
-+ (instancetype)strategyWithTestRunnerApplicationPath:(NSString *)applicationPath
-                                  applicationDataPath:(NSString *)applicationDataPath
-                                       testBundlePath:(NSString *)testBundlePath
-                               pathToXcodePlatformDir:(NSString *)pathToXcodePlatformDir
-                                     workingDirectory:(NSString *)workingDirectory
-                                          fileManager:(id<FBFileManager>)fileManager
++ (instancetype)strategyWithApplicationPath:(NSString *)applicationPath
+                        applicationDataPath:(NSString *)applicationDataPath
+                    testLaunchConfiguration:(FBTestLaunchConfiguration *)testLaunchConfiguration
+                                fileManager:(id<FBFileManager>)fileManager
 {
-    
-    FBDeviceTestPreparationStrategy *strategy = [self.class new];
-    strategy.applicationPath = applicationPath;
-    strategy.applicationDataPath = applicationDataPath;
-    strategy.testBundlePath = testBundlePath;
-    strategy.fileManager = fileManager;
-    strategy.pathToXcodePlatformDir = pathToXcodePlatformDir;
-    strategy.workingDirectory = workingDirectory;
-    NSLog(@"[%@ %@] => %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), strategy);
+  FBDeviceTestPreparationStrategy *strategy = [self.class new];
+  strategy.applicationPath = applicationPath;
+  strategy.applicationDataPath = applicationDataPath;
+  strategy.testLaunchConfiguration = testLaunchConfiguration;
+  strategy.fileManager = fileManager;
   return strategy;
 }
 
@@ -74,8 +65,7 @@
   NSAssert(deviceOperator, @"deviceOperator is needed to load bundles");
   NSAssert(self.applicationPath, @"Path to application is needed to load bundles");
   NSAssert(self.applicationDataPath, @"Path to application data bundle is needed to prepare bundles");
-  NSAssert(self.testBundlePath, @"Path to test bundle is needed to load bundles");
-    NSAssert(self.pathToXcodePlatformDir, @"Path to Xcode Platform Dir is needed to load test frameworks");
+  NSAssert(self.testLaunchConfiguration.testBundlePath, @"Path to test bundle is needed to load bundles");
 
   NSError *innerError;
   // Load tested application
@@ -123,7 +113,9 @@
   FBTestBundle *testBundle = [[[[[FBTestBundleBuilder builderWithFileManager:self.fileManager]
     withBundlePath:self.testBundlePath]
                                withCodesignProvider:deviceOperator.codesignProvider]
+
     withSessionIdentifier:sessionIdentifier]
+    withUITesting:self.testLaunchConfiguration.shouldInitializeUITesting]
     buildWithError:&innerError];
 
   if (!testBundle) {

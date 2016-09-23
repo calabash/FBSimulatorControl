@@ -9,8 +9,15 @@
 
 #import <Foundation/Foundation.h>
 
+#import <XCTest/XCTest.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
 @class FBApplicationDescriptor;
 
+/**
+ Static Fixtures for FBXCTestKitTests
+ */
 @interface FBXCTestKitFixtures : NSObject
 
 /**
@@ -44,3 +51,20 @@
 + (NSString *)macUnitTestBundlePath;
 
 @end
+
+/**
+ Conveniences for getting fixtures.
+ */
+@interface XCTestCase (FBXCTestKitTests)
+
+/**
+ An iOS Unit Test XCTest Target.
+ Will check that the bundle is codesigned, and sign it if is not.
+
+ @return path to the Unit Test Bundle.
+ */
+- (nullable NSString *)iOSUnitTestBundlePath;
+
+@end
+
+NS_ASSUME_NONNULL_END

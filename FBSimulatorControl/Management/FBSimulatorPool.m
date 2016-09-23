@@ -55,7 +55,7 @@
 - (nullable FBSimulator *)allocateSimulatorWithConfiguration:(FBSimulatorConfiguration *)configuration options:(FBSimulatorAllocationOptions)options error:(NSError **)error;
 {
   NSError *innerError = nil;
-  FBSimulator *simulator = [self obtainSimulatorWithConfiguration:configuration options:options error:&innerError];
+  FBSimulator *simulator = [self assertObtainsSimulatorWithConfiguration:configuration options:options error:&innerError];
   if (!simulator) {
     return [FBSimulatorError failWithError:innerError errorOut:error];
   }
@@ -145,19 +145,19 @@
 
 #pragma mark Properties
 
-- (NSArray *)allocatedSimulators
+- (NSArray<FBSimulator *> *)allocatedSimulators
 {
   return [self.set.allSimulators filteredArrayUsingPredicate:[FBSimulatorPredicates allocatedByPool:self]];
 }
 
-- (NSArray *)unallocatedSimulators
+- (NSArray<FBSimulator *> *)unallocatedSimulators
 {
   return [self.set.allSimulators filteredArrayUsingPredicate:[FBSimulatorPredicates unallocatedByPool:self]];
 }
 
 #pragma mark - Private
 
-- (FBSimulator *)obtainSimulatorWithConfiguration:(FBSimulatorConfiguration *)configuration options:(FBSimulatorAllocationOptions)options error:(NSError **)error
+- (FBSimulator *)assertObtainsSimulatorWithConfiguration:(FBSimulatorConfiguration *)configuration options:(FBSimulatorAllocationOptions)options error:(NSError **)error
 {
   NSError *innerError = nil;
   if (![configuration checkRuntimeRequirementsReturningError:&innerError]) {

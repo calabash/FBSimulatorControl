@@ -16,8 +16,6 @@
 
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator.h"
-#import "FBProcessLaunchConfiguration.h"
-#import "FBProcessLaunchConfiguration+Helpers.h"
 #import "FBSimulatorHistory+Queries.h"
 
 NSString *const FBSimulatorLogNameSyslog = @"system_log";
@@ -67,7 +65,31 @@ NSString *const FBSimulatorLogNameScreenshot = @"screenshot";
     stringByAppendingPathComponent:self.simulator.udid];
 }
 
-#pragma mark Diagnostic Accessors
+#pragma mark Crash Log Diagnostics
+
+- (NSArray<FBDiagnostic *> *)subprocessCrashesAfterDate:(NSDate *)date withProcessType:(FBCrashLogInfoProcessType)processType;
+{
+  return [FBConcurrentCollectionOperations
+    filterMap:[self launchdSimSubprocessCrashesPathsAfterDate:date]
+    predicate:[FBSimulatorDiagnostics predicateForProcessType:processType]
+    map:^ FBDiagnostic * (FBCrashLogInfo *logInfo) {
+      return [logInfo toDiagnostic:self.logBuilder];
+    }];
+}
+
+- (NSArray<FBDiagnostic *> *)userLaunchedProcessCrashesSinceLastLaunch
+{
+  NSPredicate *predicate = [FBSimulatorDiagnostics predicateForUserLaunchedProcessesInHistory:self.simulator.history];
+  return [self userLaunchedProcessCrashesSinceLastLaunchWithPredicate:predicate];
+}
+
+- (NSArray<FBDiagnostic *> *)userLaunchedProcessCrashesSinceLastLaunchWithProcessIdentifier:(pid_t)processIdentifier
+{
+  NSPredicate *predicate = [FBCrashLogInfo predicateForCrashLogsWithProcessID:processIdentifier];
+  return [self userLaunchedProcessCrashesSinceLastLaunchWithPredicate:predicate];
+}
+
+#pragma mark Standard Diagnostics
 
 - (FBDiagnostic *)base
 {
@@ -150,39 +172,6 @@ NSString *const FBSimulatorLogNameScreenshot = @"screenshot";
 - (NSArray<FBDiagnostic *> *)stdOutErrDiagnostics
 {
   return [FBSimulatorDiagnostics diagnosticsForSubpathsOf:self.stdOutErrContainersPath];
-}
-
-- (NSArray<FBDiagnostic *> *)subprocessCrashesAfterDate:(NSDate *)date withProcessType:(FBCrashLogInfoProcessType)processType;
-{
-  return [FBConcurrentCollectionOperations
-    filterMap:[self launchdSimSubprocessCrashesPathsAfterDate:date]
-    predicate:[FBSimulatorDiagnostics predicateForProcessType:processType]
-    map:^ FBDiagnostic * (FBCrashLogInfo *logInfo) {
-      return [logInfo toDiagnostic:self.logBuilder];
-    }];
-}
-
-- (NSArray<FBDiagnostic *> *)userLaunchedProcessCrashesSinceLastLaunch
-{
-  // Going from state transition to 'Booted' can be after the crash report is written for an
-  // Process that instacrashes around the same time the simulator is booted.
-  // Instead, use the 'Booting' state, which will be before any Process could have been launched.
-  NSDate *lastLaunchDate = [[[self.simulator.history
-    lastChangeOfState:FBSimulatorStateBooted]
-    lastChangeOfState:FBSimulatorStateBooting]
-    timestamp];
-
-  // If we don't have the last launch date, we can't reliably predict which processes are interesting.
-  if (!lastLaunchDate) {
-    return @[];
-  }
-
-  return [FBConcurrentCollectionOperations
-    filterMap:[self launchdSimSubprocessCrashesPathsAfterDate:lastLaunchDate]
-    predicate:[FBSimulatorDiagnostics predicateForUserLaunchedProcessesInHistory:self.simulator.history]
-    map:^ FBDiagnostic * (FBCrashLogInfo *logInfo) {
-      return [logInfo toDiagnostic:self.logBuilder];
-    }];
 }
 
 - (NSDictionary<FBProcessInfo *, FBDiagnostic *> *)launchedProcessLogs
@@ -351,11 +340,6 @@ NSString *const FBSimulatorLogNameScreenshot = @"screenshot";
   return [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Logs/CoreSimulator/CoreSimulator.log"];
 }
 
-- (NSString *)diagnosticReportsPath
-{
-  return [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Logs/DiagnosticReports"];
-}
-
 - (NSString *)applicationContainersPath
 {
   return [self.simulator.dataDirectory stringByAppendingPathComponent:@"Containers/Data/Application"];
@@ -371,37 +355,7 @@ NSString *const FBSimulatorLogNameScreenshot = @"screenshot";
   return [self.coreSimulatorLogsDirectory stringByAppendingPathComponent:@"asl"];
 }
 
-+ (NSPredicate *)predicateForFilesWithBasePath:(NSString *)basePath afterDate:(NSDate *)date withExtension:(NSString *)extension
-{
-  NSFileManager *fileManager = NSFileManager.defaultManager;
-  NSPredicate *datePredicate = [NSPredicate predicateWithValue:YES];
-  if (date) {
-    datePredicate = [NSPredicate predicateWithBlock:^ BOOL (NSString *fileName, NSDictionary *_) {
-      NSString *path = [basePath stringByAppendingPathComponent:fileName];
-      NSDictionary *attributes = [fileManager attributesOfItemAtPath:path error:nil];
-      return [attributes.fileModificationDate isGreaterThanOrEqualTo:date];
-    }];
-  }
-  return [NSCompoundPredicate andPredicateWithSubpredicates:@[
-    [NSPredicate predicateWithFormat:@"pathExtension == %@", extension],
-    datePredicate
-  ]];
-}
-
 #pragma mark Crash Logs
-
-- (NSArray<FBCrashLogInfo *> *)crashInfoAfterDate:(NSDate *)date
-{
-  NSString *basePath = self.diagnosticReportsPath;
-
-  return [FBConcurrentCollectionOperations
-    filterMap:[NSFileManager.defaultManager contentsOfDirectoryAtPath:basePath error:nil]
-    predicate:[FBSimulatorDiagnostics predicateForFilesWithBasePath:basePath afterDate:date withExtension:@"crash"]
-    map:^ FBCrashLogInfo * (NSString *fileName) {
-      NSString *path = [basePath stringByAppendingPathComponent:fileName];
-      return [FBCrashLogInfo fromCrashLogAtPath:path];
-    }];
-}
 
 - (NSArray<FBCrashLogInfo *> *)launchdSimSubprocessCrashesPathsAfterDate:(NSDate *)date
 {
@@ -414,7 +368,30 @@ NSString *const FBSimulatorLogNameScreenshot = @"screenshot";
     return [logInfo.parentProcessName isEqualToString:@"launchd_sim"] && logInfo.parentProcessIdentifier == launchdProcess.processIdentifier;
   }];
 
-  return [[self crashInfoAfterDate:date] filteredArrayUsingPredicate:parentProcessPredicate];
+  return [[FBCrashLogInfo crashInfoAfterDate:date] filteredArrayUsingPredicate:parentProcessPredicate];
+}
+
+- (NSArray<FBDiagnostic *> *)userLaunchedProcessCrashesSinceLastLaunchWithPredicate:(NSPredicate *)predicate
+{
+  // Going from state transition to 'Booted' can be after the crash report is written for an
+  // Process that instacrashes around the same time the simulator is booted.
+  // Instead, use the 'Booting' state, which will be before any Process could have been launched.
+  NSDate *lastLaunchDate = [[[self.simulator.history
+    lastChangeOfState:FBSimulatorStateBooted]
+    lastChangeOfState:FBSimulatorStateBooting]
+    timestamp];
+
+  // If we don't have the last launch date, we can't reliably predict which processes are interesting.
+  if (!lastLaunchDate) {
+    return @[];
+  }
+
+  return [FBConcurrentCollectionOperations
+    filterMap:[self launchdSimSubprocessCrashesPathsAfterDate:lastLaunchDate]
+    predicate:predicate
+    map:^ FBDiagnostic * (FBCrashLogInfo *logInfo) {
+      return [logInfo toDiagnostic:self.logBuilder];
+    }];
 }
 
 + (NSPredicate *)predicateForUserLaunchedProcessesInHistory:(FBSimulatorHistory *)history

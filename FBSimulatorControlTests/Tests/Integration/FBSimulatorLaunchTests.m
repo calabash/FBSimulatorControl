@@ -23,58 +23,33 @@
 
 - (FBSimulator *)testApplication:(FBApplicationDescriptor *)application launches:(FBApplicationLaunchConfiguration *)appLaunch
 {
-  FBSimulator *simulator = [self obtainSimulator];
-
-  [self.assert consumeAllNotifications];
-  [self assertInteractionSuccessful:[[[simulator.interact bootSimulator:self.simulatorLaunchConfiguration] installApplication:application] launchApplication:appLaunch]];
-  [self assertLastLaunchedApplicationIsRunning:simulator];
-
-  [self.assert bootingNotificationsFired];
-  [self.assert consumeNotification:FBSimulatorApplicationProcessDidLaunchNotification];
-  [self.assert noNotificationsToConsume];
-  [self assertSimulatorBooted:simulator];
-  [self assertInteractionFailed:[simulator.interact launchApplication:appLaunch]];
-
-  return simulator;
+  return [self
+    assertSimulatorWithConfiguration:self.simulatorConfiguration
+    launches:self.simulatorLaunchConfiguration
+    thenLaunchesApplication:application
+    withApplicationLaunchConfiguration:appLaunch];
 }
 
-- (void)testApplication:(FBApplicationDescriptor *)application relaunches:(FBApplicationLaunchConfiguration *)appLaunch
+- (FBSimulator *)testApplication:(FBApplicationDescriptor *)application relaunches:(FBApplicationLaunchConfiguration *)appLaunch
 {
-  FBSimulator *simulator = [self testApplication:application launches:appLaunch];
-  FBProcessInfo *firstLaunch = simulator.history.lastLaunchedApplicationProcess;
-
-  [self assertInteractionSuccessful:simulator.interact.relaunchLastLaunchedApplication];
-  [self.assert consumeNotification:FBSimulatorApplicationProcessDidTerminateNotification];
-  [self.assert consumeNotification:FBSimulatorApplicationProcessDidLaunchNotification];
-  [self.assert noNotificationsToConsume];
-  FBProcessInfo *secondLaunch = simulator.history.lastLaunchedApplicationProcess;
-
-  XCTAssertNotEqualObjects(firstLaunch, secondLaunch);
+  return [self
+    assertSimulatorWithConfiguration:self.simulatorConfiguration
+    relaunches:self.simulatorLaunchConfiguration
+    thenLaunchesApplication:application
+    withApplicationLaunchConfiguration:appLaunch];
 }
 
 - (void)testLaunchesSingleSimulator:(FBSimulatorConfiguration *)configuration
 {
-  NSError *error = nil;
-  if (![configuration checkRuntimeRequirementsReturningError:&error]) {
-    NSLog(@"Could not run test for configuration %@ since: %@", configuration, error);
-    return;
-  }
+  FBSimulatorLaunchConfiguration *launchConfiguration = self.simulatorLaunchConfiguration;
+  FBSimulator *simulator = [self assertObtainsBootedSimulatorWithConfiguration:configuration launchConfiguration:self.simulatorLaunchConfiguration];
 
-  FBSimulator *simulator = [self obtainSimulatorWithConfiguration:configuration];
-  [self.assert noNotificationsToConsume];
-
-  [self assertInteractionSuccessful:[simulator.interact bootSimulator:self.simulatorLaunchConfiguration]];
-  [self.assert bootingNotificationsFired];
-  [self.assert noNotificationsToConsume];
-
-  XCTAssertEqual(simulator.state, FBSimulatorStateBooted);
+  [self assertSimulatorBooted:simulator];
   XCTAssertEqual(simulator.history.launchedAgentProcesses.count, 0u);
   XCTAssertEqual(simulator.history.launchedApplicationProcesses.count, 0u);
-  [self assertSimulatorBooted:simulator];
 
   [self assertShutdownSimulatorAndTerminateSession:simulator];
-  [self.assert shutdownNotificationsFired];
-  [self.assert noNotificationsToConsume];
+  [self.assert shutdownNotificationsFired:launchConfiguration];
 }
 
 - (void)testLaunchesiPhone
@@ -84,7 +59,7 @@
 
 - (void)testLaunchesiPad
 {
-  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.iPad2];
+  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.iPadRetina];
 }
 
 - (void)testLaunchesWatch
@@ -101,9 +76,9 @@
 {
   // Simulator Pool management is single threaded since it relies on unsynchronised mutable state
   // Create the sessions in sequence, then boot them in paralell.
-  FBSimulator *simulator1 = [self obtainSimulatorWithConfiguration:FBSimulatorConfiguration.iPhone5];
-  FBSimulator *simulator2 = [self obtainSimulatorWithConfiguration:FBSimulatorConfiguration.iPhone5];
-  FBSimulator *simulator3 = [self obtainSimulatorWithConfiguration:FBSimulatorConfiguration.iPad2];
+  FBSimulator *simulator1 = [self assertObtainsSimulatorWithConfiguration:FBSimulatorConfiguration.iPhone5];
+  FBSimulator *simulator2 = [self assertObtainsSimulatorWithConfiguration:FBSimulatorConfiguration.iPhone5];
+  FBSimulator *simulator3 = [self assertObtainsSimulatorWithConfiguration:FBSimulatorConfiguration.iPadRetina];
 
   XCTAssertEqual(self.control.pool.allocatedSimulators.count, 3u);
   XCTAssertEqual(([[NSSet setWithArray:@[simulator1.udid, simulator2.udid, simulator3.udid]] count]), 3u);
@@ -150,7 +125,7 @@
 
 - (void)testCanUninstallApplication
 {
-  FBSimulator *simulator = [self obtainSimulator];
+  FBSimulator *simulator = [self assertObtainsSimulator];
   FBApplicationDescriptor *application = self.tableSearchApplication;
   FBApplicationLaunchConfiguration *launch = self.tableSearchAppLaunch;
 

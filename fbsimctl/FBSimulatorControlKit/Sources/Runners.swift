@@ -25,11 +25,11 @@ struct SequenceRunner : Runner {
   let runners: [Runner]
 
   func run() -> CommandResult {
-    var output = CommandResult.Success
+    var output = CommandResult.success(nil)
     for runner in runners {
       output = output.append(runner.run())
       switch output {
-      case .Failure: return output
+      case .failure: return output
       default: continue
       }
     }
@@ -64,11 +64,11 @@ struct RelayRunner : Runner {
     do {
       try relay.start()
       try relay.stop()
-      return .Success
+      return .success(nil)
     } catch let error as CustomStringConvertible {
-      return .Failure(error.description)
+      return .failure(error.description)
     } catch {
-      return .Failure("An unknown error occurred running the server")
+      return .failure("An unknown error occurred running the server")
     }
   }
 }

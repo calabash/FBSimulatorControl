@@ -23,7 +23,8 @@
 #import <FBControlCore/FBControlCore.h>
 
 #import "FBFramebuffer.h"
-#import "FBProcessFetcher+Simulators.h"
+#import "FBFramebufferConfiguration.h"
+#import "FBFramebufferConnectStrategy.h"
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator+Private.h"
 #import "FBSimulator.h"
@@ -31,10 +32,11 @@
 #import "FBSimulatorConnection.h"
 #import "FBSimulatorError.h"
 #import "FBSimulatorEventSink.h"
-#import "FBSimulatorLaunchCtl.h"
+#import "FBSimulatorHID.h"
 #import "FBSimulatorLaunchConfiguration+Helpers.h"
 #import "FBSimulatorLaunchConfiguration.h"
-#import "FBSimulatorHID.h"
+#import "FBSimulatorLaunchCtl.h"
+#import "FBSimulatorProcessFetcher.h"
 
 @interface FBSimulatorBootStrategy ()
 
@@ -47,7 +49,7 @@
 
 @interface FBSimulatorBootStrategy_Direct : FBSimulatorBootStrategy
 
-- (SimDeviceFramebufferService *)createMainScreenService:(NSError **)error;
+- (BOOL)shouldCreateFramebuffer;
 - (NSDictionary<NSString *, id> *)bootOptions;
 
 @end
@@ -56,19 +58,25 @@
 
 - (FBSimulatorConnection *)performBootWithError:(NSError **)error
 {
-  // Create the Framebuffer (if required).
+  // Create the Framebuffer (if required to do so).
+  NSError *innerError = nil;
   FBFramebuffer *framebuffer = nil;
-  if (self.configuration.shouldConnectFramebuffer) {
-    NSError *innerError = nil;
-    SimDeviceFramebufferService *mainScreenService = [self createMainScreenService:&innerError];
-    if (!mainScreenService) {
+  if (self.shouldCreateFramebuffer) {
+    FBFramebufferConfiguration *configuration = self.configuration.framebuffer;
+    if (!configuration) {
+      configuration = FBFramebufferConfiguration.defaultConfiguration;
+      [self.simulator.logger logFormat:@"No Framebuffer Launch Configuration provided, but required. Using default of %@", configuration];
+    }
+
+    framebuffer = [[FBFramebufferConnectStrategy
+      strategyWithConfiguration:configuration]
+      connect:self.simulator error:&innerError];
+    if (!framebuffer) {
       return [FBSimulatorError failWithError:innerError errorOut:error];
     }
-    framebuffer = [FBFramebuffer withFramebufferService:mainScreenService configuration:self.configuration simulator:self.simulator];
   }
 
   // Create the HID Port
-  NSError *innerError = nil;
   FBSimulatorHID *hid = [FBSimulatorHID hidPortForSimulator:self.simulator error:&innerError];
   if (!hid) {
     return [FBSimulatorError failWithError:innerError errorOut:error];
@@ -86,6 +94,12 @@
   }
 
   return [[FBSimulatorConnection alloc] initWithSimulator:self.simulator framebuffer:framebuffer hid:hid];
+}
+
+- (BOOL)shouldCreateFramebuffer
+{
+  NSAssert(NO, @"-[%@ %@] is abstract and should be overridden", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+  return NO;
 }
 
 - (SimDeviceFramebufferService *)createMainScreenService:(NSError **)error
@@ -108,44 +122,10 @@
 
 @implementation FBSimulatorBootStrategy_Direct_Xcode7
 
-- (SimDeviceFramebufferService *)createMainScreenService:(NSError **)error
+- (BOOL)shouldCreateFramebuffer
 {
-  // If you're curious about where the knowledege for these parts of the CoreSimulator.framework comes from, take a look at:
-  // $DEVELOPER_DIR/Platforms/iPhoneSimulator.platform/Developer/Library/CoreSimulator/Profiles/Runtimes/iOS [VERSION].simruntime/Contents/Resources/profile.plist
-  // as well as the dissasembly for CoreSimulator.framework, SimulatorKit.Framework & the Simulator.app Executable.
-  //
-  // Creating the Framebuffer with the 'mainScreen' constructor will return a 'PurpleFBServer' and attach it to the '_registeredServices' ivar.
-  // This is the Framebuffer for the Simulator's main screen, which is distinct from 'PurpleFBTVOut' and 'Stark' Framebuffers for External Displays and CarPlay.
-  //
-  // -[SimDevice portForServiceNamed:error:] is gone in Xcode 8 Beta 5.
-  NSError *innerError = nil;
-  NSPort *purpleServerPort = [self.simulator.device portForServiceNamed:@"PurpleFBServer" error:&innerError];
-  if (!purpleServerPort) {
-    return [[[FBSimulatorError
-      describeFormat:@"Could not find the 'PurpleFBServer' Port for %@", self.simulator.device]
-      causedBy:innerError]
-      fail:error];
-  }
-
-  // Setup the scale for the framebuffer service.
-  CGSize size = self.simulator.device.deviceType.mainScreenSize;
-  CGSize scaledSize = [self.configuration scaleSize:size];
-
-  // Create the service
-  SimDeviceFramebufferService *framebufferService = [NSClassFromString(@"SimDeviceFramebufferService")
-    framebufferServiceWithPort:purpleServerPort
-    deviceDimensions:size
-    scaledDimensions:scaledSize
-    error:&innerError];
-
-  if (!framebufferService) {
-    return [[[FBSimulatorError
-      describeFormat:@"Failed to create the Main Screen Framebuffer for device %@", self.simulator.device]
-      causedBy:innerError]
-      fail:error];
-  }
-
-  return framebufferService;
+  // A Framebuffer is required in Xcode 7 currently, otherwise any interface that uses the Mach Interface for 'Host Support' will fail/hang.
+  return YES;
 }
 
 - (NSDictionary<NSString *, id> *)bootOptions
@@ -167,19 +147,10 @@
 
 @implementation FBSimulatorBootStrategy_Direct_Xcode8
 
-- (SimDeviceFramebufferService *)createMainScreenService:(NSError **)error
+- (BOOL)shouldCreateFramebuffer
 {
-  NSError *innerError = nil;
-  SimDeviceFramebufferService *service = [NSClassFromString(@"SimDeviceFramebufferService")
-    mainScreenFramebufferServiceForDevice:self.simulator.device
-    error:&innerError];
-  if (!service) {
-    return [[[FBSimulatorError
-      describe:@"Failed to create Main Screen Service for Device"]
-      causedBy:innerError]
-      fail:error];
-  }
-  return service;
+  // Framebuffer connection is optional on Xcode 8 so we should use the appropriate configuration.
+  return self.configuration.shouldConnectFramebuffer;
 }
 
 - (NSDictionary<NSString *, id> *)bootOptions
@@ -295,7 +266,7 @@
 {
   // The NSWorkspace API allows for arguments & environment to be provided to the launched application
   // Additionally, multiple Apps of the same application can be launched with the NSWorkspaceLaunchNewInstance option.
-  NSURL *applicationURL = [NSURL fileURLWithPath:FBApplicationDescriptor .xcodeSimulator.path];
+  NSURL *applicationURL = [NSURL fileURLWithPath:FBApplicationDescriptor.xcodeSimulator.path];
   NSDictionary *appLaunchConfiguration = @{
     NSWorkspaceLaunchConfigurationArguments : arguments,
     NSWorkspaceLaunchConfigurationEnvironment : environment,
@@ -386,9 +357,6 @@
     return [FBSimulatorError failBoolWithError:innerError errorOut:error];
   }
 
-  // Start Listening to Framebuffer events if one exists.
-  [connection.framebuffer startListeningInBackground];
-
   // Broadcast the availability of the new bridge.
   [self.simulator.eventSink connectionDidConnect:connection];
 
@@ -403,7 +371,7 @@
 
 - (FBProcessInfo *)launchdSimWithAllRequiredProcesses:(NSError **)error
 {
-  FBProcessFetcher *processFetcher = self.simulator.processFetcher;
+  FBSimulatorProcessFetcher *processFetcher = self.simulator.processFetcher;
   FBProcessInfo *launchdProcess = [processFetcher launchdProcessForSimDevice:self.simulator.device];
   if (!launchdProcess) {
     return [[[FBSimulatorError

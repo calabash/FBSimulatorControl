@@ -11,8 +11,6 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBProcessLaunchConfiguration.h"
-
 @interface FBProcessLaunchConfiguration (HistoryQueries)
 
 - (FBBinaryDescriptor *)binary;
@@ -64,7 +62,7 @@
 
 - (NSArray<FBProcessLaunchConfiguration *> *)allProcessLaunches
 {
-  return [self.processLaunchConfigurations objectsForKeys:self.launchedProcesses notFoundMarker:NSNull.null];
+  return [self.processLaunchConfigurations objectsForKeys:self.launchedProcesses notFoundMarker:(id)NSNull.null];
 }
 
 - (NSArray<FBApplicationLaunchConfiguration *> *)allApplicationLaunches
@@ -93,12 +91,12 @@
 
 - (FBApplicationLaunchConfiguration *)lastLaunchedApplication
 {
-  return self.processLaunchConfigurations[self.lastLaunchedApplicationProcess];
+  return (FBApplicationLaunchConfiguration *)self.processLaunchConfigurations[self.lastLaunchedApplicationProcess];
 }
 
 - (FBAgentLaunchConfiguration *)lastLaunchedAgent
 {
-  return self.processLaunchConfigurations[self.lastLaunchedAgentProcess];
+  return (FBAgentLaunchConfiguration *)self.processLaunchConfigurations[self.lastLaunchedAgentProcess];
 }
 
 - (FBProcessInfo *)runningProcessForLaunchConfiguration:(FBProcessLaunchConfiguration *)launchConfig

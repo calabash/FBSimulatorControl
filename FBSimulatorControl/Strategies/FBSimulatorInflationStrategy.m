@@ -15,12 +15,12 @@
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator+Private.h"
 #import "FBSimulatorSet.h"
-#import "FBProcessFetcher+Simulators.h"
+#import "FBSimulatorProcessFetcher.h"
 
 @interface FBSimulatorInflationStrategy ()
 
 @property (nonatomic, weak, readonly) FBSimulatorSet *set;
-@property (nonatomic, strong, readonly) FBProcessFetcher *processFetcher;
+@property (nonatomic, strong, readonly) FBSimulatorProcessFetcher *processFetcher;
 
 @end
 
@@ -31,7 +31,7 @@
   return [[self alloc] initWithSet:set processFetcher:set.processFetcher];
 }
 
-- (instancetype)initWithSet:(FBSimulatorSet *)set processFetcher:(FBProcessFetcher *)processFetcher
+- (instancetype)initWithSet:(FBSimulatorSet *)set processFetcher:(FBSimulatorProcessFetcher *)processFetcher
 {
   self = [super init];
   if (!self) {
@@ -72,21 +72,27 @@
   }
 
   // Inflate the Simulators and join the array.
-  NSArray<FBSimulator *> *inflatedSimulators = [self inflateSimulators:simulatorsToInflate.allObjects availableDevices:availableDevices];
+  NSArray<FBProcessInfo *> *previouslyIdentifiedContainerApplications = [[simulators valueForKey:@"containerApplication"] filteredArrayUsingPredicate:NSPredicate.notNullPredicate];
+  NSArray<FBSimulator *> *inflatedSimulators = [self
+    inflateSimulators:simulatorsToInflate.allObjects
+    availableDevices:availableDevices
+    previouslyIdentifiedContainerApplications:previouslyIdentifiedContainerApplications];
   return [simulators arrayByAddingObjectsFromArray:inflatedSimulators];
 }
 
 #pragma mark Private
 
-- (NSArray<FBSimulator *> *)inflateSimulators:(NSArray<NSString *> *)simulatorsToInflate availableDevices:(NSDictionary<NSString *, SimDevice *> *)availableDevices
+- (NSArray<FBSimulator *> *)inflateSimulators:(NSArray<NSString *> *)simulatorsToInflate availableDevices:(NSDictionary<NSString *, SimDevice *> *)availableDevices previouslyIdentifiedContainerApplications:(NSArray<FBProcessInfo *> *)previouslyIdentifiedContainerApplications
 {
   NSArray<FBProcessInfo *> *unclaimedContainerApplications = nil;
   NSDictionary<NSString *, FBProcessInfo *> *launchdSims = [self.processFetcher launchdProcessesByUDIDs:simulatorsToInflate];
   NSDictionary<NSString *, FBProcessInfo *> *containerApplications = [self.processFetcher simulatorApplicationProcessesByUDIDs:simulatorsToInflate unclaimed:&unclaimedContainerApplications];
+
   containerApplications = [FBSimulatorInflationStrategy
     adjustContainerApplicationsMapping:containerApplications
     forLaunchdSims:launchdSims
-    withUnclaimedContainerApplications:unclaimedContainerApplications];
+    withUnclaimedContainerApplications:unclaimedContainerApplications
+    previouslyIdentifiedContainerApplications:previouslyIdentifiedContainerApplications];
 
   NSMutableArray<FBSimulator *> *inflatedSimulators = [NSMutableArray array];
   for (NSString *udid in simulatorsToInflate) {
@@ -102,22 +108,28 @@
   return [inflatedSimulators copy];
 }
 
-+ (NSDictionary<NSString *, FBProcessInfo *> *)adjustContainerApplicationsMapping:(NSDictionary<NSString *, FBProcessInfo *> *)containerApplications forLaunchdSims:(NSDictionary<NSString *, FBProcessInfo *> *)launchdSims withUnclaimedContainerApplications:(NSArray<FBProcessInfo *> *)unclaimedContainerApplications
++ (NSDictionary<NSString *, FBProcessInfo *> *)adjustContainerApplicationsMapping:(NSDictionary<NSString *, FBProcessInfo *> *)containerApplications forLaunchdSims:(NSDictionary<NSString *, FBProcessInfo *> *)launchdSims withUnclaimedContainerApplications:(NSArray<FBProcessInfo *> *)unclaimedContainerApplications previouslyIdentifiedContainerApplications:(NSArray<FBProcessInfo *> *)previouslyIdentifiedContainerApplications
 {
+  // We can only correlate when we have one unclaimed Simulator Application.
   if (unclaimedContainerApplications.count != 1) {
     return containerApplications;
   }
+  // Confirm that this one remaining container application hasn't been previously correlated with another Simulator.
+  NSMutableSet<FBProcessInfo *> *remainingUnclaimed = [NSMutableSet setWithArray:unclaimedContainerApplications];
+  [remainingUnclaimed minusSet:[NSSet setWithArray:previouslyIdentifiedContainerApplications]];
+  if (remainingUnclaimed.count != 1) {
+    return containerApplications;
+  }
 
-  NSMutableSet *unclaimedSimulatorUDIDs = [NSMutableSet setWithArray:launchdSims.allKeys];
+  // Check the Simulators that are unclaimed, if there are none there's nothing to correlate.
+  NSMutableSet<NSString *> *unclaimedSimulatorUDIDs = [NSMutableSet setWithArray:launchdSims.allKeys];
   [unclaimedSimulatorUDIDs minusSet:[NSSet setWithArray:containerApplications.allKeys]];
   if (unclaimedSimulatorUDIDs.count != 1) {
     return containerApplications;
   }
-  NSString *untaggedAssumedUDID = FBSimulator.simulatorApplicationPreferences[@"CurrentDeviceUDID"];
-  if (![untaggedAssumedUDID isEqualToString:unclaimedSimulatorUDIDs.anyObject]) {
-    return containerApplications;
-  }
 
+  // Assume that this sole unclaimed Simulator App belongs to the 'Containerless' Booted UDID.
+  NSString *untaggedAssumedUDID = [unclaimedSimulatorUDIDs anyObject];
   NSMutableDictionary *adjustedContainerApplications = [containerApplications mutableCopy];
   adjustedContainerApplications[untaggedAssumedUDID] = [unclaimedContainerApplications firstObject];
   return [adjustedContainerApplications copy];

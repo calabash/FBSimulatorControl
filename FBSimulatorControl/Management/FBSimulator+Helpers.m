@@ -14,7 +14,6 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBProcessFetcher+Simulators.h"
 #import "FBSimDeviceWrapper.h"
 #import "FBSimulator+Private.h"
 #import "FBSimulatorError.h"
@@ -22,6 +21,7 @@
 #import "FBSimulatorInteraction.h"
 #import "FBSimulatorLaunchCtl.h"
 #import "FBSimulatorPool.h"
+#import "FBSimulatorProcessFetcher.h"
 #import "FBSimulatorSet.h"
 
 @implementation FBSimulator (Helpers)
@@ -54,7 +54,7 @@
   if (!launchdSim) {
     return @[];
   }
-  return [self.processFetcher subprocessesOf:launchdSim.processIdentifier];
+  return [self.processFetcher.processFetcher subprocessesOf:launchdSim.processIdentifier];
 }
 
 - (NSArray<FBApplicationDescriptor *> *)installedApplications
@@ -199,7 +199,10 @@
     ]];
   }
   if (self.productFamily == FBControlCoreProductFamilyAppleWatch || self.productFamily == FBControlCoreProductFamilyAppleTV) {
-    return [NSSet setWithArray:@[
+    return FBControlCoreGlobalConfiguration.isXcode8OrGreater ? [NSSet setWithArray:@[
+       @"com.apple.nsurlsessiond",
+       @"com.apple.mobileassetd",
+    ]] : [NSSet setWithArray:@[
        @"com.apple.networkd",
        @"com.apple.mobileassetd",
     ]];

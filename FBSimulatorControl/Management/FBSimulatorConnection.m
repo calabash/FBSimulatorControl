@@ -20,10 +20,9 @@
 #import <SimulatorKit/SimDeviceFramebufferService.h>
 
 #import "FBFramebuffer.h"
-#import "FBProcessFetcher+Simulators.h"
+#import "FBFramebufferConfiguration.h"
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator+Private.h"
-#import "FBProcessLaunchConfiguration.h"
 #import "FBSimulator.h"
 #import "FBSimulatorBridge.h"
 #import "FBSimulatorError.h"
@@ -31,6 +30,8 @@
 #import "FBSimulatorHID.h"
 #import "FBSimulatorLaunchConfiguration+Helpers.h"
 #import "FBSimulatorLaunchConfiguration.h"
+#import "FBSimulatorProcessFetcher.h"
+#import "FBFramebufferConnectStrategy.h"
 
 @interface FBSimulatorConnection ()
 
@@ -96,6 +97,18 @@
 
   self.bridge = [FBSimulatorBridge bridgeForSimulator:self.simulator error:error];
   return self.bridge;
+}
+
+- (nullable FBFramebuffer *)connectToFramebuffer:(NSError **)error
+{
+  if (self.framebuffer) {
+    return self.framebuffer;
+  }
+
+  self.framebuffer = [[FBFramebufferConnectStrategy
+    strategyWithConfiguration:FBFramebufferConfiguration.defaultConfiguration]
+    connect:self.simulator error:error];
+  return self.framebuffer;
 }
 
 - (BOOL)terminateWithTimeout:(NSTimeInterval)timeout

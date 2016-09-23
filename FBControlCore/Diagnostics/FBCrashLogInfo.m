@@ -13,6 +13,7 @@
 
 #import "FBControlCoreGlobalConfiguration.h"
 #import "FBDiagnostic.h"
+#import "FBConcurrentCollectionOperations.h"
 
 @implementation FBCrashLogInfo
 
@@ -130,6 +131,30 @@
     processType:self.processType];
 }
 
+#pragma mark Bulk Collection
+
++ (NSArray<FBCrashLogInfo *> *)crashInfoAfterDate:(NSDate *)date
+{
+  NSString *basePath = self.diagnosticReportsPath;
+
+  return [FBConcurrentCollectionOperations
+    filterMap:[NSFileManager.defaultManager contentsOfDirectoryAtPath:basePath error:nil]
+    predicate:[FBCrashLogInfo predicateForFilesWithBasePath:basePath afterDate:date withExtension:@"crash"]
+    map:^ FBCrashLogInfo * (NSString *fileName) {
+      NSString *path = [basePath stringByAppendingPathComponent:fileName];
+      return [FBCrashLogInfo fromCrashLogAtPath:path];
+    }];
+}
+
+#pragma mark Predicates
+
++ (NSPredicate *)predicateForCrashLogsWithProcessID:(pid_t)processID
+{
+  return [NSPredicate predicateWithBlock:^ BOOL (FBCrashLogInfo *crashLog, id _) {
+    return crashLog.processIdentifier == processID;
+  }];
+}
+
 #pragma mark Private
 
 + (FBCrashLogInfoProcessType)processTypeForExecutablePath:(NSString *)executablePath
@@ -141,6 +166,28 @@
     return FBCrashLogInfoProcessTypeApplication;
   }
   return FBCrashLogInfoProcessTypeCustomAgent;
+}
+
++ (NSString *)diagnosticReportsPath
+{
+  return [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Logs/DiagnosticReports"];
+}
+
++ (NSPredicate *)predicateForFilesWithBasePath:(NSString *)basePath afterDate:(NSDate *)date withExtension:(NSString *)extension
+{
+  NSFileManager *fileManager = NSFileManager.defaultManager;
+  NSPredicate *datePredicate = [NSPredicate predicateWithValue:YES];
+  if (date) {
+    datePredicate = [NSPredicate predicateWithBlock:^ BOOL (NSString *fileName, NSDictionary *_) {
+      NSString *path = [basePath stringByAppendingPathComponent:fileName];
+      NSDictionary *attributes = [fileManager attributesOfItemAtPath:path error:nil];
+      return [attributes.fileModificationDate isGreaterThanOrEqualTo:date];
+    }];
+  }
+  return [NSCompoundPredicate andPredicateWithSubpredicates:@[
+    [NSPredicate predicateWithFormat:@"pathExtension == %@", extension],
+    datePredicate
+  ]];
 }
 
 @end

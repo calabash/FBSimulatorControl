@@ -9,8 +9,8 @@
 
 #import "FBTestRunConfiguration.h"
 
+#import <FBControlCore/FBControlCore.h>
 #import <FBSimulatorControl/FBSimulatorControl.h>
-
 #import <XCTestBootstrap/XCTestBootstrap.h>
 
 #import "FBJSONTestReporter.h"
@@ -283,25 +283,70 @@ static NSString *const MacQueryShimFileName = @"otest-query-lib-osx.dylib";
       fail:error];
   }
 
-  NSString *shimPath = [directory stringByAppendingPathComponent:iOSXCTestShimFileName];
-  if (![NSFileManager.defaultManager fileExistsAtPath:shimPath]) {
-    return [[FBXCTestError
-      describeFormat:@"The iOS xctest Simulator Shim was expected at the location '%@', but it was not there", shimPath]
-      fail:error];
-  }
-  shimPath = [directory stringByAppendingPathComponent:MacXCTestShimFileName];
-  if (![NSFileManager.defaultManager fileExistsAtPath:shimPath]) {
-    return [[FBXCTestError
-      describeFormat:@"The Mac xctest Shim was expected at the location '%@', but it was not there", shimPath]
-      fail:error];
-  }
-  shimPath = [directory stringByAppendingPathComponent:MacQueryShimFileName];
-  if (![NSFileManager.defaultManager fileExistsAtPath:shimPath]) {
-    return [[FBXCTestError
-      describeFormat:@"The Mac Query Shim was expected at the location '%@', but it was not there", shimPath]
-      fail:error];
+  NSDictionary<NSString *, NSNumber *> *shims = @{
+    iOSXCTestShimFileName : FBControlCoreGlobalConfiguration.isXcode8OrGreater ? @YES : @NO,
+    MacXCTestShimFileName : @NO,
+    MacQueryShimFileName : @NO,
+  };
+
+  id<FBCodesignProvider> codesign = FBCodeSignCommand.codeSignCommandWithAdHocIdentity;
+  for (NSString *filename in shims) {
+    NSString *shimPath = [directory stringByAppendingPathComponent:iOSXCTestShimFileName];
+    if (![NSFileManager.defaultManager fileExistsAtPath:shimPath]) {
+      return [[FBXCTestError
+        describeFormat:@"The iOS xctest Simulator Shim was expected at the location '%@', but it was not there", shimPath]
+        fail:error];
+    }
+    if (!shims[filename].boolValue) {
+      continue;
+    }
+    NSError *innerError = nil;
+    if (![codesign cdHashForBundleAtPath:shimPath error:&innerError]) {
+      return [[[FBXCTestError
+        describeFormat:@"Shim at path %@ was required to be signed, but it was not", shimPath]
+        causedBy:innerError]
+        fail:error];
+    }
   }
   return directory;
+}
+
+- (NSString *)xctestPathForSimulator:(nullable FBSimulator *)simulator
+{
+  if (simulator == nil) {
+    return [FBControlCoreGlobalConfiguration.developerDirectory
+      stringByAppendingPathComponent:@"usr/bin/xctest"];
+  } else {
+    return [FBControlCoreGlobalConfiguration.developerDirectory
+      stringByAppendingPathComponent:@"Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest"];
+  }
+}
+
++ (NSDictionary<NSString *, NSString *> *)buildEnvironmentWithEntries:(NSDictionary<NSString *, NSString *> *)entries simulator:(nullable FBSimulator *)simulator
+{
+  NSMutableDictionary<NSString *, NSString *> *parentEnvironment = NSProcessInfo.processInfo.environment.mutableCopy;
+  [parentEnvironment removeObjectsForKeys:@[
+    @"XCTestConfigurationFilePath",
+  ]];
+
+  NSMutableDictionary<NSString *, NSString *> *environmentOverrides = [NSMutableDictionary dictionary];
+  NSString *xctoolTestEnvPrefix = @"XCTOOL_TEST_ENV_";
+  for (NSString *key in parentEnvironment) {
+    if ([key hasPrefix:xctoolTestEnvPrefix]) {
+      NSString *childKey = [key substringFromIndex:xctoolTestEnvPrefix.length];
+      environmentOverrides[childKey] = parentEnvironment[key];
+    }
+  }
+  [environmentOverrides addEntriesFromDictionary:entries];
+  NSMutableDictionary<NSString *, NSString *> *environment = parentEnvironment.mutableCopy;
+  for (NSString *key in environmentOverrides) {
+    NSString *childKey = key;
+    if (simulator) {
+      childKey = [@"SIMCTL_CHILD_" stringByAppendingString:childKey];
+    }
+    environment[childKey] = environmentOverrides[key];
+  }
+  return environment.copy;
 }
 
 @end

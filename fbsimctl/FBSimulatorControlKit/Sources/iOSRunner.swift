@@ -12,14 +12,14 @@ import FBSimulatorControl
 import FBDeviceControl
 
 extension CommandResultRunner {
-  static func unimplementedActionRunner(action: Action, target: FBiOSTarget, format: FBiOSTargetFormat) -> Runner {
+  static func unimplementedActionRunner(_ action: Action, target: FBiOSTarget, format: FBiOSTargetFormat) -> Runner {
     let (eventName, maybeSubject) = action.reportable
     var actionMessage = eventName.rawValue
     if let subject = maybeSubject {
       actionMessage += " \(subject.description)"
     }
     let message = "Action \(actionMessage) is unimplemented for target \(format.format(target))"
-    return CommandResultRunner(result: CommandResult.Failure(message))
+    return CommandResultRunner(result: CommandResult.failure(message))
   }
 }
 
@@ -30,16 +30,13 @@ struct iOSActionProvider {
     let (action, target, reporter) = self.context.value
 
     switch action {
-    case .List:
-      let format = self.context.format
-      return iOSTargetRunner(reporter, nil, ControlCoreSubject(target as! ControlCoreValue)) {
-        let subject = iOSTargetSubject(target: target, format: format)
-        reporter.reporter.reportSimple(EventName.List, EventType.Discrete, subject)
-      }
-    case .Install(let appPath):
-      return iOSTargetRunner(reporter, EventName.Install, ControlCoreSubject(appPath as NSString)) {
-        try target.installApplicationWithPath(appPath)
-      }
+    case .install(let appPath):
+      return iOSTargetRunner(
+        reporter: reporter,
+        name: EventName.Install,
+        subject: ControlCoreSubject(appPath as NSString),
+        interaction: FBCommandInteractions.installApplication(withPath: appPath, command: target)
+      )
     default:
       return nil
     }
@@ -50,13 +47,17 @@ struct iOSTargetRunner : Runner {
   let reporter: iOSReporter
   let name: EventName?
   let subject: EventReporterSubject
-  let action: Void throws -> Void
+  let interaction: FBInteractionProtocol
 
-  init(_ reporter: iOSReporter, _ name: EventName?, _ subject: EventReporterSubject, _ action: Void throws -> Void) {
+  init(reporter: iOSReporter, name: EventName?, subject: EventReporterSubject, interaction: FBInteractionProtocol) {
     self.reporter = reporter
     self.name = name
     self.subject = subject
-    self.action = action
+    self.interaction = interaction
+  }
+
+  init(_ reporter: iOSReporter, _ name: EventName?, _ subject: EventReporterSubject, _ action: @escaping (Void) throws -> Void) {
+    self.init(reporter: reporter, name: name, subject: subject, interaction: Interaction(action))
   }
 
   func run() -> CommandResult {
@@ -64,17 +65,17 @@ struct iOSTargetRunner : Runner {
       if let name = self.name {
         self.reporter.report(name, EventType.Started, self.subject)
       }
-      try self.action()
+      try self.interaction.perform()
       if let name = self.name {
         self.reporter.report(name, EventType.Ended, self.subject)
       }
     } catch let error as NSError {
-      return .Failure(error.description)
+      return .failure(error.description)
     } catch let error as JSONError {
-      return .Failure(error.description)
+      return .failure(error.description)
     } catch {
-      return .Failure("Unknown Error")
+      return .failure("Unknown Error")
     }
-    return .Success
+    return .success(self.subject)
   }
 }

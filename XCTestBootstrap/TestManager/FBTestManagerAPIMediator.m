@@ -22,34 +22,37 @@
 
 #import <IDEiOSSupportCore/DVTAbstractiOSDevice.h>
 
+#import <objc/runtime.h>
+
 #import "XCTestBootstrapError.h"
 #import "FBXCTestManagerLoggingForwarder.h"
+
 #import "FBTestReporterForwarder.h"
 #import "FBTestManagerTestReporter.h"
 #import "FBTestManagerResultSummary.h"
 #import "FBTestManagerProcessInteractionDelegate.h"
-
 #import "FBTestBundleConnection.h"
 #import "FBTestDaemonConnection.h"
+#import "FBTestManagerContext.h"
+#import "FBTestBundleResult.h"
+#import "FBTestManagerResult.h"
+#import "FBTestDaemonResult.h"
 
 const NSInteger FBProtocolVersion = 0x16;
 const NSInteger FBProtocolMinimumVersion = 0x8;
 
 @interface FBTestManagerAPIMediator () <XCTestManager_IDEInterface>
 
+@property (nonatomic, strong, readonly) FBTestManagerContext *context;
 @property (nonatomic, strong, readonly) id<FBDeviceOperator> deviceOperator;
 @property (nonatomic, strong, readonly) dispatch_queue_t requestQueue;
 @property (nonatomic, strong, readonly) FBTestReporterForwarder *reporterForwarder;
 @property (nonatomic, strong, readonly) FBXCTestManagerLoggingForwarder *loggingForwarder;
-
 @property (nonatomic, strong, readonly) NSMutableDictionary *tokenToBundleIDMap;
 
-@property (nonatomic, assign, readwrite) BOOL finished;
-@property (nonatomic, assign, readwrite) BOOL hasFailed;
-@property (nonatomic, assign, readwrite) BOOL testingIsFinished;
-
-@property (nonatomic, strong, readwrite) FBTestBundleConnection *bundleConnection;
-@property (nonatomic, strong, readwrite) FBTestDaemonConnection *daemonConnection;
+@property (nonatomic, strong, nullable, readwrite) FBTestBundleConnection *bundleConnection;
+@property (nonatomic, strong, nullable, readwrite) FBTestDaemonConnection *daemonConnection;
+@property (nonatomic, strong, nullable, readwrite) FBTestManagerResult *result;
 
 @end
 
@@ -57,23 +60,22 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 
 #pragma mark - Initializers
 
-+ (instancetype)mediatorWithDeviceOperator:(id<FBDeviceOperator>)deviceOperator processDelegate:(id<FBTestManagerProcessInteractionDelegate>)processDelegate reporter:(id<FBTestManagerTestReporter>)reporter logger:(id<FBControlCoreLogger>)logger testRunnerPID:(pid_t)testRunnerPID sessionIdentifier:(NSUUID *)sessionIdentifier;
++ (instancetype)mediatorWithContext:(FBTestManagerContext *)context deviceOperator:(id<FBDeviceOperator>)deviceOperator processDelegate:(id<FBTestManagerProcessInteractionDelegate>)processDelegate reporter:(id<FBTestManagerTestReporter>)reporter logger:(id<FBControlCoreLogger>)logger
 {
-  return  [[self alloc] initWithDeviceOperator:deviceOperator processDelegate:processDelegate reporter:reporter logger:logger testRunnerPID:testRunnerPID sessionIdentifier:sessionIdentifier];
+  return  [[self alloc] initWithContext:context deviceOperator:deviceOperator processDelegate:processDelegate reporter:reporter logger:logger];
 }
 
-- (instancetype)initWithDeviceOperator:(id<FBDeviceOperator>)deviceOperator processDelegate:(id<FBTestManagerProcessInteractionDelegate>)processDelegate reporter:(id<FBTestManagerTestReporter>)reporter logger:(id<FBControlCoreLogger>)logger testRunnerPID:(pid_t)testRunnerPID sessionIdentifier:(NSUUID *)sessionIdentifier
+- (instancetype)initWithContext:(FBTestManagerContext *)context deviceOperator:(id<FBDeviceOperator>)deviceOperator processDelegate:(id<FBTestManagerProcessInteractionDelegate>)processDelegate reporter:(id<FBTestManagerTestReporter>)reporter logger:(id<FBControlCoreLogger>)logger
 {
   self = [super init];
   if (!self) {
     return nil;
   }
 
+  _context = context;
   _deviceOperator = deviceOperator;
   _processDelegate = processDelegate;
   _logger = logger;
-  _testRunnerPID = testRunnerPID;
-  _sessionIdentifier = sessionIdentifier;
 
   _tokenToBundleIDMap = [NSMutableDictionary new];
   _requestQueue = dispatch_queue_create("com.facebook.xctestboostrap.mediator", DISPATCH_QUEUE_PRIORITY_DEFAULT);
@@ -81,62 +83,86 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
   _reporterForwarder = [FBTestReporterForwarder withAPIMediator:self reporter:reporter];
   _loggingForwarder = [FBXCTestManagerLoggingForwarder withIDEInterface:(id<XCTestManager_IDEInterface, NSObject>)_reporterForwarder logger:logger];
 
-  _bundleConnection = [FBTestBundleConnection connectionWithDeviceOperator:deviceOperator interface:(id)_loggingForwarder sessionIdentifier:sessionIdentifier queue:_requestQueue logger:logger];
-  _daemonConnection = [FBTestDaemonConnection connectionWithDeviceOperator:deviceOperator interface:(id)_loggingForwarder testRunnerPID:testRunnerPID queue:_requestQueue logger:logger];
+  _bundleConnection = [FBTestBundleConnection connectionWithContext:context deviceOperator:deviceOperator interface:(id)_loggingForwarder queue:_requestQueue logger:logger];
+  _daemonConnection = [FBTestDaemonConnection connectionWithContext:context deviceOperator:deviceOperator interface:(id)_loggingForwarder queue:_requestQueue logger:logger];
 
   return self;
 }
 
+#pragma mark - NSObject
+
+- (NSString *)description
+{
+  return [NSString stringWithFormat:
+    @"TestManager %@ for (%@)",
+    self.result ?: @"Awaiting Result",
+    self.context
+  ];
+}
+
 #pragma mark - Public
 
-- (BOOL)connectTestRunnerWithTestManagerDaemonWithTimeout:(NSTimeInterval)timeout error:(NSError **)error
+- (nullable FBTestManagerResult *)connectToTestManagerDaemonAndBundleWithTimeout:(NSTimeInterval)timeout
 {
-  if (self.finished) {
-    return [[XCTestBootstrapError
-      describe:@"FBTestManager does not support reconnecting to testmanagerd. You should create new FBTestManager to establish new connection"]
-      failBool:error];
+  if (self.result) {
+    [self.logger.error log:@"FBTestManager does not support reconnecting to testmanagerd. You should create new FBTestManager to establish new connection"];
+    return self.result;
   }
-  NSError *innerError = nil;
-  if (![self.bundleConnection connectWithTimeout:timeout error:&innerError]) {
-    return [[[XCTestBootstrapError
-      describe:@"Failed to connect to the bundle"]
-      causedBy:innerError]
-      failBool:error];
+  FBTestBundleResult *bundleResult = [self.bundleConnection connectWithTimeout:timeout];
+  if (bundleResult) {
+    return [self concludeWithResult:[FBTestManagerResult bundleConnectionFailed:bundleResult]];
   }
-  if (![self.daemonConnection connectWithTimeout:timeout error:&innerError]) {
-    return [[[XCTestBootstrapError
-      describe:@"Failed to connect to the daemon"]
-      causedBy:innerError]
-      failBool:error];
+  FBTestDaemonResult *daemonResult = [self.daemonConnection connectWithTimeout:timeout];
+  if (daemonResult) {
+    return [self concludeWithResult:[FBTestManagerResult daemonConnectionFailed:daemonResult]];
   }
-  return YES;
+  return nil;
 }
 
-- (BOOL)executeTestPlanWithTimeout:(NSTimeInterval)timeout error:(NSError **)error
+- (nullable FBTestManagerResult *)executeTestPlanWithTimeout:(NSTimeInterval)timeout
 {
-  return [self.bundleConnection startTestPlanWithError:error] && [self.daemonConnection notifyTestPlanStartedWithError:error];
+  FBTestBundleResult *bundleResult = [self.bundleConnection startTestPlan];
+  if (bundleResult) {
+    return [self concludeWithResult:[FBTestManagerResult bundleConnectionFailed:bundleResult]];
+  }
+  FBTestDaemonResult *daemonResult = [self.daemonConnection notifyTestPlanStarted];
+  if (daemonResult) {
+    return [self concludeWithResult:[FBTestManagerResult daemonConnectionFailed:daemonResult]];
+  }
+  return nil;
 }
 
-- (void)disconnectTestRunnerAndTestManagerDaemon
+- (FBTestManagerResult *)waitUntilTestRunnerAndTestManagerDaemonHaveFinishedExecutionWithTimeout:(NSTimeInterval)timeout
 {
-  self.finished = YES;
-  self.testingIsFinished = YES;
+  FBTestManagerResult *result = [NSRunLoop.currentRunLoop spinRunLoopWithTimeout:timeout untilExists:^ FBTestManagerResult * {
+    FBTestBundleResult *bundleResult = [self.bundleConnection checkForResult];
+    if (bundleResult && !bundleResult.didEndSuccessfully) {
+      return [FBTestManagerResult bundleConnectionFailed:bundleResult];
+    }
+    FBTestDaemonResult *daemonResult = [self.daemonConnection checkForResult];
+    if (daemonResult && !daemonResult.didEndSuccessfully) {
+      return [FBTestManagerResult daemonConnectionFailed:daemonResult];
+    }
+    if (daemonResult && bundleResult) {
+      return FBTestManagerResult.success;
+    }
+    return nil;
+  }];
+  return [self concludeWithResult:result ?: [FBTestManagerResult timedOutAfter:timeout]];
+}
 
+- (FBTestManagerResult *)disconnectTestRunnerAndTestManagerDaemon
+{
   [self.bundleConnection disconnect];
   self.bundleConnection = nil;
 
   [self.daemonConnection disconnect];
   self.daemonConnection = nil;
-}
 
-- (BOOL)waitUntilTestRunnerAndTestManagerDaemonHaveFinishedExecutionWithTimeout:(NSTimeInterval)timeout
-{
-  return
-  [[[FBRunLoopSpinner new]
-    timeout:timeout]
-   spinUntilTrue:^BOOL{
-       return [self testingHasFinished];
-   }];
+  if (self.result) {
+    return self.result;
+  }
+  return [self concludeWithResult:FBTestManagerResult.clientRequestedDisconnect];
 }
 
 - (BOOL)testingHasFinished {
@@ -145,34 +171,14 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 
 #pragma mark Reporting
 
-- (void)finishWithError:(NSError *)error didCancel:(BOOL)didCancel
+- (FBTestManagerResult *)concludeWithResult:(FBTestManagerResult *)result
 {
-  [self.logger logFormat:@"_finishWithError:%@ didCancel: %d", error, didCancel];
-  if (self.testingIsFinished) {
-    [self.logger logFormat:@"Testing has already finished, ignoring this report."];
-    return;
+  if (self.result) {
+    return self.result;
   }
-  self.finished = YES;
-  self.testingIsFinished = YES;
 
-  if (error) {
-    NSString *message = @"";
-    NSMutableDictionary *userInfo = error.userInfo.mutableCopy;
-    if(error.localizedRecoverySuggestion){
-      message = error.localizedRecoverySuggestion;
-      userInfo[NSLocalizedRecoverySuggestionErrorKey] = message;
-    } else if (error.localizedDescription) {
-      message = error.localizedDescription;
-      userInfo[NSLocalizedDescriptionKey] = message;
-    } else if (error.localizedFailureReason) {
-      message = error.localizedFailureReason;
-      userInfo[NSLocalizedFailureReasonErrorKey] = message;
-    }
-    error = [NSError errorWithDomain:error.domain code:error.code userInfo:userInfo];
-    if (error.code != XCTestBootstrapErrorCodeLostConnection) {
-      [self.logger logFormat:@"\n\n*** %@\n\n", message];
-    }
-  }
+  self.result = result;
+  return result;
 }
 
 #pragma mark - XCTestManager_IDEInterface protocol
@@ -183,7 +189,7 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 {
   [self.logger logFormat:@"Test process requested process launch with bundleID %@", bundleID];
   NSError *error;
-  DTXRemoteInvocationReceipt *recepit = [NSClassFromString(@"DTXRemoteInvocationReceipt") new];
+  DTXRemoteInvocationReceipt *recepit = [objc_lookUpClass("DTXRemoteInvocationReceipt") new];
   if(![self.processDelegate testManagerMediator:self launchProcessWithPath:path bundleID:bundleID arguments:arguments environmentVariables:environment error:&error]) {
     [recepit invokeCompletionWithReturnValue:nil error:error];
   }
@@ -198,7 +204,7 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 - (id)_XCT_getProgressForLaunch:(id)token
 {
   [self.logger logFormat:@"Test process requested launch process status with token %@", token];
-  DTXRemoteInvocationReceipt *recepit = [NSClassFromString(@"DTXRemoteInvocationReceipt") new];
+  DTXRemoteInvocationReceipt *recepit = [objc_lookUpClass("DTXRemoteInvocationReceipt") new];
   [recepit invokeCompletionWithReturnValue:@1 error:nil];
   return recepit;
 }
@@ -207,7 +213,7 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 {
   [self.logger logFormat:@"Test process requested process termination with token %@", token];
   NSError *error;
-  DTXRemoteInvocationReceipt *recepit = [NSClassFromString(@"DTXRemoteInvocationReceipt") new];
+  DTXRemoteInvocationReceipt *recepit = [objc_lookUpClass("DTXRemoteInvocationReceipt") new];
   if (!token) {
     error = [NSError errorWithDomain:@"XCTestIDEInterfaceErrorDomain"
                                 code:0x1
@@ -230,14 +236,33 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
   return recepit;
 }
 
+#pragma mark iOS 10.x
+
+- (id)_XCT_didBeginInitializingForUITesting
+{
+  return nil;
+}
+
+- (id)_XCT_initializationForUITestingDidFailWithError:(NSError *)error
+{
+  return nil;
+}
+
+- (id)_XCT_handleCrashReportData:(NSData *)arg1 fromFileWithName:(NSString *)arg2
+{
+  return nil;
+}
+
 #pragma mark Test Suite Progress
 
 - (id)_XCT_testSuite:(NSString *)tests didStartAt:(NSString *)time
 {
   if (tests.length == 0) {
-    [self.logger logFormat:@"Failing for nil suite identifier."];
-    NSError *error = [NSError errorWithDomain:@"IDETestOperationsObserverErrorDomain" code:0x9 userInfo:@{NSLocalizedDescriptionKey : @"Test reported a suite with nil or empty identifier. This is unsupported."}];
-    [self finishWithError:error didCancel:NO];
+    XCTestBootstrapError *error = [[[XCTestBootstrapError
+      describe:@"Test reported a suite with nil or empty identifier. This is unsupported."]
+      inDomain:@"IDETestOperationsObserverErrorDomain"]
+      code:0x9];
+    [self concludeWithResult:[FBTestManagerResult internalError:error]];
   }
 
   return nil;
@@ -250,7 +275,9 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 
 - (id)_XCT_didFinishExecutingTestPlan
 {
-  [self.daemonConnection notifyTestPlanEndedWithError:nil];
+  [self.daemonConnection notifyTestPlanEnded];
+  [self.daemonConnection disconnect];
+  [self.bundleConnection disconnect];
   return nil;
 }
 

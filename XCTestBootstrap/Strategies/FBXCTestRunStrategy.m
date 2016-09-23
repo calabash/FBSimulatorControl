@@ -10,12 +10,13 @@
 #import "FBXCTestRunStrategy.h"
 
 #import <Foundation/Foundation.h>
-
+#import <XCTestBootstrap/XCTestBootstrap.h>
 #import <FBControlCore/FBControlCore.h>
 
 #import "FBDeviceOperator.h"
 #import "FBProductBundle.h"
 #import "FBTestManager.h"
+#import "FBTestManagerContext.h"
 #import "FBTestRunnerConfiguration.h"
 #import "FBXCTestPreparationStrategy.h"
 #import "XCTestBootstrapError.h"
@@ -88,20 +89,26 @@
       fail:error];
   }
 
+  // Make the Context for the Test Manager.
+  FBTestManagerContext *context = [FBTestManagerContext
+    contextWithTestRunnerPID:testRunnerProcessID
+    testRunnerBundleID:configuration.testRunner.bundleID
+    sessionIdentifier:configuration.sessionIdentifier];
+
   // Attach to the XCTest Test Runner host Process.
-  FBTestManager *testManager = [FBTestManager testManagerWithOperator:self.deviceOperator
-    testRunnerPID:testRunnerProcessID
-    sessionIdentifier:configuration.sessionIdentifier
+  FBTestManager *testManager = [FBTestManager
+    testManagerWithContext:context
+    operator:self.deviceOperator
     reporter:self.reporter
     logger:self.logger];
 
-  if (![testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout error:error]) {
-      return
-    [[[XCTestBootstrapError describe:@"Failed connect to test runner or test manager daemon"]
-      causedBy:innerError]
-     fail:error];
+  FBTestManagerResult *result = [testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout];
+  if (result) {
+    return[[[XCTestBootstrapError
+      describeFormat:@"Test Manager Connection Failed: %@", result.description]
+      causedBy:result.error]
+      fail:error];
   }
-    NSLog(@"[%@ %@] => %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), testManager);
   return testManager;
 }
 
