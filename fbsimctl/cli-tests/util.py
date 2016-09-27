@@ -7,14 +7,15 @@ import os
 import shlex
 import subprocess
 import time
+import urllib.request
 
 # Setup the Logger
 logging.basicConfig(format='%(message)s')
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-DEFAULT_TIMEOUT = 60
-LONG_TIMEOUT = 400
+DEFAULT_TIMEOUT = 120
+LONG_TIMEOUT = 500
 
 def find_fbsimctl_path(expected_path):
     if os.path.exists(expected_path):
@@ -204,3 +205,36 @@ class FBSimctl:
             arguments=self._make_arguments(arguments),
             timeout=timeout,
         )
+
+
+class WebServer:
+    def __init__(self, port):
+        self.__port = port
+
+    def get(self, path):
+        request = urllib.request.Request(
+            url=self._make_url(path),
+            method='GET',
+        )
+        return self._perform_request(request)
+
+    def post(self, path, payload):
+        data = json.dumps(payload).encode('utf-8')
+        request = urllib.request.Request(
+            url=self._make_url(path),
+            data=data,
+            method='POST',
+            headers={'content-type': 'application/json'},
+        )
+        return self._perform_request(request)
+
+    def _make_url(self, path):
+        return 'http://localhost:{}/{}'.format(
+            self.__port,
+            path,
+        )
+
+    def _perform_request(self, request):
+        with urllib.request.urlopen(request) as f:
+            response = f.read().decode('utf-8')
+            return json.loads(response)

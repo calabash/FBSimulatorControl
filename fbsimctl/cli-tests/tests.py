@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from util import (FBSimctl, Simulator, find_fbsimctl_path, DEFAULT_TIMEOUT, LONG_TIMEOUT)
+from util import (FBSimctl, Simulator, WebServer, find_fbsimctl_path, DEFAULT_TIMEOUT, LONG_TIMEOUT)
 import argparse
+import contextlib
 import os
 import tempfile
 import unittest
@@ -137,6 +138,7 @@ class MultipleSimulatorTestCase(FBSimctlTestCase):
         self,
         methodName,
         fbsimctl_path,
+
     ):
         super(MultipleSimulatorTestCase, self).__init__(
             methodName=methodName,
@@ -151,6 +153,61 @@ class MultipleSimulatorTestCase(FBSimctlTestCase):
             event_type='ended',
             timeout=LONG_TIMEOUT,
         )
+
+
+class WebserverSimulatorTestCase(FBSimctlTestCase):
+    def __init__(
+        self,
+        methodName,
+        fbsimctl_path,
+        port,
+    ):
+        super(WebserverSimulatorTestCase, self).__init__(
+            methodName=methodName,
+            fbsimctl_path=fbsimctl_path,
+            use_custom_set=True,
+        )
+        self.port = port
+
+    def extractSimulatorSubjects(self, response):
+        print(response['subject'])
+        self.assertEqual(response['status'], 'success')
+        return [
+            Simulator(event['subject']).get_udid()
+            for event
+            in response['subject']
+        ]
+
+    @contextlib.contextmanager
+    def launchWebserver(self):
+        arguments = [
+            '--simulators', 'listen', '--http', str(self.port),
+        ]
+        with self.fbsimctl.launch(arguments) as process:
+            process.wait_for_event('listen', 'started')
+            yield WebServer(self.port)
+
+    def testDiagnostics(self):
+        with self.launchWebserver() as webserver:
+            response = webserver.post('diagnose', {'type': 'all'})
+            self.assertEqual(response['status'], 'success')
+
+    def testListSimulators(self):
+        iphone6 = self.assertCreatesSimulator(['iPhone 6'])
+        iphone6s = self.assertCreatesSimulator(['iPhone 6s'])
+        with self.launchWebserver() as webserver:
+            actual = self.extractSimulatorSubjects(
+                webserver.get('list'),
+            )
+            expected = [
+                iphone6.get_udid(),
+                iphone6s.get_udid(),
+            ]
+            self.assertEqual(expected.sort(), actual.sort())
+            actual = self.extractSimulatorSubjects(
+                webserver.get(iphone6.get_udid() + '/list'),
+            )
+            expected = [iphone6.get_udid()]
 
 class SingleSimulatorTestCase(FBSimctlTestCase):
     def __init__(
@@ -253,6 +310,11 @@ class SuiteBuilder:
             self.loader.getTestCaseNames(FBSimctlTestCase)
         )
 
+    def _get_webserver_methods(self):
+        return self._filter_methods(
+            set(self.loader.getTestCaseNames(WebserverSimulatorTestCase)) - set(self._get_base_methods()),
+        )
+
     def _get_single_simulator_methods(self):
         return self._filter_methods(
             set(self.loader.getTestCaseNames(SingleSimulatorTestCase)) - set(self._get_base_methods()),
@@ -275,7 +337,7 @@ class SuiteBuilder:
             for method_name in self._get_base_methods()
             for use_custom_set in [True, False]
         ])
-        # Only run per-Simulator-Type tests against a custom set
+        # Only run per-Simulator-Type tests against a custom set.
         suite.addTests([
             SingleSimulatorTestCase(
                 methodName=method_name,
@@ -284,6 +346,15 @@ class SuiteBuilder:
             )
             for method_name in self._get_single_simulator_methods()
             for device_type in self.device_types
+        ])
+        # Only run per-Webserver-Type tests against a custom set.
+        suite.addTests([
+            WebserverSimulatorTestCase(
+                methodName=method_name,
+                fbsimctl_path=self.fbsimctl_path,
+                port=8090,
+            )
+            for method_name in self._get_webserver_methods()
         ])
         # Only run multiple-Simulator tests against a custom set.
         suite.addTests([
@@ -302,7 +373,7 @@ if __name__ == '__main__':
     parser.description = 'fbsimctl e2e test runner'
     parser.add_argument(
         '--fbsimctl-path',
-        default='executable-under-test/fbsimctl',
+        default='executable-under-test/bin/fbsimctl',
         help='The location of the fbsimctl executable',
     )
     parser.add_argument(
@@ -320,4 +391,7 @@ if __name__ == '__main__':
         verbosity=2,
         failfast=True,
     )
-    runner.run(suite_builder.build())
+    result = runner.run(suite_builder.build())
+    parser.exit(
+        status=0 if result.wasSuccessful() else 1,
+    )

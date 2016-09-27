@@ -28,6 +28,8 @@
 
 #import <XCTestBootstrap/XCTestBootstrap.h>
 
+#import <objc/runtime.h>
+
 #import "FBDevice.h"
 #import "FBDeviceControlError.h"
 #import "FBAMDevice+Private.h"
@@ -46,7 +48,10 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 @interface FBiOSDeviceOperator ()
 
 @property (nonatomic, strong, readonly) FBDevice *device;
-@property (nonatomic, copy, readwrite) NSString *preLaunchConsoleString;
+/**
+ * A string marks the end of device log for previous run.
+ */
+@property (nonatomic, copy, readwrite) NSString *previousEndMarker;
 
 @end
 
@@ -168,7 +173,7 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
      fail:error];
   }
   return
-  [[NSClassFromString(@"DTXSocketTransport") alloc] initWithConnectedSocket:socket disconnectAction:^{
+  [[objc_lookUpClass("DTXSocketTransport") alloc] initWithConnectedSocket:socket disconnectAction:^{
     [logger log:@"Disconnected from test manager daemon socket"];
     FBAMDServiceConnectionInvalidate(connection);
   }];
@@ -209,6 +214,7 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
   }
 
   __block NSUInteger preLaunchLogLength;
+  __block NSString *preLaunchConsoleString;
   if (![[[[FBRunLoopSpinner new]
           timeout:60]
          timeoutErrorMessage:@"Failed to load device console entries"]
@@ -222,7 +228,8 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
             preLaunchLogLength = log.length;
             return NO;
           }
-          self.preLaunchConsoleString = log;
+          preLaunchConsoleString = log;
+          [self markPreviousEnd:log];
           return YES;
         } error:error])
   {
@@ -243,10 +250,24 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
   return YES;
 }
 
+/**
+ * Record the end of the consoleString as the previous end marker.
+ * The next slice of log will begin after the marker.
+ */
+- (void)markPreviousEnd:(NSString *)consoleString
+{
+  self.previousEndMarker = [FBSubstringUtilities substringOf:consoleString
+                                      withLastCharacterCount:FBMaxConosleMarkerLength];
+}
+
 - (BOOL)installApplicationWithPath:(NSString *)path error:(NSError **)error
 {
+  // Get the device here in the main thread. There is an assertion for main thread in
+  // it's initialization.
+  id device = self.device.dvtDevice;
+
   id object = [FBRunLoopSpinner spinUntilBlockFinished:^id{
-    return [self.device.dvtDevice installApplicationSync:path options:nil];
+    return [device installApplicationSync:path options:nil];
   }];
   if ([object isKindOfClass:NSError.class]) {
     if (error) {
@@ -297,6 +318,11 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
    intValue];
 }
 
+- (nullable FBDiagnostic *)attemptToFindCrashLogForProcess:(pid_t)pid bundleID:(NSString *)bundleID
+{
+  return nil;
+}
+
 - (BOOL)killApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
   pid_t PID = [self processIDWithBundleID:bundleID error:error];
@@ -317,10 +343,8 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
   if (consoleString.length == 0) {
     return nil;
   }
-  NSString *markerString = [FBSubstringUtilities substringOf:self.preLaunchConsoleString withLastCharacterCount:FBMaxConosleMarkerLength];
-  return [FBSubstringUtilities substringAfterNeedle:markerString inHaystack:consoleString];
+  return [FBSubstringUtilities substringAfterNeedle:self.previousEndMarker inHaystack:consoleString];
 }
-
 
 - (BOOL)observeProcessWithID:(NSInteger)processID error:(NSError **)error
 {
@@ -353,7 +377,7 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
   [FBRunLoopSpinner spinUntilBlockFinished:^id{
     __block id responseObject;
     DTXChannel *channel = self.device.dvtDevice.serviceHubProcessControlChannel;
-    DTXMessage *message = [[NSClassFromString(@"DTXMessage") alloc] initWithSelector:aSelector firstArg:arg remainingObjectArgs:(__bridge id)(*arguments)];
+    DTXMessage *message = [[objc_lookUpClass("DTXMessage") alloc] initWithSelector:aSelector firstArg:arg remainingObjectArgs:(__bridge id)(*arguments)];
     [channel sendControlSync:message replyHandler:^(DTXMessage *responseMessage){
       if (responseMessage.errorStatus) {
         *error = responseMessage.error;

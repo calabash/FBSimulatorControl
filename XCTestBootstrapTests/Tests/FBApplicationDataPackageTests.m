@@ -11,11 +11,7 @@
 
 #import <OCMock/OCMock.h>
 
-#import "FBApplicationDataPackage.h"
-#import "FBCodesignProvider.h"
-#import "FBFileManager.h"
-#import "FBTestBundle.h"
-#import "FBTestConfiguration.h"
+#import <XCTestBootstrap/XCTestBootstrap.h>
 
 @class FBTestBundle;
 
@@ -39,6 +35,7 @@
 
   id testConfigurationMock = [OCMockObject mockForClass:FBTestConfiguration.class];
   [[[testConfigurationMock stub] andReturn:[self.class sessionIdentifier]] sessionIdentifier];
+  [[[testConfigurationMock stub] andReturnValue:@YES] shouldInitializeForUITesting];
 
   id testBundleMock = [OCMockObject mockForClass:FBTestBundle.class];
   [[[testBundleMock stub] andReturn:@"/test/Magic.xctest"] path];
@@ -75,6 +72,7 @@
 
   id testConfigurationMock = [OCMockObject mockForClass:FBTestConfiguration.class];
   [[[testConfigurationMock stub] andReturn:[self.class sessionIdentifier]] sessionIdentifier];
+  [[[testConfigurationMock stub] andReturnValue:@YES] shouldInitializeForUITesting];
 
   id testBundleMock = [OCMockObject mockForClass:FBTestBundle.class];
   [[[testBundleMock stub] andReturn:@"/test/Magic.xctest"] path];

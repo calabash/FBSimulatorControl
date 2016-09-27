@@ -27,21 +27,30 @@
   self.reporter = [FBXCTestReporterDouble new];
 }
 
++ (NSDictionary<NSString *, NSString *> *)crashingProcessUnderTestEnvironment
+{
+  return @{
+    @"TEST_FIXTURE_SHOULD_CRASH" : @"1",
+  };
+}
+
 - (void)testRunsiOSUnitTestInApplication
 {
   NSError *error;
   NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
   NSString *applicationPath = [FBXCTestKitFixtures tableSearchApplicationPath];
-  NSString *testBundlePath = [FBXCTestKitFixtures iOSUnitTestBundlePath];
+  NSString *testBundlePath = [self iOSUnitTestBundlePath];
   NSString *appTestArgument = [NSString stringWithFormat:@"%@:%@", testBundlePath, applicationPath];
   NSArray *arguments = @[ @"run-tests", @"-destination", @"name=iPhone 6", @"-appTest", appTestArgument ];
 
   FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:@{}];
-  [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
-  [testRunner executeTestsWithError:&error];
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   XCTAssertTrue(self.reporter.printReportWasCalled);
@@ -79,64 +88,44 @@
   NSError *error;
   NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
   NSString *applicationPath = [FBXCTestKitFixtures tableSearchApplicationPath];
-  NSString *testBundlePath = [FBXCTestKitFixtures iOSUnitTestBundlePath];
+  NSString *testBundlePath = [self iOSUnitTestBundlePath];
   NSString *appTestArgument = [NSString stringWithFormat:@"%@:%@", testBundlePath, applicationPath];
   NSArray *arguments = @[ @"run-tests", @"-destination", @"name=iPhone 6", @"-appTest", appTestArgument ];
-  NSDictionary<NSString *, NSString *> *processUnderTestEnvironment = @{
-    @"TEST_FIXTURE_SHOULD_CRASH" : @"1",
-  };
+  NSDictionary<NSString *, NSString *> *processUnderTestEnvironment = FBXCTestKitIntegrationTests.crashingProcessUnderTestEnvironment;
 
   FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:processUnderTestEnvironment];
-  [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
-  [testRunner executeTestsWithError:&error];
-  XCTAssertNil(error);
-
-  XCTAssertTrue(self.reporter.printReportWasCalled);
-  NSArray<NSArray<NSString *> *> *expected = @[
-    @[@"iOSUnitTestFixtureTests", @"testHostProcessIsMobileSafari"],
-    @[@"iOSUnitTestFixtureTests", @"testHostProcessIsXctest"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningInIOSApp"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningInMacOSXApp"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningOnIOS"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningOnMacOSX"],
-    @[@"iOSUnitTestFixtureTests", @"testPossibleCrashingOfHostProcess"],
-  ];
-  XCTAssertEqualObjects(expected, self.reporter.startedTests);
-  expected = @[
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningInIOSApp"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningOnIOS"],
-  ];
-  XCTAssertEqualObjects(expected, self.reporter.passedTests);
-  expected = @[
-    @[@"iOSUnitTestFixtureTests", @"testHostProcessIsMobileSafari"],
-    @[@"iOSUnitTestFixtureTests", @"testHostProcessIsXctest"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningInMacOSXApp"],
-    @[@"iOSUnitTestFixtureTests", @"testIsRunningOnMacOSX"],
-  ];
-  XCTAssertEqualObjects(expected, self.reporter.failedTests);
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertFalse(success);
+  XCTAssertNotNil(error);
+  XCTAssertFalse(self.reporter.printReportWasCalled);
+  XCTAssertTrue([error.description containsString:@"testPossibleCrashingOfHostProcess"]);
 }
 
 - (void)testRunsiOSLogicTestsWithoutApplication
 {
-  if (![FBTestRunConfiguration findShimDirectoryWithError:nil]) {
-    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+  NSError *error = nil;
+  if (![FBTestRunConfiguration findShimDirectoryWithError:&error]) {
+    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]. %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), error);
     return;
   }
 
-  NSError *error;
   NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
-  NSString *testBundlePath = [FBXCTestKitFixtures iOSUnitTestBundlePath];
+  NSString *testBundlePath = [self iOSUnitTestBundlePath];
   NSArray *arguments = @[ @"run-tests", @"-destination", @"name=iPhone 6", @"-logicTest", testBundlePath ];
 
   FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:@{}];
-  [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
-  [testRunner executeTestsWithError:&error];
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   XCTAssertTrue(self.reporter.printReportWasCalled);
@@ -146,24 +135,117 @@
   XCTAssertEqual([self.reporter eventsWithName:@"end-test"].count, 9u);
 }
 
-- (void)testReportsMacOSXTestList
+- (void)testiOSLogicTestEndsOnCrashingTest
 {
-  if (![FBTestRunConfiguration findShimDirectoryWithError:nil]) {
-    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+  NSError *error = nil;
+  if (![FBTestRunConfiguration findShimDirectoryWithError:&error]) {
+    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]. %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), error);
     return;
   }
 
-  NSError *error;
+  NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
+  NSString *testBundlePath = [self iOSUnitTestBundlePath];
+  NSArray *arguments = @[ @"run-tests", @"-destination", @"name=iPhone 6", @"-logicTest", testBundlePath ];
+  NSDictionary<NSString *, NSString *> *processUnderTestEnvironment = FBXCTestKitIntegrationTests.crashingProcessUnderTestEnvironment;
+
+  FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:processUnderTestEnvironment];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
+  XCTAssertNil(error);
+
+  FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertFalse(success);
+  XCTAssertNotNil(error);
+  XCTAssertTrue([error.description containsString:@"testPossibleCrashingOfHostProcess"]);
+
+  XCTAssertFalse(self.reporter.printReportWasCalled);
+  XCTAssertEqual([self.reporter eventsWithName:@"begin-test-suite"].count, 1u);
+  XCTAssertEqual([self.reporter eventsWithName:@"end-test-suite"].count, 0u);
+  XCTAssertEqual([self.reporter eventsWithName:@"begin-test"].count, 7u);
+  XCTAssertEqual([self.reporter eventsWithName:@"end-test"].count, 6u);
+}
+
+- (void)testMacOSXLogicTest
+{
+  NSError *error = nil;
+  if (![FBTestRunConfiguration findShimDirectoryWithError:&error]) {
+    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]. %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), error);
+    return;
+  }
+
+  NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
+  NSString *testBundlePath = [FBXCTestKitFixtures macUnitTestBundlePath];
+  NSArray *arguments = @[ @"run-tests", @"-sdk", @"macosx", @"-logicTest", testBundlePath];
+
+  FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:@{}];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
+  XCTAssertNil(error);
+
+  FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertTrue(success);
+  XCTAssertNil(error);
+
+  XCTAssertTrue(self.reporter.printReportWasCalled);
+  XCTAssertEqual([self.reporter eventsWithName:@"begin-test-suite"].count, 1u);
+  XCTAssertEqual([self.reporter eventsWithName:@"end-test-suite"].count, 1u);
+  XCTAssertEqual([self.reporter eventsWithName:@"begin-test"].count, 9u);
+  XCTAssertEqual([self.reporter eventsWithName:@"end-test"].count, 9u);
+}
+
+- (void)testMacOSXLogicTestEndsOnCrashingTest
+{
+  NSError *error = nil;
+  if (![FBTestRunConfiguration findShimDirectoryWithError:&error]) {
+    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]. %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), error);
+    return;
+  }
+
+  NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
+  NSString *testBundlePath = [FBXCTestKitFixtures macUnitTestBundlePath];
+  NSArray *arguments = @[ @"run-tests", @"-sdk", @"macosx", @"-logicTest", testBundlePath];
+  NSDictionary<NSString *, NSString *> *processUnderTestEnvironment = FBXCTestKitIntegrationTests.crashingProcessUnderTestEnvironment;
+
+  FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:processUnderTestEnvironment];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
+  XCTAssertNil(error);
+
+  FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertFalse(success);
+  XCTAssertNotNil(error);
+  XCTAssertTrue([error.description containsString:@"testPossibleCrashingOfHostProcess"]);
+
+  XCTAssertFalse(self.reporter.printReportWasCalled);
+  XCTAssertEqual([self.reporter eventsWithName:@"begin-test-suite"].count, 1u);
+  XCTAssertEqual([self.reporter eventsWithName:@"end-test-suite"].count, 0u);
+  XCTAssertEqual([self.reporter eventsWithName:@"begin-test"].count, 7u);
+  XCTAssertEqual([self.reporter eventsWithName:@"end-test"].count, 6u);
+}
+
+- (void)testReportsMacOSXTestList
+{
+  NSError *error = nil;
+  if (![FBTestRunConfiguration findShimDirectoryWithError:&error]) {
+    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]. %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), error);
+    return;
+  }
+
   NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
   NSString *testBundlePath = [FBXCTestKitFixtures macUnitTestBundlePath];
   NSArray *arguments = @[ @"run-tests", @"-sdk", @"macosx", @"-logicTest", testBundlePath, @"-listTestsOnly" ];
 
   FBTestRunConfiguration *configuration = [[FBTestRunConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:@{}];
-  [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   FBXCTestRunner *testRunner = [FBXCTestRunner testRunnerWithConfiguration:configuration];
-  [testRunner executeTestsWithError:&error];
+  success = [testRunner executeTestsWithError:&error];
+  XCTAssertTrue(success);
   XCTAssertNil(error);
 
   XCTAssertTrue(self.reporter.printReportWasCalled);

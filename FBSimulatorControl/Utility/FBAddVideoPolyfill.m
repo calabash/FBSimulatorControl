@@ -11,7 +11,6 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBProcessLaunchConfiguration+Helpers.h"
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator.h"
 #import "FBSimulatorError.h"
@@ -49,14 +48,14 @@
 
 #pragma mark Public
 
-- (BOOL)addVideos:(NSArray *)paths error:(NSError **)error
+- (BOOL)addVideos:(NSArray<NSString *> *)paths error:(NSError **)error
 {
   return [FBAddVideoPolyfill uploadVideos:paths simulator:self.simulator error:error];
 }
 
 #pragma mark Private
 
-+ (BOOL)uploadVideos:(NSArray *)videoPaths simulator:(FBSimulator *)simulator error:(NSError **)error
++ (BOOL)uploadVideos:(NSArray<NSString *> *)videoPaths simulator:(FBSimulator *)simulator error:(NSError **)error
 {
   if (!videoPaths.count) {
     return YES;

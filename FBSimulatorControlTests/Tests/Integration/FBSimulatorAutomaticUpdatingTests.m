@@ -35,7 +35,7 @@
     return;
   }
 
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   FBProcessInfo *containerProcess = simulator.containerApplication;
   XCTAssertNotNil(containerProcess);
 
@@ -50,11 +50,11 @@
     return;
   }
 
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   FBProcessInfo *containerApplication = simulator.containerApplication;
   XCTAssertNotNil(containerApplication);
 
-  NSRunningApplication *workspaceApplication = [simulator.processFetcher runningApplicationForProcess:containerApplication];
+  NSRunningApplication *workspaceApplication = [simulator.processFetcher.processFetcher runningApplicationForProcess:containerApplication];
   XCTAssertNotNil(workspaceApplication);
   [workspaceApplication forceTerminate];
 
@@ -71,7 +71,7 @@
     return;
   }
 
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   FBApplicationLaunchConfiguration *appLaunch = self.safariAppLaunch;
   [self assertInteractionSuccessful:[simulator.interact launchApplication:appLaunch]];
 
@@ -96,7 +96,7 @@
     return;
   }
 
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   FBApplicationLaunchConfiguration *appLaunch = self.safariAppLaunch;
   [self assertInteractionSuccessful:[simulator.interact launchApplication:appLaunch]];
 

@@ -56,4 +56,105 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ A representation of a HTTP Request.
+ */
+@interface HttpRequest : NSObject
+
+/**
+ The Body of the Request.
+ */
+@property (nonatomic, strong, readonly) NSData *body;
+
+/**
+ The components of the request.
+ */
+@property (nonatomic, copy, readonly) NSArray<NSString *> *pathComponents;
+
+@end
+
+/**
+ A representation of a HTTP Response.
+ */
+@interface HttpResponse : NSObject
+
+/**
+ Creates a Response with the given status code.
+ */
++ (instancetype)responseWithStatusCode:(NSInteger)statusCode body:(NSData *)body;
+
+/**
+ Creates a 500 Response.
+ */
++ (instancetype)internalServerError:(NSData *)body;
+
+/**
+ Creates a 200 Response.
+ */
++ (instancetype)ok:(NSData *)body;
+
+@property (nonatomic, assign, readonly) NSInteger statusCode;
+@property (nonatomic, strong, readonly) NSData *body;
+
+@end
+
+/**
+ A representation of a HTTP Routing.
+ */
+@interface HttpRoute : NSObject
+
+/**
+ Creates a new route.
+
+ @param method the HTTP Method to use.
+ @param path the Relative Path to use.
+ @param handler a handler for the request.
+ @return a new HTTP Route.
+ */
++ (instancetype)routeWithMethod:(NSString *)method path:(NSString *)path handler:(HttpResponse *(^)(HttpRequest *))handler;
+
+/**
+ The HTTP Method.
+ */
+@property (nonatomic, copy, readonly) NSString *method;
+
+/**
+ The Relative Path to use.
+ */
+@property (nonatomic, copy, readonly) NSString *path;
+
+/**
+ The Handler to use.
+ */
+@property (nonatomic, copy, readonly) HttpResponse *(^handler)(HttpRequest *request);
+
+@end
+
+/**
+ A Bridge between the Objective-C HTTP WebServer Implementation that can be used directly in FBSimulatorControlKit.
+ */
+@interface HttpServer : NSObject
+
+/**
+ Creates a Webserver.
+
+ @param port the port to bind on.
+ */
++ (instancetype)serverWithPort:(in_port_t)port routes:(NSArray<HttpRoute *> *)routes;
+
+/**
+ Starts the Webserver.
+
+ @param error an error out for any error that occurs.
+ @return YES if successful, NO otherwise.
+ */
+- (BOOL)startWithError:(NSError **)error;
+
+/**
+ Stops the Webserver.
+ */
+- (void)stop;
+
+@end
+
 NS_ASSUME_NONNULL_END

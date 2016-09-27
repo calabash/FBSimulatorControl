@@ -11,9 +11,7 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBProcessLaunchConfiguration+Helpers.h"
 #import "FBApplicationLaunchStrategy.h"
-#import "FBProcessLaunchConfiguration.h"
 #import "FBSimDeviceWrapper.h"
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator+Private.h"
@@ -139,7 +137,7 @@
 {
   return [self interactWithLastLaunchedApplicationProcess:^ BOOL (NSError **error, FBSimulator *simulator, FBProcessInfo *process) {
     // Obtain the Launch Config for the process.
-    FBApplicationLaunchConfiguration *launchConfig = simulator.history.processLaunchConfigurations[process];
+    FBApplicationLaunchConfiguration *launchConfig = (FBApplicationLaunchConfiguration *) simulator.history.processLaunchConfigurations[process];
     if (!process) {
       return [[[FBSimulatorError
         describe:@"Cannot re-launch an Application until one has been launched; there's no prior process launch config"]

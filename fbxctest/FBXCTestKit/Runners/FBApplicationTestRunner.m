@@ -15,6 +15,9 @@
 #import "FBTestRunConfiguration.h"
 #import "FBXCTestLogger.h"
 #import "FBXCTestReporterAdapter.h"
+#import "FBXCTestError.h"
+
+static const NSTimeInterval ApplicationTestDefaultTimeout = 4000;
 
 @interface FBApplicationTestRunner ()
 
@@ -62,18 +65,32 @@
     environment:self.configuration.processUnderTestEnvironment
     options:0];
 
-  NSString *workingDirectoryPath = [self.configuration.workingDirectory stringByAppendingPathComponent:@"tmp"];
-  FBInteraction *interaction = [[self.simulator.interact
-    startTestRunnerLaunchConfiguration:appLaunch
-    testBundlePath:self.configuration.testBundlePath
-    reporter:[FBXCTestReporterAdapter adapterWithReporter:self.configuration.reporter]
-    workingDirectory:workingDirectoryPath]
-    waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:5000];
+  FBTestLaunchConfiguration *testLaunchConfiguration = [[[FBTestLaunchConfiguration new]
+    withTestBundlePath:self.configuration.testBundlePath]
+    withApplicationLaunchConfiguration:appLaunch];
 
+  FBSimulatorTestRunStrategy *runner = [FBSimulatorTestRunStrategy
+    strategyWithSimulator:self.simulator
+    configuration:testLaunchConfiguration
+    workingDirectory:[self.configuration.workingDirectory stringByAppendingPathComponent:@"tmp"]
+    reporter:[FBXCTestReporterAdapter adapterWithReporter:self.configuration.reporter]];
 
-  if (![interaction perform:error]) {
-    [self.configuration.logger logFormat:@"Failed to execute test bundle: %@", *error];
-    return NO;
+  NSError *innerError = nil;
+  if (![runner connectAndStartWithError:&innerError]) {
+    return [[[FBXCTestError
+      describe:@"Failed to connect to the Simulator's Test Manager"]
+      causedBy:innerError]
+      failBool:error];
+  }
+  FBTestManagerResult *result = [runner waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:ApplicationTestDefaultTimeout];
+  if (result.crashDiagnostic) {
+    return [[FBXCTestError
+      describeFormat:@"The Application Crashed during the Test Run\n%@", result.crashDiagnostic.asString]
+      failBool:error];
+  }
+  if (result.error) {
+    [self.configuration.logger logFormat:@"Failed to execute test bundle %@", result.error];
+    return [XCTestBootstrapError failBoolWithError:result.error errorOut:error];
   }
   return YES;
 }

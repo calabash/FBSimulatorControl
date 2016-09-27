@@ -18,6 +18,8 @@
 
 #import <FBControlCore/FBControlCore.h>
 
+#import <objc/runtime.h>
+
 #import "FBCoreSimulatorTerminationStrategy.h"
 #import "FBSimulatorControl.h"
 #import "FBSimulatorControlConfiguration.h"
@@ -38,22 +40,17 @@
   [FBSimulatorControlFrameworkLoader loadPrivateFrameworksOrAbort];
 }
 
-+ (instancetype)setWithConfiguration:(FBSimulatorControlConfiguration *)configuration control:(FBSimulatorControl *)control logger:(nullable id<FBControlCoreLogger>)logger error:(NSError **)error
++ (instancetype)setWithConfiguration:(FBSimulatorControlConfiguration *)configuration deviceSet:(SimDeviceSet *)deviceSet logger:(nullable id<FBControlCoreLogger>)logger error:(NSError **)error
 {
   NSError *innerError = nil;
-  SimDeviceSet *deviceSet = [self createDeviceSetWithConfiguration:configuration error:&innerError];
-  if (!deviceSet) {
-    return [[[FBSimulatorError describe:@"Failed to create device set"] causedBy:innerError] fail:error];
-  }
-
-  FBSimulatorSet *set = [[FBSimulatorSet alloc] initWithConfiguration:configuration deviceSet:deviceSet control:control logger:logger];
+  FBSimulatorSet *set = [[FBSimulatorSet alloc] initWithConfiguration:configuration deviceSet:deviceSet logger:logger];
   if (![set performSetPreconditionsWithConfiguration:configuration Error:&innerError]) {
     return [[[FBSimulatorError describe:@"Failed meet simulator set preconditions"] causedBy:innerError] fail:error];
   }
   return set;
 }
 
-- (instancetype)initWithConfiguration:(FBSimulatorControlConfiguration *)configuration deviceSet:(SimDeviceSet *)deviceSet control:(FBSimulatorControl *)control logger:(id<FBControlCoreLogger>)logger
+- (instancetype)initWithConfiguration:(FBSimulatorControlConfiguration *)configuration deviceSet:(SimDeviceSet *)deviceSet logger:(id<FBControlCoreLogger>)logger
 {
   self = [super init];
   if (!self) {
@@ -62,45 +59,13 @@
 
   _logger = logger;
   _deviceSet = deviceSet;
-  _control = control;
   _configuration = configuration;
 
   _allSimulators = @[];
-  _processFetcher = [FBProcessFetcher new];
+  _processFetcher = [FBSimulatorProcessFetcher fetcherWithProcessFetcher:[FBProcessFetcher new]];
   _inflationStrategy = [FBSimulatorInflationStrategy forSet:self];
 
   return self;
-}
-
-+ (SimDeviceSet *)createDeviceSetWithConfiguration:(FBSimulatorControlConfiguration *)configuration error:(NSError **)error
-{
-  NSString *deviceSetPath = configuration.deviceSetPath;
-  NSError *innerError = nil;
-  if (deviceSetPath != nil) {
-    if (![NSFileManager.defaultManager createDirectoryAtPath:deviceSetPath withIntermediateDirectories:YES attributes:nil error:&innerError]) {
-      return [[[FBSimulatorError describeFormat:@"Failed to create custom SimDeviceSet directory at %@", deviceSetPath] causedBy:innerError] fail:error];
-    }
-  }
-
-  // Xcode 8's Simulator.app uses the SimServiceContext to fetch the Device Set, rather than instantiating it directly.
-  // Xcode 7's Simulator.app just creates the SimDeviceSet directly.
-  SimDeviceSet *deviceSet = nil;
-  Class serviceContextClass = NSClassFromString(@"SimServiceContext");
-  if ([serviceContextClass respondsToSelector:@selector(sharedServiceContextForDeveloperDir:error:)]) {
-    SimServiceContext *serviceContext = [serviceContextClass sharedServiceContextForDeveloperDir:FBControlCoreGlobalConfiguration.developerDirectory error:&innerError];
-    deviceSet = deviceSetPath
-      ? [serviceContext deviceSetWithPath:configuration.deviceSetPath error:&innerError]
-      : [serviceContext defaultDeviceSetWithError:&innerError];
-  } else {
-    deviceSet = deviceSetPath
-      ? [NSClassFromString(@"SimDeviceSet") setForSetPath:configuration.deviceSetPath]
-      : [NSClassFromString(@"SimDeviceSet") defaultSet];
-  }
-
-  if (!deviceSet) {
-    return [[[FBSimulatorError describeFormat:@"Failed to get device set for %@", deviceSetPath] causedBy:innerError] fail:error];
-  }
-  return deviceSet;
 }
 
 - (BOOL)performSetPreconditionsWithConfiguration:(FBSimulatorControlConfiguration *)configuration Error:(NSError **)error
@@ -162,6 +127,9 @@
 
 - (NSArray<FBSimulator *> *)query:(FBiOSTargetQuery *)query
 {
+  if ([query excludesAll:FBiOSTargetTypeSimulator]) {
+    return @[];
+  }
   return (NSArray<FBSimulator *> *) [query filter:self.allSimulators];
 }
 
@@ -229,7 +197,7 @@
 - (NSArray<FBSimulatorConfiguration *> *)configurationsForAbsentDefaultSimulators
 {
   NSSet<FBSimulatorConfiguration *> *existingConfigurations = [NSSet setWithArray:[self.allSimulators valueForKey:@"configuration"]];
-  NSMutableSet<FBSimulatorConfiguration *> *absentConfigurations = [NSMutableSet setWithArray:FBSimulatorConfiguration.allAvailableDefaultConfigurations];
+  NSMutableSet<FBSimulatorConfiguration *> *absentConfigurations = [NSMutableSet setWithArray:[FBSimulatorConfiguration allAvailableDefaultConfigurationsWithLogger:self.logger]];
   [absentConfigurations minusSet:existingConfigurations];
   return [absentConfigurations allObjects];
 }

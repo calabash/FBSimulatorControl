@@ -7,7 +7,9 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#import "FBProcessFetcher+Simulators.h"
+#import "FBSimulatorProcessFetcher.h"
+
+#import <AppKit/AppKit.h>
 
 #import <CoreSimulator/SimDevice.h>
 
@@ -18,18 +20,29 @@
 
 NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FBSIMULATORCONTROL_SIM_UDID";
 
-@implementation FBProcessFetcher (Simulators)
+@implementation FBSimulatorProcessFetcher
 
-#pragma mark - Process Fetching
++ (instancetype)fetcherWithProcessFetcher:(FBProcessFetcher *)processFetcher
+{
+  return [[self alloc] initWithProcessFetcher:processFetcher];
+}
 
-#pragma mark The Container 'Simulator.app'
+- (instancetype)initWithProcessFetcher:(FBProcessFetcher *)processFetcher
+{
+  self = [super init];
+  if (!self) {
+    return nil;
+  }
+
+  _processFetcher = processFetcher;
+
+  return self;
+}
 
 - (NSArray<FBProcessInfo *> *)simulatorApplicationProcesses
 {
-  // All Simulator Versions from Xcode 5-7, have Simulator.app in their path:
-  // iOS Simulator.app/Contents/MacOS/iOS Simulator
-  // Simulator.app/Contents/MacOS/Simulator
-  return [self processesWithLaunchPathSubstring:@"Simulator.app"];
+  NSArray<NSRunningApplication *> *runningApplications = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.iphonesimulator"];
+  return [self.processFetcher processInfoForRunningApplications:runningApplications];
 }
 
 - (NSDictionary<NSString *, FBProcessInfo *> *)simulatorApplicationProcessesByUDIDs:(NSArray<NSString *> *)udids unclaimed:(NSArray<FBProcessInfo *> *_Nullable * _Nullable)unclaimedOut
@@ -39,7 +52,7 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
   NSSet<NSString *> *fetchSet = [NSSet setWithArray:udids];
 
   for (FBProcessInfo *process in self.simulatorApplicationProcesses) {
-    NSString *udid = [FBProcessFetcher udidForSimulatorApplicationProcess:process];
+    NSString *udid = [FBSimulatorProcessFetcher udidForSimulatorApplicationProcess:process];
     if (!udid) {
       [unclaimed addObject:process];
     }
@@ -70,22 +83,28 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
 
 - (NSArray<FBProcessInfo *> *)launchdProcesses
 {
-  return [self processesWithProcessName:@"launchd_sim"];
+  return [self.processFetcher processesWithProcessName:@"launchd_sim"];
 }
 
 - (NSDictionary<NSString *, FBProcessInfo *> *)launchdProcessesByUDIDs:(NSArray<NSString *> *)udids
 {
-  NSMutableDictionary<NSString *, FBProcessInfo *> *dictionary = [NSMutableDictionary dictionary];
-  NSSet<NSString *> *fetchSet = [NSSet setWithArray:udids];
+  NSDictionary<NSString *, NSString *> *launchdSimServiceNames = [FBSimulatorProcessFetcher launchdSimServiceNamesForUDIDs:udids];
+  NSDictionary<NSString *, NSDictionary<NSString *, id> *> *jobs = [FBServiceManagement jobInformationForUserServicesNamed:launchdSimServiceNames.allValues];
 
-  for (FBProcessInfo *process in self.launchdProcesses) {
-    NSString *udid = [FBProcessFetcher udidForLaunchdSim:process];
-    if (!udid || ![fetchSet containsObject:udid]) {
+  NSMutableDictionary<NSString *, FBProcessInfo *> *processes = [NSMutableDictionary dictionary];
+  for (NSString *udid in launchdSimServiceNames.allKeys) {
+    NSString *serviceName = launchdSimServiceNames[udid];
+    NSDictionary<NSString *, id> *job = jobs[serviceName];
+    if (!job) {
       continue;
     }
-    dictionary[udid] = process;
+    FBProcessInfo *process = [self.processFetcher processInfoForJobDictionary:job];
+    if (!process) {
+      continue;
+    }
+    processes[udid] = process;
   }
-  return [dictionary copy];
+  return [processes copy];
 }
 
 - (NSDictionary<FBProcessInfo *, NSString *> *)launchdProcessesToContainingDeviceSet
@@ -93,7 +112,7 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
   NSMutableDictionary<FBProcessInfo *, NSString *> *dictionary = [NSMutableDictionary dictionary];
 
   for (FBProcessInfo *process in self.launchdProcesses) {
-    NSString *deviceSetPath = [FBProcessFetcher deviceSetPathForLaunchdSim:process];
+    NSString *deviceSetPath = [FBSimulatorProcessFetcher deviceSetPathForLaunchdSim:process];
     if (!deviceSetPath) {
       continue;
     }
@@ -104,14 +123,18 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
 
 - (FBProcessInfo *)launchdProcessForSimDevice:(SimDevice *)simDevice
 {
-  return [self launchdProcessesByUDIDs:@[simDevice.UDID.UUIDString]][simDevice.UDID.UUIDString];
+  NSDictionary<NSString *, id> *jobInfo = [FBServiceManagement jobInformationForUserServiceNamed:simDevice.launchdJobName];
+  if (!jobInfo) {
+    return nil;
+  }
+  return [self.processFetcher processInfoForJobDictionary:jobInfo];
 }
 
 #pragma mark CoreSimulatorService
 
 - (NSArray<FBProcessInfo *> *)coreSimulatorServiceProcesses
 {
-  return [self processesWithLaunchPathSubstring:@"Contents/MacOS/com.apple.CoreSimulator.CoreSimulatorService"];
+  return [self.processFetcher processesWithLaunchPathSubstring:@"Contents/MacOS/com.apple.CoreSimulator.CoreSimulatorService"];
 }
 
 #pragma mark Predicates
@@ -133,7 +156,7 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
 
   return [NSCompoundPredicate andPredicateWithSubpredicates:@[
     self.simulatorProcessesWithCorrectLaunchPath,
-    argumentsPredicate
+    argumentsPredicate,
   ]];
 }
 
@@ -150,22 +173,7 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
 
 + (NSPredicate *)coreSimulatorProcessesForCurrentXcode
 {
-  return [self processesWithLaunchPath:FBControlCoreGlobalConfiguration.developerDirectory];
-}
-
-+ (NSPredicate *)processesWithLaunchPath:(NSString *)launchPath
-{
-  return [NSPredicate predicateWithBlock:^ BOOL (FBProcessInfo *processInfo, NSDictionary *_) {
-    return [processInfo.launchPath isEqualToString:launchPath];
-  }];
-}
-
-+ (NSPredicate *)processesForBinary:(FBBinaryDescriptor *)binary
-{
-  NSString *endPath = binary.path.lastPathComponent;
-  return [NSPredicate predicateWithBlock:^ BOOL (FBProcessInfo *processInfo, NSDictionary *_) {
-    return [processInfo.launchPath.lastPathComponent isEqualToString:endPath];
-  }];
+  return [FBProcessFetcher processesWithLaunchPath:FBControlCoreGlobalConfiguration.developerDirectory];
 }
 
 #pragma mark Private
@@ -225,6 +233,20 @@ NSString *const FBSimulatorControlSimulatorLaunchEnvironmentSimulatorUDID = @"FB
     characterSet = [NSCharacterSet characterSetWithCharactersInString:@"."];
   });
   return characterSet;
+}
+
++ (NSDictionary<NSString *, NSString *> *)launchdSimServiceNamesForUDIDs:(NSArray<NSString *> *)udids
+{
+  NSMutableDictionary<NSString *, NSString *> *dictionary = [NSMutableDictionary dictionary];
+  for (NSString *udid in udids) {
+    dictionary[udid] = [self launchdSimServiceNameForUDID:udid];
+  }
+  return [dictionary copy];
+}
+
++ (NSString *)launchdSimServiceNameForUDID:(NSString *)udid
+{
+  return [NSString stringWithFormat:@"com.apple.CoreSimulator.SimDevice.%@.launchd_sim", udid];
 }
 
 + (NSSet<NSString *> *)launchdSimEnvironmentSubtractableComponents

@@ -9,7 +9,31 @@
 
 import Foundation
 
-struct SimpleSubject : JSONDescribeable, CustomStringConvertible {
+public protocol EventReporterSubject : CustomStringConvertible {
+  var jsonDescription: JSON { get }
+  var subSubjects: [EventReporterSubject] { get }
+}
+
+extension EventReporterSubject {
+  public var subSubjects: [EventReporterSubject] { get {
+    return [self]
+  }}
+}
+
+extension EventReporterSubject  {
+  public func append(_ other: EventReporterSubject) -> EventReporterSubject {
+    let joined = self.subSubjects + other.subSubjects
+    guard let firstElement = joined.first else {
+      return CompositeSubject([])
+    }
+    if joined.count == 1 {
+      return firstElement
+    }
+    return CompositeSubject(joined)
+  }
+}
+
+struct SimpleSubject : EventReporterSubject {
   let eventName: EventName
   let eventType: EventType
   let subject: EventReporterSubject
@@ -21,11 +45,11 @@ struct SimpleSubject : JSONDescribeable, CustomStringConvertible {
   }
 
   var jsonDescription: JSON { get {
-    return JSON.JDictionary([
-      "event_name" : JSON.JString(self.eventName.rawValue),
-      "event_type" : JSON.JString(self.eventType.rawValue),
+    return JSON.jDictionary([
+      "event_name" : JSON.jString(self.eventName.rawValue),
+      "event_type" : JSON.jString(self.eventType.rawValue),
       "subject" : self.subject.jsonDescription,
-      "timestamp" : JSON.JNumber(NSNumber(double: round(NSDate().timeIntervalSince1970))),
+      "timestamp" : JSON.jNumber(NSNumber(value: round(Date().timeIntervalSince1970) as Double)),
     ])
   }}
 
@@ -43,7 +67,7 @@ struct SimpleSubject : JSONDescribeable, CustomStringConvertible {
   }}
 }
 
-struct ControlCoreSubject : JSONDescribeable, CustomStringConvertible {
+struct ControlCoreSubject : EventReporterSubject {
   let value: ControlCoreValue
 
   init(_ value: ControlCoreValue) {
@@ -51,8 +75,8 @@ struct ControlCoreSubject : JSONDescribeable, CustomStringConvertible {
   }
 
   var jsonDescription: JSON { get {
-    guard let json = try? JSON.encode(self.value.jsonSerializableRepresentation()) else {
-      return JSON.JNull
+    guard let json = try? JSON.encode(self.value.jsonSerializableRepresentation() as AnyObject) else {
+      return JSON.jNull
     }
     return json
   }}
@@ -62,13 +86,13 @@ struct ControlCoreSubject : JSONDescribeable, CustomStringConvertible {
   }}
 }
 
-struct iOSTargetSubject: JSONDescribeable, CustomStringConvertible {
+struct iOSTargetSubject: EventReporterSubject {
   let target: FBiOSTarget
   let format: FBiOSTargetFormat
 
   var jsonDescription: JSON { get {
-    let dictionary = self.format.extractFrom(self.target)
-    return try! JSON.encode(dictionary)
+    let dictionary = self.format.extract(from: self.target)
+    return try! JSON.encode(dictionary as AnyObject)
   }}
 
   var description: String { get {
@@ -76,28 +100,28 @@ struct iOSTargetSubject: JSONDescribeable, CustomStringConvertible {
   }}
 }
 
-struct iOSTargetWithSubject : JSONDescribeable, CustomStringConvertible {
+struct iOSTargetWithSubject : EventReporterSubject {
   let targetSubject: iOSTargetSubject
   let eventName: EventName
   let eventType: EventType
   let subject: EventReporterSubject
-  let timestamp: NSDate
+  let timestamp: Date
 
   init(targetSubject: iOSTargetSubject, eventName: EventName, eventType: EventType, subject: EventReporterSubject) {
     self.targetSubject = targetSubject
     self.eventName = eventName
     self.eventType = eventType
     self.subject = subject
-    self.timestamp = NSDate()
+    self.timestamp = Date()
   }
 
   var jsonDescription: JSON { get {
-    return JSON.JDictionary([
-      "event_name" : JSON.JString(self.eventName.rawValue),
-      "event_type" : JSON.JString(self.eventType.rawValue),
+    return JSON.jDictionary([
+      "event_name" : JSON.jString(self.eventName.rawValue),
+      "event_type" : JSON.jString(self.eventType.rawValue),
       "target" : self.targetSubject.jsonDescription,
       "subject" : self.subject.jsonDescription,
-      "timestamp" : JSON.JNumber(NSNumber(double: round(self.timestamp.timeIntervalSince1970))),
+      "timestamp" : JSON.jNumber(NSNumber(value: round(self.timestamp.timeIntervalSince1970) as Double)),
     ])
   }}
 
@@ -111,17 +135,17 @@ struct iOSTargetWithSubject : JSONDescribeable, CustomStringConvertible {
   }}
 }
 
-struct LogSubject : JSONDescribeable, CustomStringConvertible {
+struct LogSubject : EventReporterSubject {
   let logString: String
   let level: Int32
 
   var jsonDescription: JSON { get {
-    return JSON.JDictionary([
-      "event_name" : JSON.JString(EventName.Log.rawValue),
-      "event_type" : JSON.JString(EventType.Discrete.rawValue),
-      "level" : JSON.JString(self.levelString),
-      "subject" : JSON.JString(self.logString),
-      "timestamp" : JSON.JNumber(NSNumber(double: round(NSDate().timeIntervalSince1970))),
+    return JSON.jDictionary([
+      "event_name" : JSON.jString(EventName.Log.rawValue),
+      "event_type" : JSON.jString(EventType.Discrete.rawValue),
+      "level" : JSON.jString(self.levelString),
+      "subject" : JSON.jString(self.logString),
+      "timestamp" : JSON.jNumber(NSNumber(value: round(Date().timeIntervalSince1970) as Double)),
     ])
   }}
 
@@ -139,18 +163,54 @@ struct LogSubject : JSONDescribeable, CustomStringConvertible {
   }}
 }
 
-struct ArraySubject<A where A : JSONDescribeable, A : CustomStringConvertible> : JSONDescribeable, CustomStringConvertible {
-  let array: [A]
+struct CompositeSubject: EventReporterSubject {
+  let array: [EventReporterSubject]
 
-  init (_ array: [A]) {
+  init (_ array: [EventReporterSubject]) {
     self.array = array
   }
 
+  var subSubjects: [EventReporterSubject] { get {
+    return self.array
+  }}
+
   var jsonDescription: JSON { get {
-    return JSON.JArray(self.array.map { $0.jsonDescription } )
+    return JSON.jArray(self.array.map { $0.jsonDescription } )
   }}
 
   var description: String { get {
-    return "[\(array.map({ $0.description }).joinWithSeparator(", "))]"
+    return "[\(self.array.map({ $0.description }).joined(separator: ", "))]"
+  }}
+}
+
+struct StringsSubject: EventReporterSubject {
+  let strings: [String]
+
+  init (_ strings: [String]) {
+    self.strings = strings
+  }
+
+  var jsonDescription: JSON { get {
+    return JSON.jArray(self.strings.map { $0.jsonDescription } )
+  }}
+
+  var description: String { get {
+    return "[\(self.strings.map({ $0.description }).joined(separator: ", "))]"
+  }}
+}
+
+extension String : EventReporterSubject {
+  public var jsonDescription: JSON { get {
+    return JSON.jString(self)
+  }}
+
+  public var description: String { get {
+    return self
+  }}
+}
+
+extension Bool : EventReporterSubject {
+  public var jsonDescription: JSON { get {
+    return JSON.jNumber(NSNumber(value: self as Bool))
   }}
 }

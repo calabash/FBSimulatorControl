@@ -15,6 +15,9 @@
 @class FBApplicationLaunchConfiguration;
 @class FBDiagnostic;
 @class FBProcessInfo;
+@class FBTestLaunchConfiguration;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  Fixtures for Tests.
@@ -47,6 +50,11 @@
  Fetching Fixtures, causing test failures if they cannot be obtained.
  */
 @interface XCTestCase (FBSimulatorControlFixtures)
+
+/**
+ A XCTest launch configuration
+ */
+- (FBTestLaunchConfiguration *)testLaunch;
 
 /**
  An Application for the built in Mobile Safari.
@@ -101,8 +109,13 @@
 - (FBProcessInfo *)processInfo2a;
 
 /**
- An iOS Unit Test XCTest Bundle
+ An iOS Unit Test XCTest Target.
+ Will check that the bundle is codesigned, and sign it if is not.
+
+ @return path to the Unit Test Bundle.
  */
-- (NSString *)iOSUnitTestBundlePath;
+- (nullable NSString *)iOSUnitTestBundlePath;
 
 @end
+
+NS_ASSUME_NONNULL_END

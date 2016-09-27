@@ -14,8 +14,6 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBProcessLaunchConfiguration.h"
-#import "FBProcessFetcher+Simulators.h"
 #import "FBSimulator+Helpers.h"
 #import "FBSimulator.h"
 #import "FBSimulatorConfiguration+CoreSimulator.h"
@@ -25,6 +23,7 @@
 #import "FBSimulatorError.h"
 #import "FBSimulatorEventSink.h"
 #import "FBSimulatorPool.h"
+#import "FBSimulatorProcessFetcher.h"
 #import "FBSimulatorTerminationStrategy.h"
 
 @implementation FBSimulatorInteraction
@@ -95,7 +94,7 @@
 
   return [self interactWithBootedSimulator:^ BOOL (NSError **error, FBSimulator *simulator) {
     FBProcessInfo *launchdProcess = simulator.launchdProcess;
-    pid_t ppid = [simulator.processFetcher parentOf:process.processIdentifier];
+    pid_t ppid = [simulator.processFetcher.processFetcher parentOf:process.processIdentifier];
     if (launchdProcess.processIdentifier != ppid) {
       return [[FBSimulatorError
         describeFormat:@"Process %@ has parent %d but should have parent %@", process.shortDescription, ppid, launchdProcess.shortDescription]

@@ -9,15 +9,17 @@
 
 #import "FBSimulatorControl+PrincipalClass.h"
 
+#import <objc/runtime.h>
+
 #import <Cocoa/Cocoa.h>
 
-#import <CoreSimulator/SimDevice.h>
-#import <CoreSimulator/SimRuntime.h>
+#import <CoreSimulator/SimServiceContext.h>
+#import <CoreSimulator/SimDeviceSet.h>
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBProcessLaunchConfiguration.h"
 #import "FBSimulatorConfiguration.h"
+#import "FBSimulatorServiceContext.h"
 #import "FBSimulatorControlConfiguration.h"
 #import "FBSimulatorError.h"
 #import "FBSimulatorHistory.h"
@@ -41,22 +43,31 @@
 
 + (nullable instancetype)withConfiguration:(FBSimulatorControlConfiguration *)configuration logger:(id<FBControlCoreLogger>)logger error:(NSError **)error
 {
-  return [[FBSimulatorControl alloc] initWithConfiguration:configuration logger:logger error:error];
+  NSError *innerError = nil;
+  FBSimulatorServiceContext *serviceContext = [FBSimulatorServiceContext sharedServiceContext];
+  SimDeviceSet *deviceSet = [serviceContext createDeviceSetWithConfiguration:configuration error:&innerError];
+  if (!deviceSet) {
+    return [FBSimulatorError failWithError:innerError errorOut:error];
+  }
+  FBSimulatorSet *set = [FBSimulatorSet setWithConfiguration:configuration deviceSet:deviceSet logger:logger error:&innerError];
+  if (!set) {
+    return [FBSimulatorError failWithError:innerError errorOut:error];
+  }
+  return [[FBSimulatorControl alloc] initWithConfiguration:configuration serviceContext:serviceContext set:set logger:logger];
 }
 
-- (nullable instancetype)initWithConfiguration:(FBSimulatorControlConfiguration *)configuration logger:(id<FBControlCoreLogger>)logger error:(NSError **)error
+
+- (nullable instancetype)initWithConfiguration:(FBSimulatorControlConfiguration *)configuration serviceContext:(nullable FBSimulatorServiceContext *)serviceContext set:(FBSimulatorSet *)set logger:(id<FBControlCoreLogger>)logger
 {
   self = [super init];
   if (!self) {
     return nil;
   }
 
-  _set = [FBSimulatorSet setWithConfiguration:configuration control:self logger:logger error:error];
-  if (!_set) {
-    return nil;
-  }
   _configuration = configuration;
-  _pool = [FBSimulatorPool poolWithSet:_set logger:logger];
+  _serviceContext = serviceContext;
+  _set = set;
+  _pool = [FBSimulatorPool poolWithSet:set logger:logger];
 
   return self;
 }

@@ -11,24 +11,14 @@
 
 @class DTXConnection;
 @class DVTDevice;
+@class FBTestBundleResult;
+@class FBTestManagerContext;
+@class XCTestBootstrapError;
+
 @protocol FBControlCoreLogger;
 @protocol XCTestDriverInterface;
 @protocol XCTestManager_IDEInterface;
 @protocol FBDeviceOperator;
-
-/**
- An Enumeration of mutually exclusive states of the connection
- */
-typedef NS_ENUM(NSUInteger, FBTestBundleConnectionState) {
-  FBTestBundleConnectionStateNotConnected = 0,
-  FBTestBundleConnectionStateConnecting = 1,
-  FBTestBundleConnectionStateTestBundleReady = 2,
-  FBTestBundleConnectionStateAwaitingStartOfTestPlan = 3,
-  FBTestBundleConnectionStateRunningTestPlan = 4,
-  FBTestBundleConnectionStateEndedTestPlan = 5,
-  FBTestBundleConnectionStateFinishedSuccessfully = 6,
-  FBTestBundleConnectionStateFinishedInError = 7,
-};
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,54 +30,60 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Constructs a Test Bundle Connection.
 
+ @param context the Context of the Test Manager.
  @param deviceOperator the device operator used to connect with device.
  @param interface the interface to delegate to.
- @param sessionIdentifier the Session Identifier.
  @param queue the queue for asynchronous deliver.
  @param logger the Logger to Log to.
  @return a new Bundle Connection instance.
  */
-+ (instancetype)connectionWithDeviceOperator:(id<FBDeviceOperator>)deviceOperator interface:(id<XCTestManager_IDEInterface, NSObject>)interface sessionIdentifier:(NSUUID *)sessionIdentifier queue:(dispatch_queue_t)queue logger:(nullable id<FBControlCoreLogger>)logger;
++ (instancetype)connectionWithContext:(FBTestManagerContext *)context deviceOperator:(id<FBDeviceOperator>)deviceOperator interface:(id<XCTestManager_IDEInterface, NSObject>)interface queue:(dispatch_queue_t)queue logger:(nullable id<FBControlCoreLogger>)logger;
 
 /**
  Synchonously Connects the to the Bundle
 
- @param timeout the time to wait for the bundle to connect
- @param error an error out for any error that occurs.
- @return YES if successful, NO otherwise.
+ @param timeout the amount of time to wait for the connection to be established.
+ @return a Result if unsuccessful, nil otherwise.
  */
-- (BOOL)connectWithTimeout:(NSTimeInterval)timeout error:(NSError **)error;
+- (nullable FBTestBundleResult *)connectWithTimeout:(NSTimeInterval)timeout;
 
 /**
  Starts the Test Plan.
  Test Events will be delivered asynchronously to the interface.
 
- @param error an error out for any error that occurs.
- @return YES if successful, NO otherwise.
+ @return a Result if unsuccessful, nil otherwise.
  */
-- (BOOL)startTestPlanWithError:(NSError **)error;
+- (nullable FBTestBundleResult *)startTestPlan;
+
+/**
+ Checks that a Result is available.
+
+ @return a Result if unsuccessful, nil otherwise.
+ */
+- (nullable FBTestBundleResult *)checkForResult;
 
 /**
  Disconnects any active connection.
+
+ @return a Result.
  */
-- (void)disconnect;
+- (FBTestBundleResult *)disconnect;
 
 /**
  Properties set through the Constructor.
  */
+@property (nonatomic, strong, readonly) FBTestManagerContext *context;
 @property (nonatomic, nullable, strong, readonly) id<FBControlCoreLogger> logger;
 @property (nonatomic, weak, readonly) id<XCTestManager_IDEInterface, NSObject> interface;
-@property (nonatomic, copy, readonly) NSUUID *sessionIdentifier;
 @property (nonatomic, strong, readonly) dispatch_queue_t queue;
 @property (nonatomic, strong, readonly) id<FBDeviceOperator> deviceOperator;
 
 /**
  Properties set from a connection.
  */
-@property (atomic, assign, readonly) FBTestBundleConnectionState state;
-@property (atomic, assign, readonly) long long testBundleProtocolVersion;
 @property (atomic, nullable, strong, readonly) id<XCTestDriverInterface> testBundleProxy;
 @property (atomic, nullable, strong, readonly) DTXConnection *testBundleConnection;
+
 @property (atomic, assign, readonly) BOOL hasFinishedExecution;
 
 @end

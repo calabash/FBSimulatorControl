@@ -461,6 +461,16 @@
   return [self updateOSVersionClass:FBControlCoreConfiguration_iOS_9_3.class];
 }
 
+- (instancetype)iOS_10_0
+{
+  return [self updateOSVersionClass:FBControlCoreConfiguration_iOS_10_0.class];
+}
+
+- (instancetype)iOS_10_1
+{
+  return [self updateOSVersionClass:FBControlCoreConfiguration_iOS_10_1.class];
+}
+
 #pragma mark tvOS Versions
 
 - (instancetype)tvOS_9_0
@@ -476,6 +486,16 @@
 - (instancetype)tvOS_9_2
 {
   return [self updateOSVersionClass:FBControlCoreConfiguration_tvOS_9_2.class];
+}
+
+- (instancetype)tvOS_10_0
+{
+  return [self updateOSVersionClass:FBControlCoreConfiguration_tvOS_10_0.class];
+}
+
+- (instancetype)tvOS_10_1
+{
+  return [self updateOSVersionClass:FBControlCoreConfiguration_tvOS_10_1.class];
 }
 
 #pragma mark watchOS Versions
@@ -495,6 +515,16 @@
   return [self updateOSVersionClass:FBControlCoreConfiguration_watchOS_2_2.class];
 }
 
+- (instancetype)watchOS_3_0
+{
+  return [self updateOSVersionClass:FBControlCoreConfiguration_watchOS_3_0.class];
+}
+
+- (instancetype)watchOS_3_1
+{
+  return [self updateOSVersionClass:FBControlCoreConfiguration_watchOS_3_1.class];
+}
+
 #pragma mark Auxillary Directory
 
 - (instancetype)withAuxillaryDirectory:(NSString *)auxillaryDirectory
@@ -506,9 +536,21 @@
 
 #pragma mark Deriving new Configurations
 
+- (instancetype)withDevice:(id<FBControlCoreConfiguration_Device>)device andOS:(id<FBControlCoreConfiguration_OS>)os
+{
+  NSParameterAssert(device);
+  NSParameterAssert(os);
+  return [[FBSimulatorConfiguration alloc] initWithNamedDevice:device os:os auxillaryDirectory:self.auxillaryDirectory];
+}
+
 - (instancetype)updateNamedDeviceClass:(Class)class
 {
-  return [self withDevice:[class new]];
+  id<FBControlCoreConfiguration_Device> device = [class new];
+  if ([FBSimulatorConfiguration device:device andOSPairSupported:self.os]) {
+    return [self withDevice:device];
+  }
+  id<FBControlCoreConfiguration_OS> os = [FBSimulatorConfiguration newestAvailableOSForDevice:device];
+  return [self withDevice:device andOS:os];
 }
 
 - (instancetype)updateOSVersionClass:(Class)class

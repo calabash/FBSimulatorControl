@@ -305,7 +305,7 @@
 
 - (NSSet<NSString *> *)productTypes
 {
-  return [NSSet setWithArray:@[@"iPhone8,2"]];
+  return [NSSet setWithArray:@[@"iPhone8,4"]];
 }
 
 - (NSString *)deviceArchitecture
@@ -325,6 +325,11 @@
 - (NSString *)deviceName
 {
   return @"iPhone 7";
+}
+
+- (NSSet<NSString *> *)productTypes
+{
+  return [NSSet setWithArray:@[@"iPhone9,1", @"iPhone9,3"]];
 }
 
 - (NSString *)deviceArchitecture
@@ -349,6 +354,11 @@
 - (NSString *)deviceArchitecture
 {
   return @"arm64";
+}
+
+- (NSSet<NSString *> *)productTypes
+{
+  return [NSSet setWithArray:@[@"iPhone9,2", @"iPhone9,4"]];
 }
 
 - (NSString *)simulatorArchitecture
@@ -900,6 +910,15 @@
 
 @end
 
+@implementation FBControlCoreConfiguration_iOS_10_1
+
+- (NSString *)name
+{
+  return @"iOS 10.1";
+}
+
+@end
+
 @implementation FBControlCoreConfiguration_tvOS_Base
 
 - (NSString *)name
@@ -951,6 +970,15 @@
 
 @end
 
+@implementation FBControlCoreConfiguration_tvOS_10_1
+
+- (NSString *)name
+{
+  return @"tvOS 10.1";
+}
+
+@end
+
 @implementation FBControlCoreConfiguration_watchOS_Base
 
 - (NSString *)name
@@ -998,6 +1026,15 @@
 - (NSString *)name
 {
   return @"watchOS 3.0";
+}
+
+@end
+
+@implementation FBControlCoreConfiguration_watchOS_3_1
+
+- (NSString *)name
+{
+  return @"watchOS 3.1";
 }
 
 @end
@@ -1058,14 +1095,17 @@
       FBControlCoreConfiguration_iOS_9_3_1.new,
       FBControlCoreConfiguration_iOS_9_3_2.new,
       FBControlCoreConfiguration_iOS_10_0.new,
+      FBControlCoreConfiguration_iOS_10_1.new,
       FBControlCoreConfiguration_tvOS_9_0.new,
       FBControlCoreConfiguration_tvOS_9_1.new,
       FBControlCoreConfiguration_tvOS_9_2.new,
       FBControlCoreConfiguration_tvOS_10_0.new,
+      FBControlCoreConfiguration_tvOS_10_1.new,
       FBControlCoreConfiguration_watchOS_2_0.new,
       FBControlCoreConfiguration_watchOS_2_1.new,
       FBControlCoreConfiguration_watchOS_2_2.new,
       FBControlCoreConfiguration_watchOS_3_0.new,
+      FBControlCoreConfiguration_watchOS_3_1.new,
     ];
   });
   return OSConfigurations;

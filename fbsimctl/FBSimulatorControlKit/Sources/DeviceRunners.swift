@@ -20,13 +20,20 @@ struct DeviceActionRunner : Runner {
     return DeviceActionRunner.makeRunner(context).run()
   }
 
-  static func makeRunner(context: iOSRunnerContext<(Action, FBDevice, DeviceReporter)>) -> Runner {
+  static func makeRunner(_ context: iOSRunnerContext<(Action, FBDevice, DeviceReporter)>) -> Runner {
     let (action, device, reporter) = context.value
     let covariantTuple: (Action, FBiOSTarget, iOSReporter) = (action, device, reporter)
     if let runner = iOSActionProvider(context: context.replace(covariantTuple)).makeRunner() {
       return runner
     }
 
-    return CommandResultRunner.unimplementedActionRunner(action, target: device, format: context.format)
+    switch action {
+    case .launchApp(let launch):
+      return iOSTargetRunner(reporter, EventName.Launch, ControlCoreSubject(launch)) {
+        try device.deviceOperator!.launchApplication(withBundleID: launch.bundleID, arguments: launch.arguments, environment: launch.environment);
+      }
+    default:
+      return CommandResultRunner.unimplementedActionRunner(action, target: device, format: context.format)
+    }
   }
 }

@@ -42,10 +42,10 @@
 
 - (void)testInjectsApplicationTestIntoSampleApp
 {
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   id<FBInteraction> interaction = [[[simulator.interact
     installApplication:self.tableSearchApplication]
-    startTestRunnerLaunchConfiguration:self.tableSearchAppLaunch testBundlePath:self.iOSUnitTestBundlePath reporter:self]
+    startTestWithLaunchConfiguration:self.testLaunch reporter:self]
     waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:20];
   [self assertInteractionSuccessful:interaction];
   [self assertPassed:@[@"testIsRunningOnIOS", @"testIsRunningInIOSApp", @"testPossibleCrashingOfHostProcess", @"testWillAlwaysPass"]
@@ -54,12 +54,15 @@
 
 - (void)testInjectsApplicationTestIntoSampleAppOnIOS83Simulator
 {
-    
-  self.simulatorConfiguration = FBSimulatorConfiguration.iPhone5.iOS_8_3;
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  if (FBControlCoreGlobalConfiguration.isXcode8OrGreater) {
+    NSLog(@"Skipping running -[%@ %@] since Xcode 7 or smaller is required", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+    return;
+  }
+  self.simulatorConfiguration = FBSimulatorConfiguration.iPhone5.iOS_8_1;
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   id<FBInteraction> interaction = [[[simulator.interact
     installApplication:self.tableSearchApplication]
-    startTestRunnerLaunchConfiguration:self.tableSearchAppLaunch testBundlePath:self.iOSUnitTestBundlePath reporter:self]
+    startTestWithLaunchConfiguration:self.testLaunch reporter:self]
     waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:20];
   [self assertInteractionSuccessful:interaction];
   [self assertPassed:@[@"testIsRunningOnIOS", @"testIsRunningInIOSApp", @"testPossibleCrashingOfHostProcess", @"testWillAlwaysPass"]
@@ -68,9 +71,10 @@
 
 - (void)testInjectsApplicationTestIntoSafari
 {
-  FBSimulator *simulator = [self obtainBootedSimulator];
+
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   id<FBInteraction> interaction = [[simulator.interact
-    startTestRunnerLaunchConfiguration:self.safariAppLaunch testBundlePath:self.iOSUnitTestBundlePath reporter:self]
+    startTestWithLaunchConfiguration:[self.testLaunch withApplicationLaunchConfiguration:self.safariAppLaunch] reporter:self]
     waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:20];
 
   [self assertInteractionSuccessful:interaction];
@@ -89,11 +93,10 @@
   NSURL *outputFileURL =
       [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[NSUUID UUID].UUIDString]];
   FBTestManagerTestReporterJUnit *reporter = [FBTestManagerTestReporterJUnit withOutputFileURL:outputFileURL];
-  FBSimulator *simulator = [self obtainBootedSimulator];
+  FBSimulator *simulator = [self assertObtainsBootedSimulator];
   id<FBInteraction> interaction = [[[simulator.interact installApplication:self.tableSearchApplication]
-      startTestRunnerLaunchConfiguration:self.tableSearchAppLaunch
-                          testBundlePath:self.iOSUnitTestBundlePath
-                                reporter:reporter] waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:20];
+      startTestWithLaunchConfiguration:self.testLaunch reporter:reporter]
+      waitUntilAllTestRunnersHaveFinishedTestingWithTimeout:20];
   [self assertInteractionSuccessful:interaction];
 
   NSURL *fixtureFileURL = [NSURL fileURLWithPath:[FBSimulatorControlFixtures JUnitXMLResult0Path]];

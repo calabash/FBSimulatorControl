@@ -11,6 +11,8 @@
 
 #import <XCTest/XCTestConfiguration.h>
 
+#import <objc/runtime.h>
+
 #import "FBFileManager.h"
 #import "NSFileManager+FBFileManager.h"
 
@@ -19,6 +21,7 @@
 @property (nonatomic, copy) NSString *moduleName;
 @property (nonatomic, copy) NSString *testBundlePath;
 @property (nonatomic, copy) NSString *path;
+@property (nonatomic, assign) BOOL shouldInitializeForUITesting;
 @end
 
 @implementation FBTestConfiguration
@@ -31,6 +34,7 @@
 @property (nonatomic, copy) NSString *moduleName;
 @property (nonatomic, copy) NSString *testBundlePath;
 @property (nonatomic, copy) NSString *savePath;
+@property (nonatomic, assign) BOOL shouldInitializeForUITesting;
 @end
 
 @implementation FBTestConfigurationBuilder
@@ -65,6 +69,12 @@
   return self;
 }
 
+- (instancetype)withUITesting:(BOOL)shouldInitializeForUITesting
+{
+  self.shouldInitializeForUITesting = shouldInitializeForUITesting;
+  return self;
+}
+
 - (instancetype)saveAs:(NSString *)savePath
 {
   self.savePath = savePath;
@@ -75,13 +85,15 @@
 {
   if (self.savePath) {
     NSAssert(self.fileManager, @"fileManager is required to save test configuration");
-    XCTestConfiguration *testConfiguration = [NSClassFromString(@"XCTestConfiguration") new];
+    XCTestConfiguration *testConfiguration = [objc_lookUpClass("XCTestConfiguration") new];
     testConfiguration.sessionIdentifier = self.sessionIdentifier;
     testConfiguration.testBundleURL = (self.testBundlePath ? [NSURL fileURLWithPath:self.testBundlePath] : nil);
     testConfiguration.treatMissingBaselinesAsFailures = NO;
     testConfiguration.productModuleName = self.moduleName;
     testConfiguration.reportResultsToIDE = YES;
     testConfiguration.pathToXcodeReportingSocket = nil;
+    testConfiguration.testsMustRunOnMainThread = self.shouldInitializeForUITesting;
+    testConfiguration.initializeForUITesting = self.shouldInitializeForUITesting;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:testConfiguration];
     if (![self.fileManager writeData:data toFile:self.savePath options:NSDataWritingAtomic error:error]) {
       return nil;
@@ -93,6 +105,7 @@
   configuration.testBundlePath = self.testBundlePath;
   configuration.moduleName = self.moduleName;
   configuration.path = self.savePath;
+  configuration.shouldInitializeForUITesting = self.shouldInitializeForUITesting;
   return configuration;
 }
 
