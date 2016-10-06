@@ -18,8 +18,6 @@
 #import "FBTestConfiguration.h"
 #import "FBTestLaunchConfiguration.h"
 #import "FBTestRunnerConfiguration.h"
-#import "NSFileManager+FBFileManager.h"
-#import "FBCodeSignCommand.h"
 #import "XCTestBootstrapError.h"
 
 @interface FBDeviceTestPreparationStrategy ()

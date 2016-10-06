@@ -73,8 +73,8 @@
   FBApplicationLaunchConfiguration *appLaunch = [FBApplicationLaunchConfiguration
     configurationWithBundleID:configuration.testRunner.bundleID
     bundleName:configuration.testRunner.bundleID
-    arguments:[self argumentsFromConfiguration:configuration attributes:attributes]
-    environment:[self environmentFromConfiguration:configuration environment:environment]
+    arguments:[FBXCTestRunStrategy argumentsFromConfiguration:configuration attributes:attributes]
+    environment:[FBXCTestRunStrategy environmentFromConfiguration:configuration environment:environment]
     options:0];
 
   if (![self.deviceOperator launchApplication:appLaunch error:&innerError]) {
@@ -116,6 +116,7 @@
 
 
 + (FBTestManager *)startTestManagerForDeviceOperator:(id<FBDeviceOperator>)deviceOperator
+                                     prepareStrategy:(id<FBXCTestPreparationStrategy>)prepareStrategy
                                       runnerBundleID:(NSString *)bundleID
                                            sessionID:(NSUUID *)sessionID
                                       withAttributes:(NSArray *)attributes
@@ -131,14 +132,25 @@
     
     NSError *innerError;
     
-    if (![deviceOperator launchApplicationWithBundleID:bundleID
-                                             arguments:attributes ?: @[]
-                                           environment:environment ?: @{}
-                                                 error:&innerError]) {
-        return
-        [[[XCTestBootstrapError describe:@"Failed launch test runner"]
-          causedBy:innerError]
-         fail:error];
+    FBTestRunnerConfiguration *configuration = [prepareStrategy prepareTestWithDeviceOperator:deviceOperator error:&innerError];
+    if (!configuration) {
+        return [[[XCTestBootstrapError
+                  describe:@"Failed to prepare test runner configuration"]
+                 causedBy:innerError]
+                fail:error];
+    }
+    
+    FBApplicationLaunchConfiguration *appLaunch = [FBApplicationLaunchConfiguration
+                                                   configurationWithBundleID:bundleID
+                                                   bundleName:bundleID
+                                                   arguments:attributes ?: @[]
+                                                   environment:environment ?: @{}
+                                                   options:0];
+    
+    if (![deviceOperator launchApplication:appLaunch error:&innerError]) {
+        return [[[XCTestBootstrapError describe:@"Failed launch test runner"]
+                 causedBy:innerError]
+                fail:error];
     }
     
     pid_t testRunnerProcessID = [deviceOperator processIDWithBundleID:bundleID error:error];
@@ -171,12 +183,12 @@
 }
 #pragma mark Private
 
-- (NSArray<NSString *> *)argumentsFromConfiguration:(FBTestRunnerConfiguration *)configuration attributes:(NSArray<NSString *> *)attributes
++ (NSArray<NSString *> *)argumentsFromConfiguration:(FBTestRunnerConfiguration *)configuration attributes:(NSArray<NSString *> *)attributes
 {
-  return [(configuration.launchArguments ?: @[]) arrayByAddingObjectsFromArray:(attributes ?: @[])];
+    return [(configuration.launchArguments ?: @[]) arrayByAddingObjectsFromArray:(attributes ?: @[])];
 }
 
-- (NSDictionary<NSString *, NSString *> *)environmentFromConfiguration:(FBTestRunnerConfiguration *)configuration environment:(NSDictionary<NSString *, NSString *> *)environment
++ (NSDictionary<NSString *, NSString *> *)environmentFromConfiguration:(FBTestRunnerConfiguration *)configuration environment:(NSDictionary<NSString *, NSString *> *)environment
 {
   NSMutableDictionary<NSString *, NSString *> *mEnvironment = (configuration.launchEnvironment ?: @{}).mutableCopy;
   if (environment) {
