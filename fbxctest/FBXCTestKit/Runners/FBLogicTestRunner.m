@@ -15,29 +15,30 @@
 #import <FBControlCore/FBControlCore.h>
 #import <FBSimulatorControl/FBSimulatorControl.h>
 
-#import "FBTestRunConfiguration.h"
+#import "FBXCTestConfiguration.h"
 #import "FBXCTestReporter.h"
 #import "FBMultiFileReader.h"
 #import "FBLineReader.h"
 #import "FBXCTestError.h"
+#import "FBXCTestShimConfiguration.h"
 
 static NSTimeInterval const CrashLogStartDateFuzz = -10;
 
 @interface FBLogicTestRunner ()
 
 @property (nonatomic, strong, nullable, readonly) FBSimulator *simulator;
-@property (nonatomic, strong, readonly) FBTestRunConfiguration *configuration;
+@property (nonatomic, strong, readonly) FBXCTestConfiguration *configuration;
 
 @end
 
 @implementation FBLogicTestRunner
 
-+ (instancetype)withSimulator:(nullable FBSimulator *)simulator configuration:(FBTestRunConfiguration *)configuration
++ (instancetype)withSimulator:(nullable FBSimulator *)simulator configuration:(FBXCTestConfiguration *)configuration
 {
   return [[self alloc] initWithSimulator:simulator configuration:configuration];
 }
 
-- (instancetype)initWithSimulator:(nullable FBSimulator *)simulator configuration:(FBTestRunConfiguration *)configuration
+- (instancetype)initWithSimulator:(nullable FBSimulator *)simulator configuration:(FBXCTestConfiguration *)configuration
 {
   self = [super init];
   if (!self) {
@@ -59,7 +60,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
 
   NSString *xctestPath = [self.configuration xctestPathForSimulator:simulator];
   NSString *simctlPath = [FBControlCoreGlobalConfiguration.developerDirectory stringByAppendingPathComponent:@"usr/bin/simctl"];
-  NSString *otestShimPath = simulator ? self.configuration.iOSSimulatorOtestShimPath : self.configuration.macOtestShimPath;
+  NSString *otestShimPath = simulator ? self.configuration.shims.iOSSimulatorOtestShimPath : self.configuration.shims.macOtestShimPath;
   NSString *otestShimOutputPath = [self.configuration.workingDirectory stringByAppendingPathComponent:@"shim-output-pipe"];
   NSMutableDictionary<NSString *, NSString *> *environment = [NSMutableDictionary dictionaryWithDictionary:@{
     @"DYLD_INSERT_LIBRARIES": otestShimPath,
@@ -88,7 +89,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
     task.launchPath = simctlPath;
     task.arguments = @[@"--set", simulator.deviceSetPath, @"spawn", simulator.udid, xctestPath, @"-XCTest", testSpecifier, self.configuration.testBundlePath];
   }
-  task.environment = [FBTestRunConfiguration buildEnvironmentWithEntries:environment simulator:simulator];
+  task.environment = [FBXCTestConfiguration buildEnvironmentWithEntries:environment simulator:simulator];
   task.standardOutput = testOutputPipe.fileHandleForWriting;
   task.standardError = testOutputPipe.fileHandleForWriting;
   [task launch];

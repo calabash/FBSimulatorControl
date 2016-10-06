@@ -9,6 +9,8 @@
 
 #import "FBDeviceTestPreparationStrategy.h"
 
+#import <FBControlCore/FBControlCore.h>
+
 #import "FBApplicationDataPackage.h"
 #import "FBDeviceOperator.h"
 #import "FBProductBundle.h"

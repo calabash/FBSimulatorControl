@@ -74,10 +74,7 @@
 {
   NSParameterAssert(appLaunch);
 
-  return [self interactWithBootedSimulator:^ BOOL (NSError **error, FBSimulator *simulator) {
-    return [[FBApplicationLaunchStrategy withSimulator:simulator]
-      launchApplication:appLaunch error:error] != nil;
-  }];
+  return [self chainNext:[FBCommandInteractions launchApplication:appLaunch command:self.simulator]];
 }
 
 - (instancetype)launchOrRelaunchApplication:(FBApplicationLaunchConfiguration *)appLaunch
@@ -116,21 +113,7 @@
 {
   NSParameterAssert(bundleID);
 
-  return [self interactWithBootedSimulator:^ BOOL (NSError **error, FBSimulator *simulator) {
-    NSError *innerError = nil;
-    FBProcessInfo *process = [simulator runningApplicationWithBundleID:bundleID error:&innerError];
-    if (!process) {
-      return [[[[FBSimulatorError
-        describeFormat:@"Could not find a running application for '%@'", bundleID]
-        inSimulator:simulator]
-        causedBy:innerError]
-        failBool:error];
-    }
-    if (![[simulator.interact terminateSubprocess:process] perform:&innerError]) {
-      return [FBSimulatorError failBoolWithError:innerError errorOut:error];
-    }
-    return YES;
-  }];
+  return [self chainNext:[FBCommandInteractions killApplicationWithBundleID:bundleID command:self.simulator]];
 }
 
 - (instancetype)relaunchLastLaunchedApplication

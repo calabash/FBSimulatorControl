@@ -11,15 +11,12 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBCodeSignCommand.h"
 #import "FBDeviceOperator.h"
-#import "FBFileManager.h"
 #import "FBProductBundle.h"
 #import "FBTestBundle.h"
 #import "FBTestConfiguration.h"
 #import "FBTestRunnerConfiguration.h"
 #import "FBTestLaunchConfiguration.h"
-#import "NSFileManager+FBFileManager.h"
 #import "XCTestBootstrapError.h"
 
 
@@ -38,7 +35,7 @@
                                    workingDirectory:(NSString *)workingDirectory
 {
   id<FBFileManager> fileManager = NSFileManager.defaultManager;
-  id<FBCodesignProvider> codesign = FBCodeSignCommand.codeSignCommandWithAdHocIdentity;
+  id<FBCodesignProvider> codesign = FBCodesignProvider.codeSignCommandWithAdHocIdentity;
   return [self strategyWithTestLaunchConfiguration:testLaunchConfiguration workingDirectory:workingDirectory fileManager:fileManager codesign:codesign];
 }
 

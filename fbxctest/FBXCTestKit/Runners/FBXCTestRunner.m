@@ -18,21 +18,22 @@
 #import "FBJSONTestReporter.h"
 #import "FBMultiFileReader.h"
 #import "FBLineReader.h"
-#import "FBTestRunConfiguration.h"
+#import "FBXCTestConfiguration.h"
 #import "FBXCTestError.h"
 #import "FBXCTestReporterAdapter.h"
 #import "FBXCTestLogger.h"
 #import "FBApplicationTestRunner.h"
 #import "FBXCTestSimulatorFetcher.h"
 #import "FBLogicTestRunner.h"
+#import "FBXCTestShimConfiguration.h"
 
 @interface FBXCTestRunner ()
-@property (nonatomic, strong) FBTestRunConfiguration *configuration;
+@property (nonatomic, strong) FBXCTestConfiguration *configuration;
 @end
 
 @implementation FBXCTestRunner
 
-+ (instancetype)testRunnerWithConfiguration:(FBTestRunConfiguration *)configuration
++ (instancetype)testRunnerWithConfiguration:(FBXCTestConfiguration *)configuration
 {
   FBXCTestRunner *runner = [self new];
   runner->_configuration = configuration;
@@ -114,7 +115,7 @@
   [self.configuration.reporter didBeginExecutingTestPlan];
 
   NSString *xctestPath = [self.configuration xctestPathForSimulator:nil];
-  NSString *otestQueryPath = self.configuration.macOtestQueryPath;
+  NSString *otestQueryPath = self.configuration.shims.macOtestQueryPath;
   NSString *otestQueryOutputPath = [self.configuration.workingDirectory stringByAppendingPathComponent:@"query-output-pipe"];
 
   if (mkfifo([otestQueryOutputPath UTF8String], S_IWUSR | S_IRUSR) != 0) {
@@ -125,7 +126,7 @@
   NSTask *task = [[NSTask alloc] init];
   task.launchPath = xctestPath;
   task.arguments = @[@"-XCTest", @"All", self.configuration.testBundlePath];
-  task.environment = [FBTestRunConfiguration
+  task.environment = [FBXCTestConfiguration
     buildEnvironmentWithEntries:@{
       @"DYLD_INSERT_LIBRARIES": otestQueryPath,
       @"OTEST_QUERY_OUTPUT_FILE": otestQueryOutputPath,

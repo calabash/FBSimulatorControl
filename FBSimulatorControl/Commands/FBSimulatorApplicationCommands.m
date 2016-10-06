@@ -15,6 +15,8 @@
 #import "FBSimulator+Helpers.h"
 #import "FBSimulatorError.h"
 #import "FBSimDeviceWrapper.h"
+#import "FBApplicationLaunchStrategy.h"
+#import "FBSimulatorSubprocessTerminationStrategy.h"
 
 @interface FBSimulatorApplicationCommands ()
 
@@ -87,6 +89,29 @@
 - (BOOL)isApplicationInstalledWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
   return [self.simulator installedApplicationWithBundleID:bundleID error:error] != nil;
+}
+
+- (BOOL)launchApplication:(FBApplicationLaunchConfiguration *)configuration error:(NSError **)error
+{
+  return [[FBApplicationLaunchStrategy withSimulator:self.simulator] launchApplication:configuration error:error] != nil;
+}
+
+- (BOOL)killApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
+{
+  NSError *innerError = nil;
+  FBProcessInfo *process = [self.simulator runningApplicationWithBundleID:bundleID error:&innerError];
+  if (!process) {
+    return [[[[FBSimulatorError
+      describeFormat:@"Could not find a running application for '%@'", bundleID]
+      inSimulator:self.simulator]
+      causedBy:innerError]
+      failBool:error];
+  }
+  if (![[FBSimulatorSubprocessTerminationStrategy forSimulator:self.simulator] terminate:process error:&innerError]) {
+    return [FBSimulatorError failBoolWithError:innerError errorOut:error];
+  }
+
+  return YES;
 }
 
 @end
