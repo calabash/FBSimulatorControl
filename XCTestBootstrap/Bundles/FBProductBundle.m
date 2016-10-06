@@ -10,9 +10,8 @@
 #import "FBProductBundle.h"
 #import "FBProductBundle+Private.h"
 
-#import "FBCodesignProvider.h"
-#import "FBFileManager.h"
-#import "NSFileManager+FBFileManager.h"
+#import <FBControlCore/FBControlCore.h>
+
 #import "XCTestBootstrapError.h"
 
 @interface FBProductBundle ()
