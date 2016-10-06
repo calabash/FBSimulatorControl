@@ -109,7 +109,7 @@
 + (NSDictionary *)defaultBuildEnvironment {
     return
     @{
-      @"XCTestConfigurationFilePath" : @"/thanks/for/using/calabash",
+      @"XCTestConfigurationFilePath" : @"thanksforusingcalabash",
       };
 }
 

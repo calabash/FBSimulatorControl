@@ -50,7 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
  and has an XCTestConfiguration file already
  
  @param deviceOperator device operator used to run tests
- @param prepareStrategy test preparation strategy used to prepare device to test.
  @param bundleID TestRunner BundleID
  @param sessionID testing session ID
  @param attributes additional attributes used to start test runner
@@ -62,7 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 
 + (FBTestManager *)startTestManagerForDeviceOperator:(id<FBDeviceOperator>)deviceOperator
-                                     prepareStrategy:(id<FBXCTestPreparationStrategy>)prepareStrategy
                                       runnerBundleID:(NSString *)bundleID
                                            sessionID:(NSUUID *)sessionID
                                       withAttributes:(NSArray *)attributes

@@ -35,16 +35,13 @@
         NSLog(@"Error creating device operator: %@", err);
         return;
     }
-    
-    FBTestLaunchConfiguration *config = [FBTestLaunchConfiguration new];
-    FBDeviceTestPreparationStrategy *prep = [FBDeviceTestPreparationStrategy strategyWithApplicationPath:nil applicationDataPath:nil testLaunchConfiguration:config];
+
     
     setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8.1/Xcode-beta.app/Contents/Developer", 1);
     
     Rep *rep = [Rep new];
     NSUUID *sessionID = [[NSUUID alloc] initWithUUIDString:@"AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"];
     [FBXCTestRunStrategy startTestManagerForDeviceOperator:device.deviceOperator
-                                           prepareStrategy:prep
                                             runnerBundleID:@"com.apple.test.DeviceAgent-Runner"
                                                  sessionID:sessionID
                                             withAttributes:[FBTestRunnerConfigurationBuilder defaultBuildAttributes]

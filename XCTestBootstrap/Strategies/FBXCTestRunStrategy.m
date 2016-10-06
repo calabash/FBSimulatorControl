@@ -116,7 +116,6 @@
 
 
 + (FBTestManager *)startTestManagerForDeviceOperator:(id<FBDeviceOperator>)deviceOperator
-                                     prepareStrategy:(id<FBXCTestPreparationStrategy>)prepareStrategy
                                       runnerBundleID:(NSString *)bundleID
                                            sessionID:(NSUUID *)sessionID
                                       withAttributes:(NSArray *)attributes
@@ -131,14 +130,6 @@
     NSLog(@"BundleID: %@", bundleID);
     
     NSError *innerError;
-    
-    FBTestRunnerConfiguration *configuration = [prepareStrategy prepareTestWithDeviceOperator:deviceOperator error:&innerError];
-    if (!configuration) {
-        return [[[XCTestBootstrapError
-                  describe:@"Failed to prepare test runner configuration"]
-                 causedBy:innerError]
-                fail:error];
-    }
     
     FBApplicationLaunchConfiguration *appLaunch = [FBApplicationLaunchConfiguration
                                                    configurationWithBundleID:bundleID
