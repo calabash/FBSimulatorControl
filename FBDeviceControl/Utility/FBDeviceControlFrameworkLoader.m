@@ -32,16 +32,26 @@ static BOOL hasLoadedXcodeFrameworks = NO;
 
 #pragma mark Essential Frameworks
 
++ (void)doOnMain:(void(^)(void))someWork {
+    if ([NSThread currentThread] == [NSThread mainThread]) {
+        someWork();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), someWork);
+    }
+}
+
 + (void)initializeEssentialFrameworks
 {
-  NSError *error = nil;
-  id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
-  BOOL success = [self loadEssentialFrameworks:logger error:&error];
-  if (success) {
-    return;
-  }
-  [logger.error logFormat:@"Failed to load the Essential frameworks for FBDeviceControl with error %@", error];
-  abort();
+    [self doOnMain:^{
+        NSError *error = nil;
+        id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
+        BOOL success = [self loadEssentialFrameworks:logger error:&error];
+        if (success) {
+            return;
+        }
+        [logger.error logFormat:@"Failed to load the Essential frameworks for FBDeviceControl with error %@", error];
+        abort();
+    }];
 }
 
 + (BOOL)loadEssentialFrameworks:(id<FBControlCoreLogger>)logger error:(NSError **)error
@@ -68,14 +78,16 @@ static BOOL hasLoadedXcodeFrameworks = NO;
 
 + (void)initializeXCodeFrameworks
 {
-  NSError *error = nil;
-  id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
-  BOOL success = [self loadXcodeFrameworks:logger error:&error];
-  if (success) {
-    return;
-  }
-  [logger.error logFormat:@"Failed to load the Xcode frameworks for FBDeviceControl with error %@", error];
-  abort();
+    [self doOnMain:^{
+        NSError *error = nil;
+        id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
+        BOOL success = [self loadXcodeFrameworks:logger error:&error];
+        if (success) {
+            return;
+        }
+        [logger.error logFormat:@"Failed to load the Xcode frameworks for FBDeviceControl with error %@", error];
+        abort();
+    }];
 }
 
 + (BOOL)loadXcodeFrameworks:(id<FBControlCoreLogger>)logger error:(NSError **)error

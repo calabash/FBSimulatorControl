@@ -42,20 +42,34 @@ static const NSTimeInterval FBDeviceSetDeviceManagerTickleTime = 2;
   [FBDeviceControlFrameworkLoader initializeEssentialFrameworks];
 }
 
+- (void)doOnMain:(void(^)(void))someWork {
+    [FBDeviceSet doOnMain:someWork];
+}
+
++ (void)doOnMain:(void(^)(void))someWork {
+    if ([NSThread currentThread] == [NSThread mainThread]) {
+        someWork();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), someWork);
+    }
+}
+
 - (void)primeDeviceManager
 {
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    // It seems that searching for a device that does not exist will cause all available devices/simulators etc. to be cached.
-    // There's probably a better way of fetching all the available devices, but this appears to work well enough.
-    // This means that all the cached available devices can then be found.
-    [FBDeviceControlFrameworkLoader initializeXCodeFrameworks];
-
-    DVTDeviceManager *deviceManager = [objc_lookUpClass("DVTDeviceManager") defaultDeviceManager];
-    [self.logger.debug logFormat:@"Quering device manager for %f seconds to cache devices", FBDeviceSetDeviceManagerTickleTime];
-    [deviceManager searchForDevicesWithType:nil options:@{@"id" : @"I_DONT_EXIST_AT_ALL"} timeout:FBDeviceSetDeviceManagerTickleTime error:nil];
-    [self.logger.debug log:@"Finished querying devices to cache them"];
-  });
+    [self doOnMain:^{
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            // It seems that searching for a device that does not exist will cause all available devices/simulators etc. to be cached.
+            // There's probably a better way of fetching all the available devices, but this appears to work well enough.
+            // This means that all the cached available devices can then be found.
+            [FBDeviceControlFrameworkLoader initializeXCodeFrameworks];
+            
+            DVTDeviceManager *deviceManager = [objc_lookUpClass("DVTDeviceManager") defaultDeviceManager];
+            [self.logger.debug logFormat:@"Quering device manager for %f seconds to cache devices", FBDeviceSetDeviceManagerTickleTime];
+            [deviceManager searchForDevicesWithType:nil options:@{@"id" : @"I_DONT_EXIST_AT_ALL"} timeout:FBDeviceSetDeviceManagerTickleTime error:nil];
+            [self.logger.debug log:@"Finished querying devices to cache them"];
+        });
+    }];
 }
 
 + (nullable instancetype)defaultSetWithLogger:(nullable id<FBControlCoreLogger>)logger error:(NSError **)error

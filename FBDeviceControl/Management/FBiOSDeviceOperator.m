@@ -58,6 +58,18 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 @implementation FBiOSDeviceOperator
 @synthesize codesignProvider;
 
++ (id)doOnMainAndReturn:(id(^)(void))someResult {
+    if ([NSThread currentThread] == [NSThread mainThread]) {
+        return someResult();
+    } else {
+        __block id ret = nil;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ret = someResult();
+        });
+        return ret;
+    }
+}
+
 + (instancetype)forDevice:(FBDevice *)device
 {
   return [[self alloc] initWithDevice:device];
@@ -328,7 +340,9 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 
 - (NSString *)fullConsoleString
 {
-  return [self.device.dvtDevice.token.deviceConsoleController consoleString];
+    return [FBiOSDeviceOperator doOnMainAndReturn:^id{
+        return [self.device.dvtDevice.token.deviceConsoleController consoleString];
+    }];
 }
 
 - (NSString *)consoleString

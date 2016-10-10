@@ -144,7 +144,7 @@ typedef NS_ENUM(NSUInteger, FBTestBundleConnectionState) {
 
 - (nullable FBTestBundleResult *)connectWithTimeout:(NSTimeInterval)timeout
 {
-  NSAssert(NSThread.isMainThread, @"-[%@ %@] should be called from the main thread", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+//  NSAssert(NSThread.isMainThread, @"-[%@ %@] should be called from the main thread", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
   if (self.state != FBTestBundleConnectionStateNotConnected) {
     XCTestBootstrapError *error = [XCTestBootstrapError
       describeFormat:@"Cannot connect, state must be %@ but is %@", [FBTestBundleConnection stateStringForState:FBTestBundleConnectionStateNotConnected], [FBTestBundleConnection stateStringForState:self.state]];
