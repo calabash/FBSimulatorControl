@@ -531,6 +531,8 @@
 		EEBD60951C908F8500298A07 /* FBCollectionInformation.m in Sources */ = {isa = PBXBuildFile; fileRef = EEBD60931C908F8500298A07 /* FBCollectionInformation.m */; };
 		EEBD60971C908FA200298A07 /* FBJSONConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = EEBD60961C908FA200298A07 /* FBJSONConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EEF4497E1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m in Sources */ = {isa = PBXBuildFile; fileRef = EEF4497C1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m */; };
+		F56EED811E9C9A3A0073C4EE /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F56EED851E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1435,6 +1437,8 @@
 		EEBD60961C908FA200298A07 /* FBJSONConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBJSONConversion.h; sourceTree = "<group>"; };
 		EEF4497B1CE0A22200300C9F /* FBXCTestBootstrapFixtures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBXCTestBootstrapFixtures.h; sourceTree = "<group>"; };
 		EEF4497C1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBXCTestBootstrapFixtures.m; sourceTree = "<group>"; };
+		F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalabashUtils.h; sourceTree = "<group>"; };
+		F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalabashUtils.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2496,6 +2500,7 @@
 		B401C979EFB6AC4600000000 /* mainGroup */ = {
 			isa = PBXGroup;
 			children = (
+				F56EED7E1E9C9A3A0073C4EE /* Calabash */,
 				AA633F8A1CFD788F00A59C5F /* Configuration */,
 				AA48775A1BAC74DC007F7D23 /* PrivateHeaders */,
 				EEBD600F1C90628F00298A07 /* FBControlCore */,
@@ -2907,6 +2912,15 @@
 			path = Fixtures;
 			sourceTree = "<group>";
 		};
+		F56EED7E1E9C9A3A0073C4EE /* Calabash */ = {
+			isa = PBXGroup;
+			children = (
+				F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */,
+				F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */,
+			);
+			path = Calabash;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -3147,6 +3161,7 @@
 				AAB123821DB4B16900F20555 /* FBDispatchSourceNotifier.h in Headers */,
 				AA7728AE1E5238A6008FCF7C /* FBFileWriter.h in Headers */,
 				AA58F8921D959593006F8D81 /* FBCodesignProvider.h in Headers */,
+				F56EED811E9C9A3A0073C4EE /* CalabashUtils.h in Headers */,
 				AA5CB9161E8A45200099F048 /* FBApplicationLaunchConfiguration.h in Headers */,
 				EEBD60801C9062E900298A07 /* FBControlCoreGlobalConfiguration.h in Headers */,
 			);
@@ -3746,6 +3761,7 @@
 				AAAD5F7C1D5475DE008D3870 /* FBBatchLogSearch.m in Sources */,
 				AA0080D81DB4CCFD009A25CB /* FBProcessTerminationStrategy.m in Sources */,
 				EEBD60771C9062E900298A07 /* FBBinaryParser.m in Sources */,
+				F56EED851E9C9A3A0073C4EE /* CalabashUtils.m in Sources */,
 				AA0F6F2B1CA3DCF700926518 /* FBWeakFrameworkLoader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
