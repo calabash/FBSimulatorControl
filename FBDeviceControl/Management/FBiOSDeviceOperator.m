@@ -35,6 +35,7 @@
 #import "FBAMDevice+Private.h"
 #import "FBDeviceControlError.h"
 #import "FBDeviceControlFrameworkLoader.h"
+#import "CalabashUtils.h"
 
 @protocol DVTApplication <NSObject>
 - (NSString *)installedPath;
@@ -388,21 +389,22 @@ static NSString *const ApplicationPathKey = @"Path";
 
 - (NSArray<FBApplicationDescriptor *> *)installedApplications
 {
-  NSMutableArray<FBApplicationDescriptor *> *installedApplications = [[NSMutableArray alloc] init];
+  return [CalabashUtils doOnMainAndReturn:^id{
+    NSMutableArray<FBApplicationDescriptor *> *installedApplications = [[NSMutableArray alloc] init];
+    for(NSDictionary *app in [self installedApplicationsData]) {
 
-  for(NSDictionary *app in [self installedApplicationsData]) {
-    if (app == nil) {
-      continue;
+      if (app == nil) {
+        continue;
+      }
+      FBApplicationDescriptor *appData = [FBApplicationDescriptor
+        remoteApplicationWithName:app[ApplicationNameKey]
+        path:app[ApplicationPathKey]
+        bundleID:app[ApplicationIdentifierKey]];
+
+      [installedApplications addObject:appData];
     }
-    FBApplicationDescriptor *appData = [FBApplicationDescriptor
-      remoteApplicationWithName:app[ApplicationNameKey]
-      path:app[ApplicationPathKey]
-      bundleID:app[ApplicationIdentifierKey]];
-
-    [installedApplications addObject:appData];
-  }
-
-  return [installedApplications copy];
+    return [installedApplications copy];
+  }];
 }
 
 #pragma mark - Helpers
