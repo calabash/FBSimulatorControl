@@ -25,6 +25,18 @@
 		3E14994C1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E14994A1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E14994D1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E14994B1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m */; };
 		877123F31BDA797800530B1E /* video0.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 877123F21BDA797800530B1E /* video0.mp4 */; };
+		8969FC791DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
+		8969FC7A1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
+		8969FC7B1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
+		8969FC7C1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
+		8969FC7D1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC7E1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC7F1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC801DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC811DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC821DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC831DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		8969FC841DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
 		89AFD2DC1CF858D8003D365E /* FBDeviceControl.h in Headers */ = {isa = PBXBuildFile; fileRef = AAC8B22D1CEC51120034A865 /* FBDeviceControl.h */; };
 		89B188D51DA6A43300E171BE /* FBCodesignProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = AA58F88F1D959593006F8D81 /* FBCodesignProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA017F581BD7787300F45E9D /* libShimulator.dylib in Resources */ = {isa = PBXBuildFile; fileRef = AA017F4C1BD7784700F45E9D /* libShimulator.dylib */; };
@@ -574,6 +586,8 @@
 		3E14994A1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBTestManagerTestReporterTestCaseFailure.h; sourceTree = "<group>"; };
 		3E14994B1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBTestManagerTestReporterTestCaseFailure.m; sourceTree = "<group>"; };
 		877123F21BDA797800530B1E /* video0.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video0.mp4; sourceTree = "<group>"; };
+		8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CalabashUtils.h; path = Calabash/CalabashUtils.h; sourceTree = "<group>"; };
+		8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CalabashUtils.m; path = Calabash/CalabashUtils.m; sourceTree = "<group>"; };
 		AA017F4C1BD7784700F45E9D /* libShimulator.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libShimulator.dylib; sourceTree = "<group>"; };
 		AA01A11F1D7896AD0030236F /* FBFramebufferConnectStrategy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBFramebufferConnectStrategy.h; sourceTree = "<group>"; };
 		AA01A1201D7896AD0030236F /* FBFramebufferConnectStrategy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBFramebufferConnectStrategy.m; sourceTree = "<group>"; };
@@ -1245,6 +1259,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8969FC761DAC11DC002E5DE9 /* Calabash */ = {
+			isa = PBXGroup;
+			children = (
+				8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */,
+				8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */,
+			);
+			name = Calabash;
+			sourceTree = "<group>";
+		};
 		AA017F4A1BD7784700F45E9D /* Shims */ = {
 			isa = PBXGroup;
 			children = (
@@ -2005,6 +2028,7 @@
 		B401C979EFB6AC4600000000 /* mainGroup */ = {
 			isa = PBXGroup;
 			children = (
+				8969FC761DAC11DC002E5DE9 /* Calabash */,
 				AA633F8A1CFD788F00A59C5F /* Configuration */,
 				AA48775A1BAC74DC007F7D23 /* PrivateHeaders */,
 				EEBD600F1C90628F00298A07 /* FBControlCore */,
@@ -2396,6 +2420,7 @@
 				AA682B1A1CEC9E8B009B6ECA /* FBDeviceSet.h in Headers */,
 				AAC8B2531CEC51520034A865 /* FBiOSDeviceOperator.h in Headers */,
 				AAC8B2511CEC51520034A865 /* FBDevice.h in Headers */,
+				8969FC7C1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				AAC8B22E1CEC51120034A865 /* FBDeviceControl.h in Headers */,
 				AAC8B2571CEC51520034A865 /* FBDeviceControlError.h in Headers */,
 			);
@@ -2422,6 +2447,7 @@
 				AAACBEB41CA13E5D00DA7686 /* FBSimulatorInteraction+Bridge.h in Headers */,
 				AAAB13281C74EC0300F3B083 /* FBSimulatorSet.h in Headers */,
 				AA5639551C060005009BAFAA /* FBSimulatorControl.h in Headers */,
+				8969FC7B1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				AA2F45C21D6ED47B00365A2C /* FBSimulatorServiceContext.h in Headers */,
 				AA9517571C15F54600A89CAD /* FBSimulatorResourceManager.h in Headers */,
 				AA4242FD1C529366008ABD80 /* FBFramebufferVideo.h in Headers */,
@@ -2521,6 +2547,7 @@
 				89B188D51DA6A43300E171BE /* FBCodesignProvider.h in Headers */,
 				EE4F0D871C91B82700608E89 /* FBXCTestRunStrategy.h in Headers */,
 				AAB05EA31D6DE63D005E05F4 /* FBTestBundleResult.h in Headers */,
+				8969FC7A1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				EE4F0D791C91B82700608E89 /* FBTestBundle.h in Headers */,
 				EE1277621C9338D700DE52A1 /* FBTestManagerAPIMediator.h in Headers */,
 				AA12D5441CE1086300CCD944 /* FBTestReporterForwarder.h in Headers */,
@@ -2579,6 +2606,7 @@
 				AA5449951CFF4A6700443C2F /* FBControlCoreConfigurationVariants.h in Headers */,
 				AAE4D05B1D9996DB0098A71E /* FBFileManager.h in Headers */,
 				EEBD60971C908FA200298A07 /* FBJSONConversion.h in Headers */,
+				8969FC791DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				EEBD606F1C9062E900298A07 /* FBTaskExecutor+Convenience.h in Headers */,
 				EEBD60711C9062E900298A07 /* FBTaskExecutor+Private.h in Headers */,
 				AA58F88C1D95917D006F8D81 /* FBBundleDescriptor.h in Headers */,
@@ -2940,6 +2968,7 @@
 				AAEE425B1D86939F0077D141 /* FBSimulatorScale.m in Sources */,
 				AA4242F21C529145008ABD80 /* FBFramebufferCompositeDelegate.m in Sources */,
 				AA95179A1C15F54600A89CAD /* FBDispatchSourceNotifier.m in Sources */,
+				8969FC811DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA9517681C15F54600A89CAD /* FBSimulatorInteraction+Applications.m in Sources */,
 				AA2F45C31D6ED47B00365A2C /* FBSimulatorServiceContext.m in Sources */,
 				AA9517781C15F54600A89CAD /* FBSimulatorDiagnostics.m in Sources */,
@@ -3011,6 +3040,7 @@
 				AA5A73941D886C8F00833013 /* FBSimulatorFramebufferTests.m in Sources */,
 				AA3230CB1BDA387700C5BA01 /* FBSimulatorControlAssertions.m in Sources */,
 				AA3FD04B1C876E4F001093CA /* FBSimulatorDiagnosticsTests.m in Sources */,
+				8969FC821DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA3FD0561C876E4F001093CA /* FBSimulatorControlHistoryTests.m in Sources */,
 				AAB4AC271BBBC6880046F6A1 /* FBSimulatorControlTestCase.m in Sources */,
 				AAF49AB61D2C2B2C00C71E10 /* FBSimulatorApplicationDescriptorTests.m in Sources */,
@@ -3026,6 +3056,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAC8B2581CEC51520034A865 /* FBDeviceControlError.m in Sources */,
+				8969FC831DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA682B1B1CEC9E8B009B6ECA /* FBDeviceSet.m in Sources */,
 				AAC8B2521CEC51520034A865 /* FBDevice.m in Sources */,
 				AAC8B2541CEC51520034A865 /* FBiOSDeviceOperator.m in Sources */,
@@ -3038,6 +3069,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8969FC841DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AAC8B2671CEC57F10034A865 /* FBDeviceControlLinkerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3074,6 +3106,7 @@
 				EE62DC611D6C82340031A457 /* FBTestLaunchConfiguration.m in Sources */,
 				EE4F0D7A1C91B82700608E89 /* FBTestBundle.m in Sources */,
 				AA0DC7571CE3A29F0037A8A7 /* FBTestDaemonConnection.m in Sources */,
+				8969FC7F1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				EE4F0D851C91B82700608E89 /* FBSimulatorTestPreparationStrategy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3092,6 +3125,7 @@
 				AAEC23CA1D5E345D0083CAB7 /* FBSimulatorTestPreparationStrategyTests.m in Sources */,
 				AAEC23C91D5E345D0083CAB7 /* FBProductBundleTests.m in Sources */,
 				AAEC23D01D5E345D0083CAB7 /* FBXCTestRunStrategyTests.m in Sources */,
+				8969FC801DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AAEC23CE1D5E345D0083CAB7 /* FBTestManagerTestReporterJUnitTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3128,6 +3162,7 @@
 				AA89546C1D5C7400006BD815 /* FBControlCoreFrameworkLoader.m in Sources */,
 				AA58F8931D959593006F8D81 /* FBCodesignProvider.m in Sources */,
 				EEBD607D1C9062E900298A07 /* FBConcurrentCollectionOperations.m in Sources */,
+				8969FC7D1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				EEBD60831C9062E900298A07 /* FBControlCoreLogger.m in Sources */,
 				AAE4D05D1D99972B0098A71E /* FBFileManager.m in Sources */,
 				AA1FC91D1D911F6F00A5FCC3 /* FBInteraction.m in Sources */,
@@ -3159,6 +3194,7 @@
 				AA98351C1CEF55C20038F432 /* FBLocalizationOverrideTests.m in Sources */,
 				AAB68D7B1C90C2F200D20416 /* FBControlCoreValueTestCase.m in Sources */,
 				AA7FDA151C981318009F7828 /* FBCrashLogInfoTests.m in Sources */,
+				8969FC7E1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA0EE6701D06AB5600422361 /* FBiOSTargetDescriptionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

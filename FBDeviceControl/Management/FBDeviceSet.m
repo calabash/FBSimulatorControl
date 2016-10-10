@@ -30,6 +30,7 @@
 #import "FBDeviceControlFrameworkLoader.h"
 #import "FBDevice+Private.h"
 #import "FBAMDevice.h"
+#import "CalabashUtils.h"
 
 static const NSTimeInterval FBDeviceSetDeviceManagerTickleTime = 2;
 
@@ -42,21 +43,9 @@ static const NSTimeInterval FBDeviceSetDeviceManagerTickleTime = 2;
   [FBDeviceControlFrameworkLoader initializeEssentialFrameworks];
 }
 
-- (void)doOnMain:(void(^)(void))someWork {
-    [FBDeviceSet doOnMain:someWork];
-}
-
-+ (void)doOnMain:(void(^)(void))someWork {
-    if ([NSThread currentThread] == [NSThread mainThread]) {
-        someWork();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), someWork);
-    }
-}
-
 - (void)primeDeviceManager
 {
-    [self doOnMain:^{
+    [CalabashUtils doOnMain:^{
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             // It seems that searching for a device that does not exist will cause all available devices/simulators etc. to be cached.

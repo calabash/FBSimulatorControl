@@ -35,6 +35,7 @@
 #import "FBAMDevice+Private.h"
 #import "FBDeviceControlError.h"
 #import "FBDeviceControlFrameworkLoader.h"
+#import "CalabashUtils.h"
 
 static const NSUInteger FBMaxConosleMarkerLength = 1000;
 
@@ -57,18 +58,6 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 
 @implementation FBiOSDeviceOperator
 @synthesize codesignProvider;
-
-+ (id)doOnMainAndReturn:(id(^)(void))someResult {
-    if ([NSThread currentThread] == [NSThread mainThread]) {
-        return someResult();
-    } else {
-        __block id ret = nil;
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            ret = someResult();
-        });
-        return ret;
-    }
-}
 
 + (instancetype)forDevice:(FBDevice *)device
 {
@@ -340,7 +329,7 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 
 - (NSString *)fullConsoleString
 {
-    return [FBiOSDeviceOperator doOnMainAndReturn:^id{
+    return [CalabashUtils doOnMainAndReturn:^id{
         return [self.device.dvtDevice.token.deviceConsoleController consoleString];
     }];
 }

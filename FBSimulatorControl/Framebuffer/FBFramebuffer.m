@@ -33,6 +33,7 @@
 #import "FBSimulatorDiagnostics.h"
 #import "FBSimulatorEventSink.h"
 #import "FBSimulatorLaunchConfiguration.h"
+#import "CalabashUtils.h"
 
 /**
  Enumeration to keep track of internal state.
@@ -125,29 +126,31 @@ typedef NS_ENUM(NSUInteger, FBSimulatorFramebufferState) {
 
 - (instancetype)startListeningInBackground;
 {
-  NSParameterAssert(NSThread.currentThread.isMainThread);
-  NSParameterAssert(self.state == FBSimulatorFramebufferStateNotStarted);
-
-  self.state = FBSimulatorFramebufferStateStarting;
-  [self.framebufferService registerClient:self onQueue:self.clientQueue];
-  [self.framebufferService resume];
-
-  return self;
+  return [CalabashUtils doOnMainAndReturn:^id{
+      NSParameterAssert(self.state == FBSimulatorFramebufferStateNotStarted);
+      
+      self.state = FBSimulatorFramebufferStateStarting;
+      [self.framebufferService registerClient:self onQueue:self.clientQueue];
+      [self.framebufferService resume];
+      
+      return self;
+  }];
 }
 
 - (instancetype)stopListeningWithTeardownGroup:(dispatch_group_t)teardownGroup
 {
-  NSParameterAssert(NSThread.currentThread.isMainThread);
-  NSParameterAssert(self.state != FBSimulatorFramebufferStateNotStarted);
-  NSParameterAssert(self.state != FBSimulatorFramebufferStateTerminated);
-
-  // Preserve the contract that the delegate methods are called on the client queue.
-  // Use dispatch_sync so that adding entries to the group has occurred before this method returns.
-  dispatch_sync(self.clientQueue, ^{
-    [self framebufferDidBecomeInvalid:self error:nil teardownGroup:teardownGroup];
-  });
-
-  return self;
+  return [CalabashUtils doOnMainAndReturn:^id{
+      NSParameterAssert(self.state != FBSimulatorFramebufferStateNotStarted);
+      NSParameterAssert(self.state != FBSimulatorFramebufferStateTerminated);
+      
+      // Preserve the contract that the delegate methods are called on the client queue.
+      // Use dispatch_sync so that adding entries to the group has occurred before this method returns.
+      dispatch_sync(self.clientQueue, ^{
+          [self framebufferDidBecomeInvalid:self error:nil teardownGroup:teardownGroup];
+      });
+      
+      return self;
+  }];
 }
 
 - (void)framebufferDidBecomeInvalid:(FBFramebuffer *)framebuffer error:(NSError *)error

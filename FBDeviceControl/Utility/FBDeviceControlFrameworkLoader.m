@@ -23,6 +23,8 @@
 #import "FBDeviceControlError.h"
 #import "FBAMDevice.h"
 
+#import "CalabashUtils.h"
+
 static BOOL hasLoadedEssentialFrameworks = NO;
 static BOOL hasLoadedXcodeFrameworks = NO;
 
@@ -32,17 +34,9 @@ static BOOL hasLoadedXcodeFrameworks = NO;
 
 #pragma mark Essential Frameworks
 
-+ (void)doOnMain:(void(^)(void))someWork {
-    if ([NSThread currentThread] == [NSThread mainThread]) {
-        someWork();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), someWork);
-    }
-}
-
 + (void)initializeEssentialFrameworks
 {
-    [self doOnMain:^{
+    [CalabashUtils doOnMain:^{
         NSError *error = nil;
         id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
         BOOL success = [self loadEssentialFrameworks:logger error:&error];
@@ -78,7 +72,7 @@ static BOOL hasLoadedXcodeFrameworks = NO;
 
 + (void)initializeXCodeFrameworks
 {
-    [self doOnMain:^{
+    [CalabashUtils doOnMain:^{
         NSError *error = nil;
         id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
         BOOL success = [self loadXcodeFrameworks:logger error:&error];
