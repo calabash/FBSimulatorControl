@@ -32,6 +32,7 @@
 #import "FBSimulatorLaunchConfiguration.h"
 #import "FBSimulatorProcessFetcher.h"
 #import "FBFramebufferConnectStrategy.h"
+#import "CalabashUtils.h"
 
 @interface FBSimulatorConnection ()
 
@@ -113,32 +114,32 @@
 
 - (BOOL)terminateWithTimeout:(NSTimeInterval)timeout
 {
-  NSParameterAssert(NSThread.currentThread.isMainThread);
-
-  // First stop the Framebuffer
-  [self.framebuffer stopListeningWithTeardownGroup:self.teardownGroup];
-
-  // Disconnect the HID
-  [self.hid disconnect];
-
-  // Close the connection with the SimulatorBridge and nullify
-  [self.bridge disconnect];
-
-  // Don't wait if there's no timeout
-  if (timeout <= 0) {
-    return YES;
-  }
-
-  int64_t timeoutInt = ((int64_t) timeout) * ((int64_t) NSEC_PER_SEC);
-  BOOL result = dispatch_group_wait(self.teardownGroup, dispatch_time(DISPATCH_TIME_NOW, timeoutInt)) == 0l;
-
-  // Clean up resources and notify.
-  self.framebuffer = nil;
-  self.hid = nil;
-  self.bridge = nil;
-  [self.simulator.eventSink connectionDidDisconnect:self expected:YES];
-
-  return result;
+  return [[CalabashUtils doOnMainAndReturn:^id{
+      // First stop the Framebuffer
+      [self.framebuffer stopListeningWithTeardownGroup:self.teardownGroup];
+      
+      // Disconnect the HID
+      [self.hid disconnect];
+      
+      // Close the connection with the SimulatorBridge and nullify
+      [self.bridge disconnect];
+      
+      // Don't wait if there's no timeout
+      if (timeout <= 0) {
+          return @YES;
+      }
+      
+      int64_t timeoutInt = ((int64_t) timeout) * ((int64_t) NSEC_PER_SEC);
+      BOOL result = dispatch_group_wait(self.teardownGroup, dispatch_time(DISPATCH_TIME_NOW, timeoutInt)) == 0l;
+      
+      // Clean up resources and notify.
+      self.framebuffer = nil;
+      self.hid = nil;
+      self.bridge = nil;
+      [self.simulator.eventSink connectionDidDisconnect:self expected:YES];
+      
+      return @(result);
+  }] boolValue];
 }
 
 @end

@@ -35,6 +35,7 @@
 #import "FBAMDevice+Private.h"
 #import "FBDeviceControlError.h"
 #import "FBDeviceControlFrameworkLoader.h"
+#import "CalabashUtils.h"
 
 static const NSUInteger FBMaxConosleMarkerLength = 1000;
 
@@ -328,7 +329,9 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 
 - (NSString *)fullConsoleString
 {
-  return [self.device.dvtDevice.token.deviceConsoleController consoleString];
+    return [CalabashUtils doOnMainAndReturn:^id{
+        return [self.device.dvtDevice.token.deviceConsoleController consoleString];
+    }];
 }
 
 - (NSString *)consoleString
