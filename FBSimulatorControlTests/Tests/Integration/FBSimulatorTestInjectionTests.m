@@ -68,7 +68,7 @@
 - (void)testInjectsApplicationTestIntoSampleAppOnIOS81Simulator
 {
   if (FBControlCoreGlobalConfiguration.isXcode8OrGreater) {
-    NSLog(@"Skipping running -[%@ %@] since Xcode 7 or smaller is required", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+    DDLogInfo(@"Skipping running -[%@ %@] since Xcode 7 or smaller is required", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
     return;
   }
   self.simulatorConfiguration = [[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPhone5] withOSNamed:FBOSVersionNameiOS_8_1];

@@ -30,11 +30,11 @@
   }
   FBSimulatorBootConfiguration *launchConfiguration = self.simulatorLaunchConfiguration;
   if (launchConfiguration.shouldUseDirectLaunch) {
-    NSLog(@"Skipping running -[%@ %@] since the Simulator will be launched directly", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+    DDLogInfo(@"Skipping running -[%@ %@] since the Simulator will be launched directly", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
     return;
   }
   if (!FBControlCoreGlobalConfiguration.isXcode8OrGreater) {
-    NSLog(@"Skipping running -[%@ %@] since Xcode 8 or greater is required", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+    DDLogInfo(@"Skipping running -[%@ %@] since Xcode 8 or greater is required", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
     return;
   }
 

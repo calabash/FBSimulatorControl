@@ -8,7 +8,7 @@
  */
 
 #import "FBControlCoreLogger.h"
-
+#import "CalabashUtils.h"
 #import <asl.h>
 
 @interface FBASLClientWrapper : NSObject
@@ -79,7 +79,7 @@
     if (self.fileDescriptor >= STDIN_FILENO) {
       int result = asl_add_output_file(client, self.fileDescriptor, ASL_MSG_FMT_STD, ASL_TIME_FMT_LCL, filterLimit, ASL_ENCODE_SAFE);
       if (result != 0) {
-        NSLog(@"Failed to add File Descriptor %@ to client with error %@",
+        DDLogError(@"Failed to add File Descriptor %@ to client with error %@",
               @(self.fileDescriptor), @(result));
         /*
         asl_log(client, NULL, ASL_LEVEL_ERR, "Failed to add File Descriptor %d to client with error %d", self.fileDescriptor, result);
@@ -124,7 +124,7 @@
 - (id<FBControlCoreLogger>)log:(NSString *)string
 {
   string = self.prefix ? [self.prefix stringByAppendingFormat:@" %@", string] : string;
-  NSLog(@"%@", string);
+  DDLogInfo(@"%@", string);
   //asl_log(self.client, NULL, self.currentLevel, string.UTF8String, NULL);
   return self;
 }
@@ -168,6 +168,27 @@
 @end
 
 @implementation FBControlCoreLogger
+
++ (void)load {
+    DDFileLogger *fileLogger = [DDFileLogger new];
+    NSError *e;
+    NSString *logsDir = [CalabashUtils logfileLocation:&e];
+
+    if (logsDir && !e) {
+        DDLogFileManagerDefault *logFileManager = [[DDLogFileManagerDefault alloc] initWithLogsDirectory:logsDir];
+        fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
+    }
+
+    //Logfile rolls every day or 1 mb of log
+    fileLogger.rollingFrequency = 60 * 60 * 24;
+    fileLogger.maximumFileSize = 1024 * 1024; //1Mb
+    fileLogger.logFileManager.maximumNumberOfLogFiles = 10;
+    [DDLog addLogger:fileLogger];
+
+    if (e) {
+        DDLogError(@"Error creating %@", e);
+    }
+}
 
 + (id<FBControlCoreLogger>)aslLoggerWritingToStderrr:(BOOL)writeToStdErr withDebugLogging:(BOOL)debugLogging
 {
