@@ -75,7 +75,7 @@ static NSString *const RecordVideoEnvKey = @"FBSIMULATORCONTROL_RECORD_VIDEO";
 + (BOOL)isRunningOnTravis
 {
   if (NSProcessInfo.processInfo.environment[@"TRAVIS"]) {
-    NSLog(@"Running in Travis environment, skipping test");
+    DDLogInfo(@"Running in Travis environment, skipping test");
     return YES;
   }
   return NO;

@@ -32,12 +32,12 @@
                                                     error:&err] deviceWithUDID:@"718ab8dbee0173b3f9ebfb01c5688b89221702c6"];
     
     if (err) {
-        NSLog(@"Error creating device operator: %@", err);
+        DDLogError(@"Error creating device operator: %@", err);
         return;
     }
 
     
-    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8.1/Xcode-beta.app/Contents/Developer", 1);
+//    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8.1/Xcode-beta.app/Contents/Developer", 1);
     
     Rep *rep = [Rep new];
     NSUUID *sessionID = [[NSUUID alloc] initWithUUIDString:@"AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"];
@@ -100,35 +100,35 @@
 @implementation Rep
 
 - (void)testManagerMediatorDidBeginExecutingTestPlan:(FBTestManagerAPIMediator *)mediator {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediator:(FBTestManagerAPIMediator *)mediator testSuite:(NSString *)testSuite didStartAt:(NSString *)startTime {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediator:(FBTestManagerAPIMediator *)mediator testCaseDidFinishForTestClass:(NSString *)testClass method:(NSString *)method withStatus:(FBTestReportStatus)status duration:(NSTimeInterval)duration {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediator:(FBTestManagerAPIMediator *)mediator testCaseDidFailForTestClass:(NSString *)testClass method:(NSString *)method withMessage:(NSString *)message file:(NSString *)file line:(NSUInteger)line {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediator:(FBTestManagerAPIMediator *)mediator testBundleReadyWithProtocolVersion:(NSInteger)protocolVersion minimumVersion:(NSInteger)minimumVersion {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediator:(FBTestManagerAPIMediator *)mediator testCaseDidStartForTestClass:(NSString *)testClass method:(NSString *)method {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediator:(FBTestManagerAPIMediator *)mediator finishedWithSummary:(FBTestManagerResultSummary *)summary {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 - (void)testManagerMediatorDidFinishExecutingTestPlan:(FBTestManagerAPIMediator *)mediator {
-    NSLog(@"%@", NSStringFromSelector(_cmd));
+    DDLogInfo(@"%@", NSStringFromSelector(_cmd));
 }
 
 @end
