@@ -128,9 +128,9 @@
   NSDictionary *infoPlist = [self.fileManager dictionaryWithPath:plistPath];
   if (!infoPlist) {
       plistPath = [self.bundlePath stringByAppendingPathComponent:@"Contents/Info.plist"];
-      NSLog(@"Couldn't find Info.plist at %@, checking %@", self.bundlePath, plistPath);
+      DDLogInfo(@"Couldn't find Info.plist at %@, checking %@", self.bundlePath, plistPath);
     infoPlist = [self.fileManager dictionaryWithPath:plistPath];
-      NSLog(@"No Info.plist found");
+      DDLogError(@"No Info.plist found");
   }
   if (!infoPlist) {
     return

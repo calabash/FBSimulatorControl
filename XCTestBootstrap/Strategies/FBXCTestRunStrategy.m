@@ -126,8 +126,8 @@
     NSAssert(bundleID, @"Must provide test runner bundle ID in order to run a test");
     NSAssert(sessionID, @"Must provide a test session ID in order to run a test");
     
-    NSLog(@"SessionID: %@", sessionID);
-    NSLog(@"BundleID: %@", bundleID);
+    DDLogInfo(@"SessionID: %@", sessionID);
+    DDLogInfo(@"BundleID: %@", bundleID);
     
     NSError *innerError;
     

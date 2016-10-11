@@ -25,18 +25,40 @@
 		3E14994C1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E14994A1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E14994D1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E14994B1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m */; };
 		877123F31BDA797800530B1E /* video0.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 877123F21BDA797800530B1E /* video0.mp4 */; };
-		8969FC791DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
-		8969FC7A1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
-		8969FC7B1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
+		89523A3C1DAD427A001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A3B1DAD427A001DFD43 /* CocoaLumberjack.framework */; };
+		89523A3D1DAD4290001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A3B1DAD427A001DFD43 /* CocoaLumberjack.framework */; };
+		89523A3E1DAD429D001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A3B1DAD427A001DFD43 /* CocoaLumberjack.framework */; };
+		89523A3F1DAD42A8001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A3B1DAD427A001DFD43 /* CocoaLumberjack.framework */; };
+		89523A421DAD4331001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A431DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A441DAD433E001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A451DAD433E001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A461DAD4344001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A471DAD4344001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A491DAD4353001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A4A1DAD4353001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A511DAD4924001DFD43 /* PrefixHeader.pch in Headers */ = {isa = PBXBuildFile; fileRef = 89523A501DAD4924001DFD43 /* PrefixHeader.pch */; };
+		89523A521DAD4924001DFD43 /* PrefixHeader.pch in Headers */ = {isa = PBXBuildFile; fileRef = 89523A501DAD4924001DFD43 /* PrefixHeader.pch */; };
+		89523A531DAD4924001DFD43 /* PrefixHeader.pch in Headers */ = {isa = PBXBuildFile; fileRef = 89523A501DAD4924001DFD43 /* PrefixHeader.pch */; };
+		89523A541DAD4924001DFD43 /* PrefixHeader.pch in Headers */ = {isa = PBXBuildFile; fileRef = 89523A501DAD4924001DFD43 /* PrefixHeader.pch */; };
+		89523A551DAD4B4C001DFD43 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
+		89523A561DAD503D001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; };
+		89523A571DAD504B001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; };
+		89523A581DAD5064001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; };
+		89523A591DAD5075001DFD43 /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; };
+		89523A5B1DAD51D4001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A5C1DAD51D4001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A5D1DAD51E1001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A5E1DAD51E1001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A601DAD51F6001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A611DAD51F6001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		89523A631DAD5204001DFD43 /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		89523A641DAD5204001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = 89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */; };
+		8969FC791DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8969FC7C1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */; };
 		8969FC7D1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
-		8969FC7E1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
-		8969FC7F1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
 		8969FC801DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
 		8969FC811DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
-		8969FC821DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
-		8969FC831DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
-		8969FC841DAC11FF002E5DE9 /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */; };
 		89AFD2DC1CF858D8003D365E /* FBDeviceControl.h in Headers */ = {isa = PBXBuildFile; fileRef = AAC8B22D1CEC51120034A865 /* FBDeviceControl.h */; };
 		89B188D51DA6A43300E171BE /* FBCodesignProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = AA58F88F1D959593006F8D81 /* FBCodesignProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA017F581BD7787300F45E9D /* libShimulator.dylib in Resources */ = {isa = PBXBuildFile; fileRef = AA017F4C1BD7784700F45E9D /* libShimulator.dylib */; };
@@ -516,12 +538,58 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		89523A481DAD434C001DFD43 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				89523A491DAD4353001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A4A1DAD4353001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		89523A5A1DAD51CB001DFD43 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				89523A5B1DAD51D4001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A5C1DAD51D4001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		89523A5F1DAD51F0001DFD43 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				89523A601DAD51F6001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A611DAD51F6001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		89523A621DAD51FE001DFD43 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				89523A631DAD5204001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A641DAD5204001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA98ECA81D0559B200916AED /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				89523A441DAD433E001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A451DAD433E001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
 				AA98ECAA1D0559D000916AED /* FBControlCore.framework in CopyFiles */,
 				AA98ECAE1D0559E400916AED /* XCTestBootstrap.framework in CopyFiles */,
 			);
@@ -533,6 +601,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				89523A421DAD4331001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A431DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
 				AA98ECAC1D0559DF00916AED /* FBControlCore.framework in CopyFiles */,
 				AA98ECAD1D0559E100916AED /* XCTestBootstrap.framework in CopyFiles */,
 			);
@@ -544,6 +614,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				89523A461DAD4344001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A471DAD4344001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
 				AA98ECB01D055A0000916AED /* FBControlCore.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -554,6 +626,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				89523A5D1DAD51E1001DFD43 /* CocoaLumberjack.framework in CopyFiles */,
+				89523A5E1DAD51E1001DFD43 /* CocoaLumberjack.framework.dSYM in CopyFiles */,
 				AAC083781B9FBA7600451648 /* FBSimulatorControl.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -586,6 +660,10 @@
 		3E14994A1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBTestManagerTestReporterTestCaseFailure.h; sourceTree = "<group>"; };
 		3E14994B1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBTestManagerTestReporterTestCaseFailure.m; sourceTree = "<group>"; };
 		877123F21BDA797800530B1E /* video0.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = video0.mp4; sourceTree = "<group>"; };
+		89523A3B1DAD427A001DFD43 /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = Carthage/Build/Mac/CocoaLumberjack.framework; sourceTree = "<group>"; };
+		89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = Carthage/Build/Mac/CocoaLumberjack.framework; sourceTree = "<group>"; };
+		89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = CocoaLumberjack.framework.dSYM; path = Carthage/Build/Mac/CocoaLumberjack.framework.dSYM; sourceTree = "<group>"; };
+		89523A501DAD4924001DFD43 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = Calabash/PrefixHeader.pch; sourceTree = "<group>"; };
 		8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CalabashUtils.h; path = Calabash/CalabashUtils.h; sourceTree = "<group>"; };
 		8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CalabashUtils.m; path = Calabash/CalabashUtils.m; sourceTree = "<group>"; };
 		AA017F4C1BD7784700F45E9D /* libShimulator.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libShimulator.dylib; sourceTree = "<group>"; };
@@ -1175,6 +1253,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 0;
 			files = (
+				89523A3E1DAD429D001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				AAB4AC1E1BB586930046F6A1 /* AVFoundation.framework in Frameworks */,
 				AAC241261BB311690054570C /* ApplicationServices.framework in Frameworks */,
 				E7A30F0476B173B900000000 /* Cocoa.framework in Frameworks */,
@@ -1193,6 +1272,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A571DAD504B001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				EEBD60911C9065EE00298A07 /* FBControlCore.framework in Frameworks */,
 				AA819DB71B9FB40D002F58CA /* FBSimulatorControl.framework in Frameworks */,
 				AAC083791B9FBACB00451648 /* Cocoa.framework in Frameworks */,
@@ -1204,6 +1284,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A3F1DAD42A8001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				AAC8B2641CEC553C0034A865 /* Cocoa.framework in Frameworks */,
 				AAC8B2631CEC55370034A865 /* Foundation.framework in Frameworks */,
 				AAC8B2601CEC55270034A865 /* FBControlCore.framework in Frameworks */,
@@ -1215,6 +1296,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A561DAD503D001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				AAC8B2351CEC51120034A865 /* FBDeviceControl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1223,6 +1305,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A3D1DAD4290001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				AA719E491D672D5A00947611 /* Foundation.framework in Frameworks */,
 				EE4F0DDD1C91BA8300608E89 /* FBControlCore.framework in Frameworks */,
 			);
@@ -1232,6 +1315,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A581DAD5064001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				EE4F0D3A1C91B7DB00608E89 /* XCTestBootstrap.framework in Frameworks */,
 				EE4F0DE01C91BEB400608E89 /* OCMock.framework in Frameworks */,
 			);
@@ -1241,6 +1325,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A3C1DAD427A001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				AA719E481D672D5000947611 /* Foundation.framework in Frameworks */,
 				AA1958791D6F4CF90059886F /* Cocoa.framework in Frameworks */,
 				AA19587C1D6F4D2F0059886F /* CoreGraphics.framework in Frameworks */,
@@ -1252,6 +1337,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A591DAD5075001DFD43 /* CocoaLumberjack.framework in Frameworks */,
 				EEBD60181C90628F00298A07 /* FBControlCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1264,6 +1350,7 @@
 			children = (
 				8969FC771DAC11FF002E5DE9 /* CalabashUtils.h */,
 				8969FC781DAC11FF002E5DE9 /* CalabashUtils.m */,
+				89523A501DAD4924001DFD43 /* PrefixHeader.pch */,
 			);
 			name = Calabash;
 			sourceTree = "<group>";
@@ -1989,6 +2076,7 @@
 		B401C97968022A5500000000 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				89523A3B1DAD427A001DFD43 /* CocoaLumberjack.framework */,
 				AA19587A1D6F4D010059886F /* CoreFoundation.framework */,
 				AA1958771D6F4CF20059886F /* ServiceManagement.framework */,
 				AAC241231BB3113F0054570C /* AppKit.framework */,
@@ -2028,6 +2116,8 @@
 		B401C979EFB6AC4600000000 /* mainGroup */ = {
 			isa = PBXGroup;
 			children = (
+				89523A401DAD4331001DFD43 /* CocoaLumberjack.framework */,
+				89523A411DAD4331001DFD43 /* CocoaLumberjack.framework.dSYM */,
 				8969FC761DAC11DC002E5DE9 /* Calabash */,
 				AA633F8A1CFD788F00A59C5F /* Configuration */,
 				AA48775A1BAC74DC007F7D23 /* PrivateHeaders */,
@@ -2423,6 +2513,7 @@
 				8969FC7C1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				AAC8B22E1CEC51120034A865 /* FBDeviceControl.h in Headers */,
 				AAC8B2571CEC51520034A865 /* FBDeviceControlError.h in Headers */,
+				89523A541DAD4924001DFD43 /* PrefixHeader.pch in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2447,7 +2538,6 @@
 				AAACBEB41CA13E5D00DA7686 /* FBSimulatorInteraction+Bridge.h in Headers */,
 				AAAB13281C74EC0300F3B083 /* FBSimulatorSet.h in Headers */,
 				AA5639551C060005009BAFAA /* FBSimulatorControl.h in Headers */,
-				8969FC7B1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				AA2F45C21D6ED47B00365A2C /* FBSimulatorServiceContext.h in Headers */,
 				AA9517571C15F54600A89CAD /* FBSimulatorResourceManager.h in Headers */,
 				AA4242FD1C529366008ABD80 /* FBFramebufferVideo.h in Headers */,
@@ -2491,6 +2581,7 @@
 				AA791BA11C6364F500AE49EB /* FBSimulatorConnection.h in Headers */,
 				AA6A3B3B1CC1597000E016C4 /* FBCoreSimulatorTerminationStrategy.h in Headers */,
 				AA95175B1C15F54600A89CAD /* FBSimulatorEventSink.h in Headers */,
+				89523A531DAD4924001DFD43 /* PrefixHeader.pch in Headers */,
 				AA9517651C15F54600A89CAD /* FBSimulatorInteraction+Agents.h in Headers */,
 				AA95175E1C15F54600A89CAD /* FBSimulatorHistoryGenerator.h in Headers */,
 				AA9517701C15F54600A89CAD /* FBSimulatorInteraction+Upload.h in Headers */,
@@ -2543,11 +2634,11 @@
 				EE4F0D7B1C91B82700608E89 /* FBTestConfiguration.h in Headers */,
 				AA7F12781D70679200929CD9 /* FBTestManagerResult.h in Headers */,
 				EE4F0D861C91B82700608E89 /* FBXCTestPreparationStrategy.h in Headers */,
+				89523A521DAD4924001DFD43 /* PrefixHeader.pch in Headers */,
 				AA7414EC1CE2555E00C9641D /* FBTestDaemonConnection.h in Headers */,
 				89B188D51DA6A43300E171BE /* FBCodesignProvider.h in Headers */,
 				EE4F0D871C91B82700608E89 /* FBXCTestRunStrategy.h in Headers */,
 				AAB05EA31D6DE63D005E05F4 /* FBTestBundleResult.h in Headers */,
-				8969FC7A1DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				EE4F0D791C91B82700608E89 /* FBTestBundle.h in Headers */,
 				EE1277621C9338D700DE52A1 /* FBTestManagerAPIMediator.h in Headers */,
 				AA12D5441CE1086300CCD944 /* FBTestReporterForwarder.h in Headers */,
@@ -2606,7 +2697,6 @@
 				AA5449951CFF4A6700443C2F /* FBControlCoreConfigurationVariants.h in Headers */,
 				AAE4D05B1D9996DB0098A71E /* FBFileManager.h in Headers */,
 				EEBD60971C908FA200298A07 /* FBJSONConversion.h in Headers */,
-				8969FC791DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				EEBD606F1C9062E900298A07 /* FBTaskExecutor+Convenience.h in Headers */,
 				EEBD60711C9062E900298A07 /* FBTaskExecutor+Private.h in Headers */,
 				AA58F88C1D95917D006F8D81 /* FBBundleDescriptor.h in Headers */,
@@ -2614,6 +2704,8 @@
 				EEBD606C1C9062E900298A07 /* FBTask+Private.h in Headers */,
 				EE9E1E4B1D6CB2CC00860830 /* FBProcessLaunchConfiguration+Helpers.h in Headers */,
 				EEBD606A1C9062E900298A07 /* FBDebugDescribeable.h in Headers */,
+				89523A511DAD4924001DFD43 /* PrefixHeader.pch in Headers */,
+				8969FC791DAC11FF002E5DE9 /* CalabashUtils.h in Headers */,
 				AAF4C4DF1CDBA1A7004F4AF3 /* FBRunLoopSpinner.h in Headers */,
 				AA58F8921D959593006F8D81 /* FBCodesignProvider.h in Headers */,
 				EEBD60801C9062E900298A07 /* FBControlCoreGlobalConfiguration.h in Headers */,
@@ -2671,6 +2763,7 @@
 				AAC8B2301CEC51120034A865 /* Sources */,
 				AAC8B2311CEC51120034A865 /* Frameworks */,
 				AAC8B2321CEC51120034A865 /* Resources */,
+				89523A5A1DAD51CB001DFD43 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -2731,6 +2824,7 @@
 				EE4F0D361C91B7DB00608E89 /* Frameworks */,
 				EE4F0D371C91B7DB00608E89 /* Resources */,
 				EE5CFEC91C91C0570011FD3D /* carthage copy-frameworks */,
+				89523A5F1DAD51F0001DFD43 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -2750,6 +2844,7 @@
 				EEBD600A1C90628F00298A07 /* Frameworks */,
 				EEBD600B1C90628F00298A07 /* Headers */,
 				EEBD600C1C90628F00298A07 /* Resources */,
+				89523A481DAD434C001DFD43 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -2767,6 +2862,7 @@
 				EEBD60131C90628F00298A07 /* Sources */,
 				EEBD60141C90628F00298A07 /* Frameworks */,
 				EEBD60151C90628F00298A07 /* Resources */,
+				89523A621DAD51FE001DFD43 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -3040,7 +3136,6 @@
 				AA5A73941D886C8F00833013 /* FBSimulatorFramebufferTests.m in Sources */,
 				AA3230CB1BDA387700C5BA01 /* FBSimulatorControlAssertions.m in Sources */,
 				AA3FD04B1C876E4F001093CA /* FBSimulatorDiagnosticsTests.m in Sources */,
-				8969FC821DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA3FD0561C876E4F001093CA /* FBSimulatorControlHistoryTests.m in Sources */,
 				AAB4AC271BBBC6880046F6A1 /* FBSimulatorControlTestCase.m in Sources */,
 				AAF49AB61D2C2B2C00C71E10 /* FBSimulatorApplicationDescriptorTests.m in Sources */,
@@ -3056,7 +3151,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAC8B2581CEC51520034A865 /* FBDeviceControlError.m in Sources */,
-				8969FC831DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA682B1B1CEC9E8B009B6ECA /* FBDeviceSet.m in Sources */,
 				AAC8B2521CEC51520034A865 /* FBDevice.m in Sources */,
 				AAC8B2541CEC51520034A865 /* FBiOSDeviceOperator.m in Sources */,
@@ -3069,7 +3163,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8969FC841DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AAC8B2671CEC57F10034A865 /* FBDeviceControlLinkerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3106,7 +3199,6 @@
 				EE62DC611D6C82340031A457 /* FBTestLaunchConfiguration.m in Sources */,
 				EE4F0D7A1C91B82700608E89 /* FBTestBundle.m in Sources */,
 				AA0DC7571CE3A29F0037A8A7 /* FBTestDaemonConnection.m in Sources */,
-				8969FC7F1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				EE4F0D851C91B82700608E89 /* FBSimulatorTestPreparationStrategy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3186,6 +3278,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89523A551DAD4B4C001DFD43 /* CalabashUtils.m in Sources */,
 				AAB84EA81D0ACEC200D6F3ED /* FBiOSTargetDouble.m in Sources */,
 				AAEA3A951C90B5E4004F8409 /* FBDiagnosticTests.m in Sources */,
 				AAB84EA31D0AB18000D6F3ED /* FBiOSTargetQueryTests.m in Sources */,
@@ -3194,7 +3287,6 @@
 				AA98351C1CEF55C20038F432 /* FBLocalizationOverrideTests.m in Sources */,
 				AAB68D7B1C90C2F200D20416 /* FBControlCoreValueTestCase.m in Sources */,
 				AA7FDA151C981318009F7828 /* FBCrashLogInfoTests.m in Sources */,
-				8969FC7E1DAC11FF002E5DE9 /* CalabashUtils.m in Sources */,
 				AA0EE6701D06AB5600422361 /* FBiOSTargetDescriptionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3261,6 +3353,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Debug;
 		};
@@ -3299,6 +3396,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Profile;
 		};
@@ -3334,6 +3436,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Release;
 		};
@@ -3367,6 +3474,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AA38D7721CFEC8C30078A0DA /* FBSimulatorControlTests.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Debug;
 		};
@@ -3374,6 +3486,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AA38D7721CFEC8C30078A0DA /* FBSimulatorControlTests.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Profile;
 		};
@@ -3381,6 +3498,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AA38D7721CFEC8C30078A0DA /* FBSimulatorControlTests.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Release;
 		};
@@ -3396,7 +3518,12 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = FYD86LA7RE;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "FBDeviceControl/FBDeviceControl-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -3433,7 +3560,12 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = FYD86LA7RE;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "FBDeviceControl/FBDeviceControl-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -3470,7 +3602,12 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = FYD86LA7RE;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "FBDeviceControl/FBDeviceControl-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/Frameworks";
 				OTHER_LDFLAGS = (
@@ -3505,9 +3642,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -3531,8 +3673,13 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "FBDeviceControlTests/FBDeviceControlTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -3552,8 +3699,13 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "FBDeviceControlTests/FBDeviceControlTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -3568,6 +3720,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Debug;
 		};
@@ -3577,6 +3734,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Profile;
 		};
@@ -3586,6 +3748,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Release;
 		};
@@ -3597,6 +3764,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "XCTestBootstrapTests/XCTestBootstrapTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.XCTestBootstrapTests;
@@ -3612,6 +3780,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "XCTestBootstrapTests/XCTestBootstrapTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.XCTestBootstrapTests;
@@ -3627,6 +3796,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 				INFOPLIST_FILE = "XCTestBootstrapTests/XCTestBootstrapTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.XCTestBootstrapTests;
@@ -3640,6 +3810,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Debug;
 		};
@@ -3649,6 +3824,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Profile;
 		};
@@ -3658,6 +3838,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Release;
 		};
@@ -3665,6 +3850,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA55F641D0088E800BC4824 /* FBControlCoreTests.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Debug;
 		};
@@ -3672,6 +3862,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA55F641D0088E800BC4824 /* FBControlCoreTests.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Profile;
 		};
@@ -3679,6 +3874,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA55F641D0088E800BC4824 /* FBControlCoreTests.xcconfig */;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				GCC_PREFIX_HEADER = "$(SRCROOT)/Calabash/PrefixHeader.pch";
 			};
 			name = Release;
 		};
