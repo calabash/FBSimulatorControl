@@ -316,8 +316,8 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 
 - (id)_XCT_testCaseDidFailForTestClass:(NSString *)testClass method:(NSString *)method withMessage:(NSString *)message file:(NSString *)file line:(NSNumber *)line
 {
-  NSLog(@"Test failed: %@", message);
-  NSLog(@"File: %@:%@", file, line);
+  DDLogInfo(@"Test failed: %@", message);
+  DDLogInfo(@"File: %@:%@", file, line);
   return nil;
 }
 

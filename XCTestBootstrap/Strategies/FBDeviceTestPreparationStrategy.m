@@ -32,7 +32,7 @@
                         applicationDataPath:(NSString *)applicationDataPath
                     testLaunchConfiguration:(FBTestLaunchConfiguration *)testLaunchConfiguration;
 {
-  NSLog(@"Creating %@ for %@", NSStringFromClass(self.class), @{
+  DDLogInfo(@"Creating %@ for %@", NSStringFromClass(self.class), @{
                                                                 @"applicationPath" : applicationPath,
                                                                 @"applicationDataPath" : applicationDataPath,
                                                                 @"testLaunchConfiguration" : testLaunchConfiguration

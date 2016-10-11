@@ -72,3 +72,5 @@
 #import <FBControlCore/FBWeakFrameworkLoader.h>
 #import <FBControlCore/FBXCTestCommands.h>
 #import <FBControlCore/NSPredicate+FBControlCore.h>
+#import <FBControlCore/CalabashUtils.h>
+
