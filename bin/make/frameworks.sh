@@ -62,7 +62,12 @@ strip_framework "FBSimulatorControlKit.framework/Versions/Current/Frameworks/FBS
 strip_framework "FBSimulatorControlKit.framework/Versions/Current/Frameworks/FBDeviceControl.framework"
 strip_framework "FBSimulatorControl.framework/Versions/Current/Frameworks/XCTestBootstrap.framework"
 strip_framework "FBSimulatorControl.framework/Versions/Current/Frameworks/FBControlCore.framework"
+strip_framework "FBSimulatorControl.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
 strip_framework "FBDeviceControl.framework/Versions/Current/Frameworks/XCTestBootstrap.framework"
 strip_framework "FBDeviceControl.framework/Versions/Current/Frameworks/FBControlCore.framework"
+strip_framework "FBDeviceControl.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
 strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/FBControlCore.framework"
+strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
+strip_framework "FBControlCore.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
+
 
