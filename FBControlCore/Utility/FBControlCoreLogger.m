@@ -10,6 +10,9 @@
 #import "FBControlCoreLogger.h"
 #import "CalabashUtils.h"
 #import <asl.h>
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 @interface FBASLClientWrapper : NSObject
 
@@ -124,7 +127,7 @@
 - (id<FBControlCoreLogger>)log:(NSString *)string
 {
   string = self.prefix ? [self.prefix stringByAppendingFormat:@" %@", string] : string;
-  DDLogInfo(@"%@", string);
+  DDLogDebug(@"%@", string);
   //asl_log(self.client, NULL, self.currentLevel, string.UTF8String, NULL);
   return self;
 }

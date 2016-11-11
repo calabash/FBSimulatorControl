@@ -492,6 +492,21 @@
 		EEF4497E1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m in Sources */ = {isa = PBXBuildFile; fileRef = EEF4497C1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m */; };
 		F56EED811E9C9A3A0073C4EE /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F56EED851E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED861E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED871E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED881E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED891E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8A1E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8B1E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8C1E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8E1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED8F1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED901E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED911E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED931E9CC8820073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED941E9CC8900073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED951E9CC8960073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED961E9CC89C0073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -587,6 +602,7 @@
 			files = (
 				AA98ECAA1D0559D000916AED /* FBControlCore.framework in CopyFiles */,
 				AA98ECAE1D0559E400916AED /* XCTestBootstrap.framework in CopyFiles */,
+				F56EED951E9CC8960073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -598,6 +614,7 @@
 			files = (
 				AA98ECAC1D0559DF00916AED /* FBControlCore.framework in CopyFiles */,
 				AA98ECAD1D0559E100916AED /* XCTestBootstrap.framework in CopyFiles */,
+				F56EED961E9CC89C0073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -608,6 +625,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				AA98ECB01D055A0000916AED /* FBControlCore.framework in CopyFiles */,
+				F56EED941E9CC8900073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -618,6 +636,16 @@
 			dstSubfolderSpec = 10;
 			files = (
 				AAC083781B9FBA7600451648 /* FBSimulatorControl.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F56EED921E9CC8780073C4EE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F56EED931E9CC8820073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1358,6 +1386,7 @@
 		EEF4497C1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBXCTestBootstrapFixtures.m; sourceTree = "<group>"; };
 		F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalabashUtils.h; sourceTree = "<group>"; };
 		F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalabashUtils.m; sourceTree = "<group>"; };
+		F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = Vendor/CocoaLumberjack.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1375,6 +1404,7 @@
 				AA719E4A1D672D6300947611 /* Foundation.framework in Frameworks */,
 				AA3C18421D5DE3BB00419EAA /* IOSurface.framework in Frameworks */,
 				EEBD608A1C90655900298A07 /* FBControlCore.framework in Frameworks */,
+				F56EED901E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				EE1277541C931C5E00DE52A1 /* XCTestBootstrap.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1399,6 +1429,7 @@
 				AAEA171D1E005CD7001BD35A /* CoreMediaIO.framework in Frameworks */,
 				AAC8B2631CEC55370034A865 /* Foundation.framework in Frameworks */,
 				AAC8B2601CEC55270034A865 /* FBControlCore.framework in Frameworks */,
+				F56EED911E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				AAC8B2611CEC552A0034A865 /* XCTestBootstrap.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1416,6 +1447,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA719E491D672D5A00947611 /* Foundation.framework in Frameworks */,
+				F56EED8F1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				EE4F0DDD1C91BA8300608E89 /* FBControlCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1435,6 +1467,7 @@
 			files = (
 				AA719E481D672D5000947611 /* Foundation.framework in Frameworks */,
 				AA1958791D6F4CF90059886F /* Cocoa.framework in Frameworks */,
+				F56EED8E1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				AA19587C1D6F4D2F0059886F /* CoreGraphics.framework in Frameworks */,
 				AA1958781D6F4CF20059886F /* ServiceManagement.framework in Frameworks */,
 			);
@@ -2325,6 +2358,7 @@
 		B401C97968022A5500000000 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */,
 				AAC241231BB3113F0054570C /* AppKit.framework */,
 				AAC241251BB311690054570C /* ApplicationServices.framework */,
 				AAB4AC1D1BB586930046F6A1 /* AVFoundation.framework */,
@@ -3128,6 +3162,7 @@
 				EEBD600A1C90628F00298A07 /* Frameworks */,
 				EEBD600B1C90628F00298A07 /* Headers */,
 				EEBD600C1C90628F00298A07 /* Resources */,
+				F56EED921E9CC8780073C4EE /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -3665,6 +3700,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -3687,6 +3726,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -3706,6 +3749,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
@@ -3746,6 +3793,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -3756,6 +3807,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -3766,6 +3821,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
@@ -3800,6 +3859,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -3810,6 +3873,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -3820,6 +3887,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
@@ -3875,6 +3946,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -3885,6 +3960,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -3895,6 +3974,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
