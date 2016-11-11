@@ -9,10 +9,12 @@
 
 #import "FBProductBundle.h"
 #import "FBProductBundle+Private.h"
-
 #import <FBControlCore/FBControlCore.h>
-
 #import "XCTestBootstrapError.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
+
 
 @interface FBProductBundle ()
 @property (nonatomic, copy) NSString *name;
@@ -128,7 +130,7 @@
   NSDictionary *infoPlist = [self.fileManager dictionaryWithPath:plistPath];
   if (!infoPlist) {
       plistPath = [self.bundlePath stringByAppendingPathComponent:@"Contents/Info.plist"];
-      DDLogInfo(@"Couldn't find Info.plist at %@, checking %@", self.bundlePath, plistPath);
+      DDLogWarn(@"Couldn't find Info.plist at %@, checking %@", self.bundlePath, plistPath);
     infoPlist = [self.fileManager dictionaryWithPath:plistPath];
       DDLogError(@"No Info.plist found");
   }
