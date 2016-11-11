@@ -10,6 +10,9 @@
 #import "FBControlCoreLogger.h"
 #import "CalabashUtils.h"
 #import <asl.h>
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 @interface FBASLClientWrapper : NSObject
 
@@ -124,7 +127,7 @@
 - (id<FBControlCoreLogger>)log:(NSString *)string
 {
   string = self.prefix ? [self.prefix stringByAppendingFormat:@" %@", string] : string;
-  DDLogInfo(@"%@", string);
+  DDLogDebug(@"%@", string);
   //asl_log(self.client, NULL, self.currentLevel, string.UTF8String, NULL);
   return self;
 }
@@ -168,27 +171,6 @@
 @end
 
 @implementation FBControlCoreLogger
-
-+ (void)load {
-    DDFileLogger *fileLogger = [DDFileLogger new];
-    NSError *e;
-    NSString *logsDir = [CalabashUtils logfileLocation:&e];
-
-    if (logsDir && !e) {
-        DDLogFileManagerDefault *logFileManager = [[DDLogFileManagerDefault alloc] initWithLogsDirectory:logsDir];
-        fileLogger = [[DDFileLogger alloc] initWithLogFileManager:logFileManager];
-    }
-
-    //Logfile rolls every day or 1 mb of log
-    fileLogger.rollingFrequency = 60 * 60 * 24;
-    fileLogger.maximumFileSize = 1024 * 1024; //1Mb
-    fileLogger.logFileManager.maximumNumberOfLogFiles = 10;
-    [DDLog addLogger:fileLogger];
-
-    if (e) {
-        DDLogError(@"Error creating %@", e);
-    }
-}
 
 + (id<FBControlCoreLogger>)aslLoggerWritingToStderrr:(BOOL)writeToStdErr withDebugLogging:(BOOL)debugLogging
 {
