@@ -8,18 +8,19 @@
  */
 
 #import "FBXCTestRunStrategy.h"
-
 #import <Foundation/Foundation.h>
-#import <XCTestBootstrap/XCTestBootstrap.h>
 #import <FBControlCore/FBControlCore.h>
-
 #import "FBDeviceOperator.h"
 #import "FBProductBundle.h"
 #import "FBTestManager.h"
+#import "FBTestManagerResult.h"
 #import "FBTestManagerContext.h"
 #import "FBTestRunnerConfiguration.h"
 #import "FBXCTestPreparationStrategy.h"
 #import "XCTestBootstrapError.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 @interface FBXCTestRunStrategy ()
 

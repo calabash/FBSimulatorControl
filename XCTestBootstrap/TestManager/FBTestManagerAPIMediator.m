@@ -37,6 +37,9 @@
 #import "FBTestBundleResult.h"
 #import "FBTestManagerResult.h"
 #import "FBTestDaemonResult.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 const NSInteger FBProtocolVersion = 0x16;
 const NSInteger FBProtocolMinimumVersion = 0x8;
