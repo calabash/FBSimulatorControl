@@ -34,7 +34,6 @@
 #import "FBSimulatorDiagnostics.h"
 #import "FBSimulatorEventSink.h"
 #import "FBSimulatorBootConfiguration.h"
-#import "CalabashUtils.h"
 
 /**
  Enumeration to keep track of internal state.
