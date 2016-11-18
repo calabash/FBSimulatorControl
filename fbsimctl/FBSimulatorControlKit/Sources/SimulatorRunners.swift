@@ -62,10 +62,10 @@ struct SimulatorActionRunner : Runner {
       return SimulatorInteractionRunner(reporter, EventName.Approve, StringsSubject(bundleIDs)) { interaction in
         interaction.authorizeLocationSettings(bundleIDs)
       }
-    case .boot(let maybeLaunchConfiguration):
-      let launchConfiguration = maybeLaunchConfiguration ?? FBSimulatorLaunchConfiguration.default()
-      return SimulatorInteractionRunner(reporter, EventName.Boot, ControlCoreSubject(launchConfiguration)) { interaction in
-        interaction.prepare(forLaunch: launchConfiguration).bootSimulator(launchConfiguration)
+    case .boot(let maybeBootConfiguration):
+      let bootConfiguration = maybeBootConfiguration ?? FBSimulatorBootConfiguration.default()
+      return SimulatorInteractionRunner(reporter, EventName.Boot, ControlCoreSubject(bootConfiguration)) { interaction in
+        interaction.prepare(forBoot: bootConfiguration).bootSimulator(bootConfiguration)
       }
     case .clearKeychain(let maybeBundleID):
       return SimulatorInteractionRunner(reporter, EventName.ClearKeychain, ControlCoreSubject(simulator)) { interaction in
@@ -92,12 +92,14 @@ struct SimulatorActionRunner : Runner {
       return SimulatorInteractionRunner(reporter, EventName.Launch, ControlCoreSubject(launch)) { interaction in
         interaction.launchApplication(launch)
       }
-    case .launchXCTest(let launch, let bundlePath, let timeout):
-      return SimulatorInteractionRunner(reporter, EventName.LaunchXCTest, ControlCoreSubject(launch)) { interaction in
-        let testLaunchConfiguration = FBTestLaunchConfiguration().withTestBundlePath(bundlePath).withApplicationLaunchConfiguration(launch).withUITesting(true)
-        interaction.startTest(with: testLaunchConfiguration)
-        if let timeout = timeout {
-            interaction.waitUntilAllTestRunnersHaveFinishedTesting(withTimeout: timeout)
+    case .launchXCTest(var configuration):
+      // Always initialize for UI Testing until we make this optional
+      configuration = configuration.withUITesting(true)
+      return SimulatorInteractionRunner(reporter, EventName.LaunchXCTest, ControlCoreSubject(configuration)) { interaction in
+        interaction.startTest(with: configuration)
+
+        if configuration.timeout > 0 {
+            interaction.waitUntilAllTestRunnersHaveFinishedTesting(withTimeout: configuration.timeout)
         }
       }
     case .listApps:
@@ -123,6 +125,8 @@ struct SimulatorActionRunner : Runner {
       }
     case .search(let search):
       return SearchRunner(reporter, search)
+    case .serviceInfo(let identifier):
+      return ServiceInfoRunner(reporter: reporter, identifier: identifier)
     case .shutdown:
       return iOSTargetRunner(reporter, EventName.Shutdown, ControlCoreSubject(simulator)) {
         try simulator.set!.kill(simulator)
@@ -179,10 +183,10 @@ private struct SimulatorInteractionRunner : Runner {
 private struct DiagnosticsRunner : Runner {
   let reporter: SimulatorReporter
   let subject: ControlCoreValue
-  let query: FBSimulatorDiagnosticQuery
+  let query: FBDiagnosticQuery
   let format: DiagnosticFormat
 
-  init(_ reporter: SimulatorReporter, _ subject: ControlCoreValue, _ query: FBSimulatorDiagnosticQuery, _ format: DiagnosticFormat) {
+  init(_ reporter: SimulatorReporter, _ subject: ControlCoreValue, _ query: FBDiagnosticQuery, _ format: DiagnosticFormat) {
     self.reporter = reporter
     self.subject = subject
     self.query = query
@@ -190,14 +194,18 @@ private struct DiagnosticsRunner : Runner {
   }
 
   func run() -> CommandResult {
-    let diagnostics = self.fetchDiagnostics()
-
     reporter.reportValue(EventName.Diagnose, EventType.Started, query)
-    for diagnostic in diagnostics {
-      reporter.reportValue(EventName.Diagnostic, EventType.Discrete, diagnostic)
-    }
+    let diagnostics = self.fetchDiagnostics()
     reporter.reportValue(EventName.Diagnose, EventType.Ended, query)
-    return .success(nil)
+
+    let subjects: [EventReporterSubject] = diagnostics.map { diagnostic in
+      return SimpleSubject(
+        EventName.Diagnostic,
+        EventType.Discrete,
+        ControlCoreSubject(diagnostic)
+      )
+    }
+    return .success(CompositeSubject(subjects))
   }
 
   func fetchDiagnostics() -> [FBDiagnostic] {
@@ -232,6 +240,22 @@ private struct SearchRunner : Runner {
     let results = search.search(diagnostics)
     self.reporter.report(EventName.Search, EventType.Discrete, ControlCoreSubject(results))
     return .success(nil)
+  }
+}
+
+private struct ServiceInfoRunner : Runner {
+  let reporter: SimulatorReporter
+  let identifier: String
+
+  func run() -> CommandResult {
+    var pid: pid_t = 0
+    guard let _ = try? self.reporter.simulator.launchctl.serviceName(forBundleID: self.identifier, processIdentifierOut: &pid) else {
+      return .failure("Could not get service for name \(identifier)")
+    }
+    guard let processInfo = self.reporter.simulator.processFetcher.processFetcher.processInfo(for: pid) else {
+      return .failure("Could not get process info for pid \(pid)")
+    }
+    return .success(SimpleSubject(EventName.ServiceInfo, EventType.Discrete, ControlCoreSubject(processInfo)))
   }
 }
 

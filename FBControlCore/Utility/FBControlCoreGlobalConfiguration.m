@@ -12,7 +12,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "FBControlCoreLogger.h"
-#import "FBTaskExecutor.h"
+#import "FBTaskBuilder.h"
 
 NSString *const FBControlCoreStderrLogging = @"FBCONTROLCORE_LOGGING";
 NSString *const FBControlCoreDebugLogging = @"FBCONTROLCORE_DEBUG_LOGGING";
@@ -26,11 +26,7 @@ static id<FBControlCoreLogger> logger;
   static dispatch_once_t onceToken;
   static NSString *directory;
   dispatch_once(&onceToken, ^{
-    directory = [[[FBTaskExecutor.sharedInstance
-      taskWithLaunchPath:@"/usr/bin/xcode-select" arguments:@[@"--print-path"]]
-      startSynchronouslyWithTimeout:FBControlCoreGlobalConfiguration.fastTimeout]
-      stdOut];
-    NSCAssert(directory, @"Xcode Path could not be determined from `xcode-select`");
+    directory = [self findXcodeDeveloperDirectoryOrAssert];
   });
   return directory;
 }
@@ -204,6 +200,18 @@ static id<FBControlCoreLogger> logger;
     stringByAppendingPathComponent:@"Info.plist"];
 }
 
++ (NSString *)findXcodeDeveloperDirectoryOrAssert
+{
+  FBTask *task = [[FBTaskBuilder
+    taskWithLaunchPath:@"/usr/bin/xcode-select" arguments:@[@"--print-path"]]
+    startSynchronouslyWithTimeout:FBControlCoreGlobalConfiguration.fastTimeout];
+  NSString *directory = [task stdOut];
+  NSAssert(directory, @"Xcode Path could not be determined from `xcode-select`: %@", task.error);
+  directory = [directory stringByResolvingSymlinksInPath];
+  NSAssert([NSFileManager.defaultManager fileExistsAtPath:directory], @"No Xcode Directory at: %@", directory);
+  return directory;
+}
+
 @end
 
 @implementation FBControlCoreGlobalConfiguration (Environment)
@@ -216,10 +224,15 @@ static id<FBControlCoreLogger> logger;
   logger = defaultLogger;
 }
 
++ (void)setDebugLoggingEnabled:(BOOL)enabled
+{
+  setenv(FBControlCoreDebugLogging.UTF8String, enabled ? "YES" : "NO", 1);
+}
+
 + (void)setDefaultLoggerToASLWithStderrLogging:(BOOL)stderrLogging debugLogging:(BOOL)debugLogging
 {
   setenv(FBControlCoreStderrLogging.UTF8String, stderrLogging ? "YES" : "NO", 1);
-  setenv(FBControlCoreDebugLogging.UTF8String, debugLogging ? "YES" : "NO", 1);
+  [self setDebugLoggingEnabled:debugLogging];
 }
 
 @end

@@ -24,8 +24,8 @@ public struct Configuration {
  Options for Creating a Server for listening to commands on.
  */
 public enum Server {
-  case stdIO
-  case socket(in_port_t)
+  case empty
+  case stdin
   case http(in_port_t)
 }
 
@@ -50,9 +50,9 @@ public enum CreationSpecification {
   An Enumeration specifying the output format of diagnostics.
 */
 public enum DiagnosticFormat : String {
-  case CurrentFormat = "--current-format"
-  case Path = "--path"
-  case Content = "--content"
+  case CurrentFormat = "current-format"
+  case Path = "path"
+  case Content = "content"
 }
 
 /**
@@ -60,17 +60,17 @@ public enum DiagnosticFormat : String {
  */
 public enum Action {
   case approve([String])
-  case boot(FBSimulatorLaunchConfiguration?)
+  case boot(FBSimulatorBootConfiguration?)
   case clearKeychain(String?)
   case config
   case create(CreationSpecification)
   case delete
-  case diagnose(FBSimulatorDiagnosticQuery, DiagnosticFormat)
+  case diagnose(FBDiagnosticQuery, DiagnosticFormat)
   case erase
   case install(String)
   case launchAgent(FBAgentLaunchConfiguration)
   case launchApp(FBApplicationLaunchConfiguration)
-  case launchXCTest(FBApplicationLaunchConfiguration, String, TimeInterval?)
+  case launchXCTest(FBTestLaunchConfiguration)
   case list
   case listApps
   case listDeviceSets
@@ -79,13 +79,14 @@ public enum Action {
   case record(Bool)
   case relaunch(FBApplicationLaunchConfiguration)
   case search(FBBatchLogSearch)
+  case serviceInfo(String)
+  case setLocation(Double,Double)
   case shutdown
   case tap(Double, Double)
   case terminate(String)
   case uninstall(String)
   case upload([FBDiagnostic])
   case watchdogOverride([String], TimeInterval)
-  case setLocation(Double,Double)
 }
 
 /**
@@ -203,8 +204,8 @@ public func == (left: Action, right: Action) -> Bool {
     return leftLaunch == rightLaunch
   case (.launchApp(let leftLaunch), .launchApp(let rightLaunch)):
     return leftLaunch == rightLaunch
-  case (.launchXCTest(let leftLaunch, let leftBundle, let leftTimeout), .launchXCTest(let rightLaunch, let rightBundle, let rightTimeout)):
-    return leftLaunch == rightLaunch && leftBundle == rightBundle && leftTimeout == rightTimeout
+  case (.launchXCTest(let leftConfiguration), .launchXCTest(let rightConfiguration)):
+    return leftConfiguration == rightConfiguration
   case (.list, .list):
     return true
   case (.listApps, .listApps):
@@ -221,12 +222,14 @@ public func == (left: Action, right: Action) -> Bool {
     return leftLaunch == rightLaunch
   case (.search(let leftSearch), .search(let rightSearch)):
     return leftSearch == rightSearch
+  case (.serviceInfo(let leftIdentifier), .serviceInfo(let rightIdentifier)):
+    return leftIdentifier == rightIdentifier
+  case (.setLocation(let leftLat, let leftLon), .setLocation(let rightLat, let rightLon)):
+    return leftLat == rightLat && leftLon == rightLon
   case (.shutdown, .shutdown):
     return true
   case (.tap(let leftX, let leftY), .tap(let rightX, let rightY)):
     return leftX == rightX && leftY == rightY
-  case (.setLocation(let leftLat, let leftLon), .setLocation(let rightLat, let rightLon)):
-    return leftLat == rightLat && leftLon == rightLon
   case (.terminate(let leftBundleID), .terminate(let rightBundleID)):
     return leftBundleID == rightBundleID
   case (.uninstall(let leftBundleID), .uninstall(let rightBundleID)):
@@ -265,8 +268,8 @@ extension Action {
       return (EventName.Launch, ControlCoreSubject(launch))
     case .launchApp(let launch):
       return (EventName.Launch, ControlCoreSubject(launch))
-    case .launchXCTest(let launch, _, _):
-        return (EventName.LaunchXCTest, ControlCoreSubject(launch))
+    case .launchXCTest(let configuration):
+        return (EventName.LaunchXCTest, ControlCoreSubject(configuration))
     case .list:
         return (EventName.List, nil)
     case .listApps:
@@ -283,20 +286,22 @@ extension Action {
       return (EventName.Relaunch, ControlCoreSubject(appLaunch))
     case .search(let search):
       return (EventName.Search, ControlCoreSubject(search))
+    case .serviceInfo:
+      return (EventName.ServiceInfo, nil)
+    case .setLocation:
+      return (EventName.SetLocation, nil)
     case .shutdown:
       return (EventName.Shutdown, nil)
     case .tap:
       return (EventName.Tap, nil)
     case .terminate(let bundleID):
-      return (EventName.Record, bundleID)
+      return (EventName.Terminate, bundleID)
     case .uninstall(let bundleID):
       return (EventName.Uninstall, bundleID)
     case .upload:
       return (EventName.Diagnose, nil)
     case .watchdogOverride(let bundleIDs, _):
       return (EventName.WatchdogOverride, StringsSubject(bundleIDs))
-    case .setLocation:
-      return (EventName.SetLocation, nil)
     }
   }}
 }
@@ -304,10 +309,10 @@ extension Action {
 extension Server : Equatable { }
 public func == (left: Server, right: Server) -> Bool {
   switch (left, right) {
-  case (.stdIO, .stdIO):
+  case (.empty, .empty):
     return true
-  case (.socket(let leftPort), .socket(let rightPort)):
-    return leftPort == rightPort
+  case (.stdin, .stdin):
+    return true
   case (.http(let leftPort), .http(let rightPort)):
     return leftPort == rightPort
   default:
@@ -318,14 +323,13 @@ public func == (left: Server, right: Server) -> Bool {
 extension Server : EventReporterSubject {
   public var jsonDescription: JSON { get {
     switch self {
-    case .stdIO:
+    case .empty:
       return JSON.jDictionary([
-        "type" : JSON.jString("stdio")
+        "type" : JSON.jString("empty")
       ])
-    case .socket(let port):
+    case .stdin:
       return JSON.jDictionary([
-        "type" : JSON.jString("socket"),
-        "port" : JSON.jNumber(NSNumber(value: Int32(port) as Int32))
+        "type" : JSON.jString("stdin")
       ])
     case .http(let port):
       return JSON.jDictionary([
@@ -337,8 +341,8 @@ extension Server : EventReporterSubject {
 
   public var description: String { get {
     switch self {
-    case .stdIO: return "stdio"
-    case .socket(let port): return "Socket: Port \(port)"
+    case .empty: return "empty"
+    case .stdin: return "stdin"
     case .http(let port): return "HTTP: Port \(port)"
     }
   }}

@@ -17,9 +17,8 @@
 
 #import "FBXCTestConfiguration.h"
 #import "FBXCTestReporter.h"
-#import "FBMultiFileReader.h"
-#import "FBLineReader.h"
 #import "FBXCTestError.h"
+#import "FBXCTestLogger.h"
 #import "FBXCTestShimConfiguration.h"
 
 static NSTimeInterval const CrashLogStartDateFuzz = -10;
@@ -27,18 +26,18 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
 @interface FBLogicTestRunner ()
 
 @property (nonatomic, strong, nullable, readonly) FBSimulator *simulator;
-@property (nonatomic, strong, readonly) FBXCTestConfiguration *configuration;
+@property (nonatomic, strong, readonly) FBLogicTestConfiguration *configuration;
 
 @end
 
 @implementation FBLogicTestRunner
 
-+ (instancetype)withSimulator:(nullable FBSimulator *)simulator configuration:(FBXCTestConfiguration *)configuration
++ (instancetype)withSimulator:(nullable FBSimulator *)simulator configuration:(FBLogicTestConfiguration *)configuration
 {
   return [[self alloc] initWithSimulator:simulator configuration:configuration];
 }
 
-- (instancetype)initWithSimulator:(nullable FBSimulator *)simulator configuration:(FBXCTestConfiguration *)configuration
+- (instancetype)initWithSimulator:(nullable FBSimulator *)simulator configuration:(FBLogicTestConfiguration *)configuration
 {
   self = [super init];
   if (!self) {
@@ -58,7 +57,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
 
   [self.configuration.reporter didBeginExecutingTestPlan];
 
-  NSString *xctestPath = [self.configuration xctestPathForSimulator:simulator];
+  NSString *xctestPath = self.configuration.xctestPath;
   NSString *simctlPath = [FBControlCoreGlobalConfiguration.developerDirectory stringByAppendingPathComponent:@"usr/bin/simctl"];
   NSString *otestShimPath = simulator ? self.configuration.shims.iOSSimulatorOtestShimPath : self.configuration.shims.macOtestShimPath;
   NSString *otestShimOutputPath = [self.configuration.workingDirectory stringByAppendingPathComponent:@"shim-output-pipe"];
@@ -89,7 +88,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
     task.launchPath = simctlPath;
     task.arguments = @[@"--set", simulator.deviceSetPath, @"spawn", simulator.udid, xctestPath, @"-XCTest", testSpecifier, self.configuration.testBundlePath];
   }
-  task.environment = [FBXCTestConfiguration buildEnvironmentWithEntries:environment simulator:simulator];
+  task.environment = [self.configuration buildEnvironmentWithEntries:environment];
   task.standardOutput = testOutputPipe.fileHandleForWriting;
   task.standardError = testOutputPipe.fileHandleForWriting;
   [task launch];
@@ -101,7 +100,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
     return [[FBXCTestError describeFormat:@"Failed to open fifo for reading: %@", otestShimOutputPath] failBool:error];
   }
 
-  FBMultiFileReader *multiReader = [FBMultiFileReader fileReader];
+  FBMultiFileReader *multiReader = [FBMultiFileReader new];
 
   FBLineReader *otestLineReader = [FBLineReader lineReaderWithConsumer:^(NSString *line){
     if ([line length] == 0) {
@@ -109,28 +108,18 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
     }
     NSDictionary *event = [NSJSONSerialization JSONObjectWithData:[line dataUsingEncoding:NSUTF8StringEncoding] options:0 error:error];
     if (event == nil) {
-      NSLog(@"Received unexpected output from otest-shim:\n%@", line);
+      [self.configuration.logger logFormat:@"Received unexpected output from otest-shim:\n%@", line];
     }
     [self.configuration.reporter handleExternalEvent:event];
   }];
-  if (![multiReader
-        addFileHandle:otestShimOutputHandle
-        withConsumer:^(NSData *data) {
-          [otestLineReader consumeData:data];
-        }
-        error:error]) {
+  if (![multiReader addFileHandle:otestShimOutputHandle withConsumer:otestLineReader error:error]) {
     return NO;
   }
 
   FBLineReader *testOutputLineReader = [FBLineReader lineReaderWithConsumer:^(NSString *line){
     [self.configuration.reporter testHadOutput:[line stringByAppendingString:@"\n"]];
   }];
-  if (![multiReader
-        addFileHandle:testOutputPipe.fileHandleForReading
-        withConsumer:^(NSData *data) {
-          [testOutputLineReader consumeData:data];
-        }
-        error:error]) {
+  if (![multiReader addFileHandle:testOutputPipe.fileHandleForReading withConsumer:testOutputLineReader error:error]) {
     return NO;
   }
 

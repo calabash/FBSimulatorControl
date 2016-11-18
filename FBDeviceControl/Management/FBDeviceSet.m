@@ -30,7 +30,6 @@
 #import "FBDeviceControlFrameworkLoader.h"
 #import "FBDevice+Private.h"
 #import "FBAMDevice.h"
-#import "CalabashUtils.h"
 
 static const NSTimeInterval FBDeviceSetDeviceManagerTickleTime = 2;
 

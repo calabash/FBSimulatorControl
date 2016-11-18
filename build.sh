@@ -5,6 +5,14 @@ set -e
 BUILD_DIRECTORY=build
 CLI_E2E_PATH=fbsimctl/cli-tests/executable-under-test
 
+function assert_xcode_version() {
+  local version=$1
+  if ! xcodebuild -version | grep -q "Xcode $version\."; then
+    echo "building fbsimctl requires Xcode $version"
+    exit 1
+  fi
+}
+
 function assert_has_carthage() {
   if ! command -v carthage; then
       echo "build needs 'carthage' to bootstrap dependencies"
@@ -14,6 +22,7 @@ function assert_has_carthage() {
 }
 
 function build_fbsimctl_deps() {
+  assert_xcode_version 8
   assert_has_carthage
   pushd fbsimctl
   carthage bootstrap --platform Mac
@@ -120,6 +129,7 @@ function strip_framework() {
 function cli_build() {
   local name=$1
   local output_directory=$2
+  local script_directory=$1/Scripts
 
   xcodebuild \
     -workspace $name/$name.xcworkspace \
@@ -137,12 +147,13 @@ function cli_build() {
   strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/FBControlCore.framework"
 
   if [[ -n $output_directory ]]; then
-    cli_install $output_directory
+    cli_install $output_directory $script_directory
   fi
 }
 
 function cli_install() {
   local output_directory=$1
+  local script_directory=$2
   local cli_artifact="$BUILD_DIRECTORY/Build/Products/Debug/!(*.framework)"
   local framework_artifact="$BUILD_DIRECTORY/Build/Products/Debug/*.framework"
   local output_directory_cli="$output_directory/bin"
@@ -158,6 +169,11 @@ function cli_install() {
 
   echo "Copying Build output from $framework_artifact to $output_directory_framework"
   cp -R $framework_artifact "$output_directory_framework"
+
+  if [[ -d $script_directory ]]; then
+    echo "Copying Scripts from $script_directory to $output_directory_cli"
+    cp -R "$2"/* "$output_directory_cli"
+  fi
 
   shopt -u extglob
 }

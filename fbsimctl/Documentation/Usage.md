@@ -89,23 +89,18 @@ $ fbsimctl --state=booted diagnose | grep system_log | awk '{print $NF}' | xargs
 
 ## `listen`
 
-The `listen` action of `fbsimctl`, can be used to accept a stream of commands over `stdin`, or to start a HTTP Server for accepting commands:
+The `listen` action of `fbsimctl` will keep the `fbsimctl` process running, until a `SIGINT`, `SIGHUP` or `SIGTERM` is sent to the process. This can be used to keep a Simulator alive that was previously launched with `--direct-launch`. 
 
-- `listen` with no arguments will accept commands over `stdin`. A command will interpreted, when a newline character is sent.
+Additionally, it is possible to listen on an interface for incoming commands:
+
+- `listen --stdin` with no arguments will accept commands over `stdin`. A command will interpreted, when a newline character is sent.
 - `listen --http [PORT-NUMBER]` will start a HTTP server on `PORT-NUMBER`. Many of the common `fbsimctl` actions are exposed with individual endpoints.
-
-When you wish to complete the `listen` action, send a `SIGHUP` to the `fbsimctl` process.
 
 ## Video Recording with Xcode 8
 
-Since Xcode 8, `fbsimctl` can record the video of any booted Simulator, regardless of where it was booted. Here's a simple one-liner for recording a video and printing the location of the file to `stdout`:
-```
-# Start video recording for all booted Simulators. Send a Ctrl-C to stop video recording and print the path to the video
-$ fbsimctl --debug-logging record start -- listen -- record stop > /dev/null && fbsimctl --state=booted diagnose | grep video | awk '{print $NF}'
-/Users/user/Library/Developer/CoreSimulator/Devices/932105B4-3658-4E11-8010-81FB8587EA75/data/fbsimulatorcontrol/diagnostics/video.mp4
-```
+Since Xcode 8, `fbsimctl` can record the video of any booted Simulator, regardless of where it was booted. There's a handy script called [`fbsimrecord` for doing this](../Scripts/README.md). This script is included in the standard install for convenience and quick recall.
 
-This is a great command to alias in your shell for easy recall. The video for each booted simulator will be printed to `stdout` so you can combine with `open(1)`, `cp(1)` or any other command that you wish to use.
+The location of the video file for each booted simulator will be printed to `stdout`. This makes it easy to combine with `open(1)`, `cp(1)` or any other command for further automation. The script itself simple so you can automate in any way that you choose.
 
 ## Video Recording with Xcode 7
 

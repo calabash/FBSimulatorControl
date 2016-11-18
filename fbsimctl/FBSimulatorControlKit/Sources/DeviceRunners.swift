@@ -17,7 +17,24 @@ struct DeviceActionRunner : Runner {
     let (action, device) = self.context.value
     let reporter = DeviceReporter(device: device, format: self.context.format, reporter: self.context.reporter)
     let context = self.context.replace((action, device, reporter))
-    return DeviceActionRunner.makeRunner(context).run()
+
+    switch (action) {
+      case .launchXCTest(let configuration):
+        do {
+          let strategy = FBDeviceTestRunStrategy(
+            device: device,
+            testHostPath: configuration.testHostPath,
+            testBundlePath: configuration.testBundlePath,
+            withTimeout: configuration.timeout
+          )
+          try strategy.start();
+        } catch let error as NSError {
+          return CommandResult.failure(error.description)
+        }
+        return CommandResult.success(configuration.description)
+      default:
+        return DeviceActionRunner.makeRunner(context).run()
+    }
   }
 
   static func makeRunner(_ context: iOSRunnerContext<(Action, FBDevice, DeviceReporter)>) -> Runner {

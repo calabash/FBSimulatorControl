@@ -19,19 +19,16 @@
 #import "FBXCTestShimConfiguration.h"
 
 @interface FBXCTestConfiguration ()
+
 @property (nonatomic, strong, readwrite) id<FBControlCoreLogger> logger;
 @property (nonatomic, strong, readwrite) id<FBXCTestReporter> reporter;
-@property (nonatomic, strong, readwrite) FBSimulatorConfiguration *targetDeviceConfiguration;
+@property (nonatomic, strong, readwrite) id<FBControlCoreConfiguration_Device> iosDevice;
+@property (nonatomic, strong, readwrite) id<FBControlCoreConfiguration_OS> iosVersion;
 
 @property (nonatomic, copy, readwrite) NSString *workingDirectory;
 @property (nonatomic, copy, readwrite) NSString *testBundlePath;
 @property (nonatomic, copy, readwrite) NSString *runnerAppPath;
-@property (nonatomic, copy, readwrite) NSString *simulatorName;
-@property (nonatomic, copy, readwrite) NSString *simulatorOS;
 @property (nonatomic, copy, readwrite) NSString *testFilter;
-
-@property (nonatomic, assign, readwrite) BOOL runWithoutSimulator;
-@property (nonatomic, assign, readwrite) BOOL listTestsOnly;
 
 @property (nonatomic, copy, nullable, readwrite) FBXCTestShimConfiguration *shims;
 
@@ -39,7 +36,21 @@
 
 @implementation FBXCTestConfiguration
 
-- (instancetype)initWithReporter:(id<FBXCTestReporter>)reporter processUnderTestEnvironment:(NSDictionary<NSString *, NSString *> *)environment
++ (nullable instancetype)configurationFromArguments:(NSArray<NSString *> *)arguments processUnderTestEnvironment:(NSDictionary<NSString *, NSString *> *)environment workingDirectory:(NSString *)workingDirectory reporter:(nullable id<FBXCTestReporter>)reporter logger:(nullable FBXCTestLogger *)logger error:(NSError **)error
+{
+  Class configurationClass = [self testConfigurationClassForArguments:arguments error:error];
+  if (!configurationClass) {
+    return nil;
+  }
+
+  FBXCTestConfiguration *configuration = [[configurationClass alloc] initWithReporter:reporter logger:logger processUnderTestEnvironment:environment];
+  if (![configuration loadWithArguments:arguments workingDirectory:workingDirectory error:error]) {
+    return nil;
+  }
+  return configuration;
+}
+
+- (instancetype)initWithReporter:(nullable id<FBXCTestReporter>)reporter logger:(FBXCTestLogger *)logger processUnderTestEnvironment:(NSDictionary<NSString *, NSString *> *)environment
 {
   self = [super init];
   if (!self) {
@@ -48,20 +59,35 @@
 
   _reporter = reporter;
   _processUnderTestEnvironment = environment ?: @{};
+  _logger = logger;
 
   return self;
 }
 
++ (Class)testConfigurationClassForArguments:(NSArray<NSString *> *)arguments error:(NSError **)error
+{
+  NSSet<NSString *> *argumentSet = [NSSet setWithArray:arguments];
+  if ([argumentSet containsObject:@"-listTestsOnly"]) {
+    return [FBListTestConfiguration class];
+  }
+  if ([argumentSet containsObject:@"-logicTest"]) {
+    return [FBLogicTestConfiguration class];
+  }
+  if ([argumentSet containsObject:@"-appTest"]) {
+    return [FBApplicationTestConfiguration class];
+  }
+  return [[FBControlCoreError
+    describeFormat:@"Could not determine test runner type from %@", [FBCollectionInformation oneLineDescriptionFromArray:arguments]]
+    fail:error];
+}
+
 - (BOOL)loadWithArguments:(NSArray<NSString *> *)arguments workingDirectory:(NSString *)workingDirectory error:(NSError **)error
 {
-  // Sets the default logger for all Frameworks.
-  self.logger = [FBXCTestLogger loggerInTemporaryDirectory];
-  [FBControlCoreGlobalConfiguration setDefaultLogger:self.logger];
-
   arguments = [arguments subarrayWithRange:NSMakeRange(1, [arguments count] - 1)];
   NSUInteger nextArgument = 0;
   NSString *testFilter = nil;
   BOOL shimsRequired = YES;
+  BOOL ignoreSimulatorDestination = NO;
 
   while (nextArgument < arguments.count) {
     NSString *argument = arguments[nextArgument++];
@@ -69,7 +95,7 @@
       // Ignore. This is the only action we support.
       continue;
     } else if ([argument isEqualToString:@"-listTestsOnly"]) {
-      self.listTestsOnly = YES;
+      // Ignore. This is handled by the configuration class.
       continue;
     }
     if (nextArgument >= arguments.count) {
@@ -81,13 +107,20 @@
         return NO;
       }
     } else if ([argument isEqualToString:@"-sdk"]) {
-      if (![self setSDK:parameter error:error]) {
-        return NO;
+      if ([parameter isEqualToString:@"macosx"]) {
+        ignoreSimulatorDestination = YES;
       }
     } else if ([argument isEqualToString:@"-destination"]) {
-      if (![self setDestination:parameter error:error]) {
+      if (ignoreSimulatorDestination) {
+        continue;
+      }
+      id<FBControlCoreConfiguration_OS> os = nil;
+      id<FBControlCoreConfiguration_Device> device = nil;
+      if (![FBXCTestConfiguration parseSimulatorConfigurationFromDestination:parameter osOut:&os deviceOut:&device error:error]) {
         return NO;
       }
+      self.iosDevice = device;
+      self.iosVersion = os;
     } else if ([argument isEqualToString:@"-logicTest"]) {
       [self addTestBundle:parameter runnerAppPath:nil error:error];
     } else if ([argument isEqualToString:@"-appTest"]) {
@@ -132,14 +165,6 @@
     self.reporter = [[FBJSONTestReporter new] initWithTestBundlePath:_testBundlePath testType:self.testType];
   }
 
-  FBSimulatorConfiguration *simulatorConfiguration = [FBSimulatorConfiguration defaultConfiguration];
-  if (_simulatorName) {
-    simulatorConfiguration = [simulatorConfiguration withDeviceNamed:_simulatorName];
-  }
-  if (_simulatorOS) {
-    simulatorConfiguration = [simulatorConfiguration withOSNamed:_simulatorOS];
-  }
-  self.targetDeviceConfiguration = simulatorConfiguration;
   self.workingDirectory = workingDirectory;
   return YES;
 }
@@ -152,62 +177,48 @@
   return YES;
 }
 
-- (BOOL)setSDK:(NSString *)sdk error:(NSError **)error
-{
-  if ([sdk isEqualToString:@"iphonesimulator"]) {
-    self.runWithoutSimulator = NO;
-    return YES;
-  }
-  if ([sdk isEqualToString:@"macosx"]) {
-    self.runWithoutSimulator = YES;
-    return YES;
-  }
-  return [[FBXCTestError describeFormat:@"Unsupported SDK: %@", sdk] failBool:error];
-}
-
-- (BOOL)setDestination:(NSString *)destination error:(NSError **)error
++ (BOOL)parseSimulatorConfigurationFromDestination:(NSString *)destination osOut:(id<FBControlCoreConfiguration_OS> *)osOut deviceOut:(id<FBControlCoreConfiguration_Device> *)deviceOut error:(NSError **)error
 {
   NSArray<NSString *> *parts = [destination componentsSeparatedByString:@","];
+
   for (NSString *part in parts) {
     if ([part length] == 0) {
       continue;
     }
     NSRange equalsRange = [part rangeOfString:@"="];
     if (equalsRange.length == 0) {
-      return [[FBXCTestError describeFormat:@"Destination specifier should contain '=': %@", part] failBool:error];
+      return [[FBXCTestError
+        describeFormat:@"Destination specifier should contain '=': %@", part]
+        failBool:error];
     }
     NSString *key = [part substringToIndex:equalsRange.location];
     NSString *value = [part substringFromIndex:equalsRange.location + 1];
     if ([key isEqualToString:@"name"]) {
-      if (![self setSimulatorName:value error:error]) {
-        return NO;
+      id<FBControlCoreConfiguration_Device> device = FBControlCoreConfigurationVariants.nameToDevice[value];
+      if (!device) {
+        return [[FBXCTestError
+          describeFormat:@"Could not use a device named '%@'", value]
+          failBool:error];
+      }
+      if (deviceOut) {
+        *deviceOut = device;
       }
     } else if ([key isEqualToString:@"OS"]) {
-      if (![self setSimulatorOS:value error:error]) {
-        return NO;
+      id<FBControlCoreConfiguration_OS> os = FBControlCoreConfigurationVariants.nameToOSVersion[value];
+      if (!os) {
+        return [[FBXCTestError
+          describeFormat:@"Could not use a os named '%@'", value]
+          failBool:error];
+      }
+      if (osOut) {
+        *osOut = os;
       }
     } else {
-      return [[FBXCTestError describeFormat:@"Unrecognized destination specifier: %@", key] failBool:error];
+      return [[FBXCTestError
+        describeFormat:@"Unrecognized destination specifier: %@", key]
+        failBool:error];
     }
   }
-  return YES;
-}
-
-- (BOOL)setSimulatorName:(NSString *)name error:(NSError **)error
-{
-  if (_simulatorName) {
-    return [[FBXCTestError describeFormat:@"Multiple destination simulator names specified: %@ and %@", _simulatorName, name] failBool:error];
-  }
-  _simulatorName = name;
-  return YES;
-}
-
-- (BOOL)setSimulatorOS:(NSString *)os error:(NSError **)error
-{
-  if (_simulatorOS) {
-    return [[FBXCTestError describeFormat:@"Multiple destination simulator OS specified: %@ and %@", _simulatorOS, os] failBool:error];
-  }
-  _simulatorOS = os;
   return YES;
 }
 
@@ -221,6 +232,21 @@
   return YES;
 }
 
+- (FBSimulatorConfiguration *)simulatorConfiguration
+{
+  if (!self.iosDevice && !self.iosVersion) {
+    return nil;
+  }
+  FBSimulatorConfiguration *configuration = [FBSimulatorConfiguration defaultConfiguration];
+  if (self.iosDevice) {
+    configuration = [configuration withDevice:self.iosDevice];
+  }
+  if (self.iosVersion) {
+    configuration = [configuration withOS:self.iosVersion];
+  }
+  return configuration;
+}
+
 - (NSString *)testType
 {
   if (_runnerAppPath) {
@@ -230,33 +256,18 @@
   }
 }
 
-#pragma mark Helpers
-
-+ (NSString *)fbxctestInstallationRoot
+- (NSString *)xctestPath
 {
-  NSString *executablePath = NSProcessInfo.processInfo.arguments[0];
-  if (!executablePath.isAbsolutePath) {
-    executablePath = [NSFileManager.defaultManager.currentDirectoryPath stringByAppendingString:executablePath];
-  }
-  executablePath = [executablePath stringByStandardizingPath];
-  NSString *path = [[executablePath
-    stringByDeletingLastPathComponent]
-    stringByDeletingLastPathComponent];
-  return [NSFileManager.defaultManager fileExistsAtPath:path] ? path : nil;
-}
-
-- (NSString *)xctestPathForSimulator:(nullable FBSimulator *)simulator
-{
-  if (simulator == nil) {
-    return [FBControlCoreGlobalConfiguration.developerDirectory
-      stringByAppendingPathComponent:@"usr/bin/xctest"];
-  } else {
+  if (self.simulatorConfiguration) {
     return [FBControlCoreGlobalConfiguration.developerDirectory
       stringByAppendingPathComponent:@"Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest"];
+  } else {
+    return [FBControlCoreGlobalConfiguration.developerDirectory
+      stringByAppendingPathComponent:@"usr/bin/xctest"];
   }
 }
 
-+ (NSDictionary<NSString *, NSString *> *)buildEnvironmentWithEntries:(NSDictionary<NSString *, NSString *> *)entries simulator:(nullable FBSimulator *)simulator
+- (NSDictionary<NSString *, NSString *> *)buildEnvironmentWithEntries:(NSDictionary<NSString *, NSString *> *)entries
 {
   NSMutableDictionary<NSString *, NSString *> *parentEnvironment = NSProcessInfo.processInfo.environment.mutableCopy;
   [parentEnvironment removeObjectsForKeys:@[
@@ -275,12 +286,43 @@
   NSMutableDictionary<NSString *, NSString *> *environment = parentEnvironment.mutableCopy;
   for (NSString *key in environmentOverrides) {
     NSString *childKey = key;
-    if (simulator) {
+    if (self.simulatorConfiguration) {
       childKey = [@"SIMCTL_CHILD_" stringByAppendingString:childKey];
     }
     environment[childKey] = environmentOverrides[key];
   }
   return environment.copy;
 }
+
+#pragma mark Helpers
+
++ (NSString *)fbxctestInstallationRoot
+{
+  NSString *executablePath = NSProcessInfo.processInfo.arguments[0];
+  if (!executablePath.isAbsolutePath) {
+    executablePath = [NSFileManager.defaultManager.currentDirectoryPath stringByAppendingString:executablePath];
+  }
+  executablePath = [executablePath stringByStandardizingPath];
+  NSString *path = [[executablePath
+    stringByDeletingLastPathComponent]
+    stringByDeletingLastPathComponent];
+  return [NSFileManager.defaultManager fileExistsAtPath:path] ? path : nil;
+}
+
+@end
+
+@implementation FBListTestConfiguration
+
+@end
+
+@implementation FBApplicationTestConfiguration
+
+@dynamic runnerAppPath;
+
+@end
+
+@implementation FBLogicTestConfiguration
+
+@dynamic testFilter;
 
 @end

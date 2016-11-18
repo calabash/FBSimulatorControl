@@ -141,7 +141,8 @@ struct ActionRunner : Runner {
     switch action {
     case .config:
       let config = FBControlCoreGlobalConfiguration()
-      return CommandResult.success(ControlCoreSubject(config))
+      let subject = SimpleSubject(EventName.Config, EventType.Discrete, ControlCoreSubject(config))
+      return CommandResult.success(subject)
     case .list:
       let context = self.context.replace(query)
       return ListRunner(context: context).run()
@@ -187,12 +188,11 @@ struct ServerRunner : Runner, CommandPerformer {
 
   var baseRelay: Relay { get {
     switch self.context.value.0 {
-    case .stdIO:
+    case .empty:
+      return EmptyRelay()
+    case .stdin:
       let commandBuffer = LineBuffer(performer: self, reporter: self.context.reporter)
       return FileHandleRelay(commandBuffer: commandBuffer)
-    case .socket(let portNumber):
-      let commandBuffer = LineBuffer(performer: self, reporter: self.context.reporter)
-      return SocketRelay(portNumber: portNumber, commandBuffer: commandBuffer, localEventReporter: self.context.reporter, socketOutput: self.context.configuration.outputOptions)
     case .http(let portNumber):
       let query = self.context.value.1
       let performer = ActionPerformer(commandPerformer: self, configuration: self.context.configuration, query: query, format: self.context.format)

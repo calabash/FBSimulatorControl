@@ -80,13 +80,13 @@
 
 - (void)testLaunchConfigurations
 {
-  NSArray<FBSimulatorLaunchConfiguration *> *values = @[
-    [[[FBSimulatorLaunchConfiguration
+  NSArray<FBSimulatorBootConfiguration *> *values = @[
+    [[[FBSimulatorBootConfiguration
       withLocalizationOverride:[FBLocalizationOverride withLocale:[NSLocale localeWithLocaleIdentifier:@"en_US"]]]
-      withOptions:FBSimulatorLaunchOptionsEnableDirectLaunch]
+      withOptions:FBSimulatorBootOptionsEnableDirectLaunch]
       scale75Percent],
-    [[FBSimulatorLaunchConfiguration
-      withOptions:FBSimulatorLaunchOptionsUseNSWorkspace]
+    [[FBSimulatorBootConfiguration
+      withOptions:FBSimulatorBootOptionsUseNSWorkspace]
       scale25Percent]
   ];
   [self assertEqualityOfCopy:values];
@@ -96,9 +96,9 @@
 
 - (void)testLaunchConfigurationScaleAppliedToFramebufferConfiguration
 {
-  FBSimulatorLaunchConfiguration *launchConfiguration = [[[FBSimulatorLaunchConfiguration
+  FBSimulatorBootConfiguration *launchConfiguration = [[[FBSimulatorBootConfiguration
     withLocalizationOverride:[FBLocalizationOverride withLocale:[NSLocale localeWithLocaleIdentifier:@"en_US"]]]
-    withOptions:FBSimulatorLaunchOptionsEnableDirectLaunch]
+    withOptions:FBSimulatorBootOptionsEnableDirectLaunch]
     withFramebuffer:FBFramebufferConfiguration.defaultConfiguration];
   XCTAssertNotNil(launchConfiguration.framebuffer);
   XCTAssertNil(launchConfiguration.scale);
@@ -126,11 +126,11 @@
 
 - (void)testDiagnosticQueries
 {
-  NSArray<FBSimulatorDiagnosticQuery *> *values = @[
-    [FBSimulatorDiagnosticQuery all],
-    [FBSimulatorDiagnosticQuery named:@[@"foo", @"bar", @"baz"]],
-    [FBSimulatorDiagnosticQuery filesInApplicationOfBundleID:@"foo.bar.baz" withFilenames:@[@"foo.txt", @"bar.log"]],
-    [FBSimulatorDiagnosticQuery crashesOfType:FBCrashLogInfoProcessTypeCustomAgent | FBCrashLogInfoProcessTypeApplication since:[NSDate dateWithTimeIntervalSince1970:100]],
+  NSArray<FBDiagnosticQuery *> *values = @[
+    [FBDiagnosticQuery all],
+    [FBDiagnosticQuery named:@[@"foo", @"bar", @"baz"]],
+    [FBDiagnosticQuery filesInApplicationOfBundleID:@"foo.bar.baz" withFilenames:@[@"foo.txt", @"bar.log"]],
+    [FBDiagnosticQuery crashesOfType:FBCrashLogInfoProcessTypeCustomAgent | FBCrashLogInfoProcessTypeApplication since:[NSDate dateWithTimeIntervalSince1970:100]],
   ];
   [self assertEqualityOfCopy:values];
   [self assertUnarchiving:values];

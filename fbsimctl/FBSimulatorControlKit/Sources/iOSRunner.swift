@@ -47,7 +47,7 @@ struct iOSActionProvider {
     case .terminate(let bundleID):
       return iOSTargetRunner(
         reporter: reporter,
-        name: EventName.Launch,
+        name: EventName.Terminate,
         subject: ControlCoreSubject(bundleID as NSString),
         interaction: FBCommandInteractions.killApplication(withBundleID: bundleID, command: target)
       )
@@ -90,6 +90,6 @@ struct iOSTargetRunner : Runner {
     } catch {
       return .failure("Unknown Error")
     }
-    return .success(self.subject)
+    return .success(nil)
   }
 }
