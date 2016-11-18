@@ -37,8 +37,6 @@
 #import "FBDeviceControlFrameworkLoader.h"
 #import "CalabashUtils.h"
 
-static const NSUInteger FBMaxConosleMarkerLength = 1000;
-
 @protocol DVTApplication <NSObject>
 - (NSString *)installedPath;
 - (NSString *)containerPath;
@@ -49,10 +47,6 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
 @interface FBiOSDeviceOperator ()
 
 @property (nonatomic, strong, readonly) FBDevice *device;
-/**
- * A string marks the end of device log for previous run.
- */
-@property (nonatomic, copy, readwrite) NSString *previousEndMarker;
 
 @end
 
@@ -220,7 +214,7 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
           timeout:60]
          timeoutErrorMessage:@"Failed to load device console entries"]
         spinUntilTrue:^BOOL{
-          NSString *log = self.fullConsoleString.copy;
+          NSString *log = self.consoleString.copy;
           if (log.length == 0) {
             return NO;
           }
@@ -230,7 +224,6 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
             return NO;
           }
           preLaunchConsoleString = log;
-          [self markPreviousEnd:log];
           return YES;
         } error:error])
   {
@@ -249,16 +242,6 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
       failBool:error];
   }
   return YES;
-}
-
-/**
- * Record the end of the consoleString as the previous end marker.
- * The next slice of log will begin after the marker.
- */
-- (void)markPreviousEnd:(NSString *)consoleString
-{
-  self.previousEndMarker = [FBSubstringUtilities substringOf:consoleString
-                                      withLastCharacterCount:FBMaxConosleMarkerLength];
 }
 
 - (BOOL)installApplicationWithPath:(NSString *)path error:(NSError **)error
@@ -327,20 +310,9 @@ static const NSUInteger FBMaxConosleMarkerLength = 1000;
   return [self killProcessWithID:PID error:error];
 }
 
-- (NSString *)fullConsoleString
-{
-    return [CalabashUtils doOnMainAndReturn:^id{
-        return [self.device.dvtDevice.token.deviceConsoleController consoleString];
-    }];
-}
-
 - (NSString *)consoleString
 {
-  NSString *consoleString = self.fullConsoleString.copy;
-  if (consoleString.length == 0) {
-    return nil;
-  }
-  return [FBSubstringUtilities substringAfterNeedle:self.previousEndMarker inHaystack:consoleString];
+  return [self.device.dvtDevice.token.deviceConsoleController consoleString];
 }
 
 - (BOOL)observeProcessWithID:(NSInteger)processID error:(NSError **)error

@@ -22,18 +22,18 @@ static const NSTimeInterval ApplicationTestDefaultTimeout = 4000;
 @interface FBApplicationTestRunner ()
 
 @property (nonatomic, strong, readonly) FBSimulator *simulator;
-@property (nonatomic, strong, readonly) FBXCTestConfiguration *configuration;
+@property (nonatomic, strong, readonly) FBApplicationTestConfiguration *configuration;
 
 @end
 
 @implementation FBApplicationTestRunner
 
-+ (instancetype)withSimulator:(FBSimulator *)simulator configuration:(FBXCTestConfiguration *)configuration
++ (instancetype)withSimulator:(FBSimulator *)simulator configuration:(FBApplicationTestConfiguration *)configuration
 {
   return [[self alloc] initWithSimulator:simulator configuration:configuration];
 }
 
-- (instancetype)initWithSimulator:(FBSimulator *)simulator configuration:(FBXCTestConfiguration *)configuration
+- (instancetype)initWithSimulator:(FBSimulator *)simulator configuration:(FBApplicationTestConfiguration *)configuration
 {
   self = [super init];
   if (!self) {
@@ -65,8 +65,8 @@ static const NSTimeInterval ApplicationTestDefaultTimeout = 4000;
     environment:self.configuration.processUnderTestEnvironment
     options:0];
 
-  FBTestLaunchConfiguration *testLaunchConfiguration = [[[FBTestLaunchConfiguration new]
-    withTestBundlePath:self.configuration.testBundlePath]
+  FBTestLaunchConfiguration *testLaunchConfiguration = [[FBTestLaunchConfiguration
+    configurationWithTestBundlePath:self.configuration.testBundlePath]
     withApplicationLaunchConfiguration:appLaunch];
 
   FBSimulatorTestRunStrategy *runner = [FBSimulatorTestRunStrategy

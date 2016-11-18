@@ -49,14 +49,13 @@ public extension Action {
           Action.subprocessEnvironment(environment)
         )
       )
-    case .launchXCTest(let configuration, let bundle, let timeout):
-      return .launchXCTest(
-        configuration.withEnvironmentAdditions(
-          Action.subprocessEnvironment(environment)
-        ),
-        bundle,
-        timeout
-      )
+    case .launchXCTest(let configuration):
+      if let appLaunchConf = configuration.applicationLaunchConfiguration?.withEnvironmentAdditions(
+        Action.subprocessEnvironment(environment)
+        ) {
+        configuration.withApplicationLaunchConfiguration(appLaunchConf)
+      }
+      return .launchXCTest(configuration)
     default:
       return self
     }

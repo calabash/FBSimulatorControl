@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from util import (FBSimctl, Simulator, WebServer, find_fbsimctl_path, DEFAULT_TIMEOUT, LONG_TIMEOUT)
+from util import (FBSimctl, Simulator, WebServer, Defaults, Fixtures, log)
 import argparse
+import base64
 import contextlib
 import os
 import tempfile
@@ -46,7 +47,7 @@ class FBSimctlTestCase(unittest.TestCase):
         event_type,
         min_count=1,
         max_count=None,
-        timeout=DEFAULT_TIMEOUT,
+        timeout=Defaults.TIMEOUT,
     ):
         events = self.fbsimctl.run(arguments, timeout)
         matching_events = events.matching(event_name, event_type)
@@ -151,7 +152,7 @@ class MultipleSimulatorTestCase(FBSimctlTestCase):
             arguments=['create', '--all-missing-defaults'],
             event_name='create',
             event_type='ended',
-            timeout=LONG_TIMEOUT,
+            timeout=Defaults.LONG_TIMEOUT,
         )
 
 
@@ -187,10 +188,24 @@ class WebserverSimulatorTestCase(FBSimctlTestCase):
             process.wait_for_event('listen', 'started')
             yield WebServer(self.port)
 
-    def testDiagnostics(self):
+    def testDiagnosticSearch(self):
         with self.launchWebserver() as webserver:
             response = webserver.post('diagnose', {'type': 'all'})
             self.assertEqual(response['status'], 'success')
+
+    def testGetCoreSimulatorLog(self):
+        iphone6 = self.assertCreatesSimulator(['iPhone 6'])
+        with self.launchWebserver() as webserver:
+            response = webserver.get(
+                iphone6.get_udid() + '/diagnose/coresimulator',
+            )
+            self.assertEqual(response['status'], 'success')
+            event = response['subject'][0]
+            self.assertEqual(event['event_name'], 'diagnostic')
+            self.assertEqual(event['event_type'], 'discrete')
+            diagnostic = event['subject']
+            self.assertEqual(diagnostic['short_name'], 'coresimulator')
+            self.assertIsNotNone(diagnostic.get('contents'))
 
     def testListSimulators(self):
         iphone6 = self.assertCreatesSimulator(['iPhone 6'])
@@ -205,9 +220,21 @@ class WebserverSimulatorTestCase(FBSimctlTestCase):
             ]
             self.assertEqual(expected.sort(), actual.sort())
             actual = self.extractSimulatorSubjects(
-                webserver.get(iphone6.get_udid() + '/list'),
+                webserver.get(iphone6.get_udid() + 'list'),
             )
             expected = [iphone6.get_udid()]
+
+    def testUploadsVideo(self):
+        simulator = self.assertCreatesSimulator(['iPhone 6'])
+        self.assertEventSuccesful([simulator.get_udid(), 'boot'], 'boot')
+        with open(Fixtures.VIDEO, 'rb') as f, self.launchWebserver() as webserver:
+            data = base64.b64encode(f.read()).decode()
+            webserver.post(simulator.get_udid() + '/upload', {
+                'short_name': 'video',
+                'file_type': 'mp4',
+                'data': data,
+            })
+        self.assertEventSuccesful([simulator.get_udid(), 'shutdown'], 'shutdown')
 
 class SingleSimulatorTestCase(FBSimctlTestCase):
     def __init__(
@@ -257,18 +284,25 @@ class SingleSimulatorTestCase(FBSimctlTestCase):
         simulator = self.assertCreatesSimulator([self.device_type])
         self.assertEventSuccesful([simulator.get_udid(), 'boot'], 'boot')
         self.assertEventSuccesful([simulator.get_udid(), 'launch', 'com.apple.Preferences'], 'launch')
+        self.assertEventsFromRun([simulator.get_udid(), 'service_info', 'com.apple.Preferences'], 'service_info', 'discrete')
         return (simulator, 'com.apple.Preferences')
 
     def testLaunchesThenTerminatesSystemApplication(self):
         (simulator, bundle_id) = self.testLaunchesSystemApplication()
         self.assertEventSuccesful([simulator.get_udid(), 'terminate', bundle_id], 'terminate')
 
-    def testRecordsVideo(self):
+    def testUploadsVideo(self):
         simulator = self.assertCreatesSimulator([self.device_type])
+        self.assertEventSuccesful([simulator.get_udid(), 'boot'], 'boot')
+        self.assertEventSuccesful([simulator.get_udid(), 'upload', Fixtures.VIDEO], 'upload')
+        self.assertEventSuccesful([simulator.get_udid(), 'shutdown'], 'shutdown')
+
+    def testRecordsVideo(self):
+        (simulator, _) = self.testLaunchesSystemApplication()
         arguments = [
-            simulator.get_udid(), 'boot', '--direct-launch',
-            '--', 'record', 'start',
+            simulator.get_udid(), 'record', 'start',
             '--', 'listen',
+            '--', 'record', 'stop',
             '--', 'shutdown',
         ]
         # Launch the process, terminate and confirm teardown is successful
@@ -294,35 +328,30 @@ class SingleSimulatorTestCase(FBSimctlTestCase):
 
 
 class SuiteBuilder:
-    def __init__(self, fbsimctl_path, name_filter=None, device_types=['iPhone 6', 'iPad Air 2']):
+    def __init__(self, fbsimctl_path, device_types, name_filter=None):
         self.fbsimctl_path = fbsimctl_path
         self.device_types = device_types
         self.name_filter = name_filter
         self.loader = unittest.defaultTestLoader
 
-    def _filter_methods(self, methods):
+    def _filter_methods(self, cls, methods):
+        log.info('All Tests for {} {}'.format(cls, methods))
         if not self.name_filter:
             return methods
-        return [method for method in methods if self.name_filter.lower() in method.lower()]
+        filtered = [method for method in methods if self.name_filter.lower() in method.lower()]
+        log.info('Filtered Tests for {}'.format(cls, filtered))
+        return filtered
 
     def _get_base_methods(self):
         return self._filter_methods(
+            FBSimctlTestCase,
             self.loader.getTestCaseNames(FBSimctlTestCase)
         )
 
-    def _get_webserver_methods(self):
+    def _get_extended_methods(self, cls):
         return self._filter_methods(
-            set(self.loader.getTestCaseNames(WebserverSimulatorTestCase)) - set(self._get_base_methods()),
-        )
-
-    def _get_single_simulator_methods(self):
-        return self._filter_methods(
-            set(self.loader.getTestCaseNames(SingleSimulatorTestCase)) - set(self._get_base_methods()),
-        )
-
-    def _get_multiple_simulator_methods(self):
-        return self._filter_methods(
-            set(self.loader.getTestCaseNames(MultipleSimulatorTestCase)) - set(self._get_base_methods()),
+            cls,
+            set(self.loader.getTestCaseNames(cls)) - set(self._get_base_methods()),
         )
 
     def build(self):
@@ -344,7 +373,7 @@ class SuiteBuilder:
                 fbsimctl_path=self.fbsimctl_path,
                 device_type=device_type,
             )
-            for method_name in self._get_single_simulator_methods()
+            for method_name in self._get_extended_methods(SingleSimulatorTestCase)
             for device_type in self.device_types
         ])
         # Only run per-Webserver-Type tests against a custom set.
@@ -354,7 +383,7 @@ class SuiteBuilder:
                 fbsimctl_path=self.fbsimctl_path,
                 port=8090,
             )
-            for method_name in self._get_webserver_methods()
+            for method_name in self._get_extended_methods(WebserverSimulatorTestCase)
         ])
         # Only run multiple-Simulator tests against a custom set.
         suite.addTests([
@@ -363,7 +392,7 @@ class SuiteBuilder:
                 fbsimctl_path=self.fbsimctl_path,
             )
             for method_name
-            in self._get_multiple_simulator_methods()
+            in self._get_extended_methods(MultipleSimulatorTestCase)
         ])
         return suite
 
@@ -381,10 +410,21 @@ if __name__ == '__main__':
         default=None,
         help='A substring to match tests against, will only run matching tests',
     )
+    parser.add_argument(
+        '--device-type',
+        action='append',
+        help='The iOS Device Type to run tests against. Multiple may be given.',
+        default=[],
+    )
     arguments = parser.parse_args()
+    arguments.device_type = list(set(arguments.device_type))
+    if not len(arguments.device_type):
+        arguments.device_type = ['iPhone 6']
+    defaults = Defaults(arguments.fbsimctl_path)
 
     suite_builder = SuiteBuilder(
-        fbsimctl_path=find_fbsimctl_path(arguments.fbsimctl_path),
+        fbsimctl_path=defaults.fbsimctl_path,
+        device_types=arguments.device_type,
         name_filter=arguments.name_filter,
     )
     runner = unittest.TextTestRunner(

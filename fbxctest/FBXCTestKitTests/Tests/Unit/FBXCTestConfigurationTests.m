@@ -38,19 +38,15 @@
   NSDictionary<NSString *, NSString *> *processEnvironment = @{@"FOO" : @"BAR"};
   NSArray<NSString *> *arguments = @[ @"run-tests", @"-destination", @"name=iPhone 6", @"-appTest", appTestArgument ];
 
-  FBXCTestConfiguration *configuration = [[FBXCTestConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:processEnvironment];
   NSError *error = nil;
-  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  FBXCTestConfiguration *configuration = [FBXCTestConfiguration configurationFromArguments:arguments processUnderTestEnvironment:processEnvironment workingDirectory:workingDirectory reporter:self.reporter logger:nil error:&error];
 
   XCTAssertNil(error);
-  XCTAssertTrue(success);
-  XCTAssertFalse(configuration.runWithoutSimulator);
-  XCTAssertFalse(configuration.listTestsOnly);
-  XCTAssertNil(configuration.testFilter);
+  XCTAssertNotNil(configuration);
+  XCTAssertTrue([configuration isKindOfClass:FBApplicationTestConfiguration.class]);
   XCTAssertEqualObjects(configuration.processUnderTestEnvironment, processEnvironment);
-  XCTAssertEqualObjects(configuration.simulatorName, @"iPhone 6");
-  XCTAssertNil(configuration.simulatorOS);
-  XCTAssertEqualObjects(configuration.targetDeviceConfiguration.device, FBControlCoreConfiguration_Device_iPhone6.new);
+  XCTAssertNotNil(configuration.simulatorConfiguration);
+  XCTAssertEqualObjects(configuration.simulatorConfiguration.device, FBControlCoreConfiguration_Device_iPhone6.new);
 }
 
 - (void)testiOSLogicTests
@@ -66,19 +62,15 @@
   NSDictionary<NSString *, NSString *> *processEnvironment = @{@"FOO" : @"BAR"};
   NSArray<NSString *> *arguments = @[ @"run-tests", @"-destination", @"name=iPhone 6", @"-logicTest", testBundlePath ];
 
-  FBXCTestConfiguration *configuration = [[FBXCTestConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:processEnvironment];
-  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  FBXCTestConfiguration *configuration = [FBXCTestConfiguration configurationFromArguments:arguments processUnderTestEnvironment:processEnvironment workingDirectory:workingDirectory reporter:self.reporter logger:nil error:&error];
 
   XCTAssertNil(error);
-  XCTAssertTrue(success);
+  XCTAssertNotNil(configuration);
   XCTAssertNotNil(configuration.shims);
-  XCTAssertFalse(configuration.runWithoutSimulator);
-  XCTAssertFalse(configuration.listTestsOnly);
-  XCTAssertNil(configuration.testFilter);
+  XCTAssertTrue([configuration isKindOfClass:FBLogicTestConfiguration.class]);
   XCTAssertEqualObjects(configuration.processUnderTestEnvironment, processEnvironment);
-  XCTAssertEqualObjects(configuration.simulatorName, @"iPhone 6");
-  XCTAssertNil(configuration.simulatorOS);
-  XCTAssertEqualObjects(configuration.targetDeviceConfiguration.device, FBControlCoreConfiguration_Device_iPhone6.new);
+  XCTAssertNotNil(configuration.simulatorConfiguration);
+  XCTAssertEqualObjects(configuration.simulatorConfiguration.device, FBControlCoreConfiguration_Device_iPhone6.new);
 }
 
 - (void)testMacLogicTests
@@ -94,18 +86,36 @@
   NSDictionary<NSString *, NSString *> *processEnvironment = @{@"FOO" : @"BAR"};
   NSArray *arguments = @[ @"run-tests", @"-sdk", @"macosx", @"-logicTest", testBundlePath];
 
-  FBXCTestConfiguration *configuration = [[FBXCTestConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:processEnvironment];
-  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  FBXCTestConfiguration *configuration = [FBXCTestConfiguration configurationFromArguments:arguments processUnderTestEnvironment:processEnvironment workingDirectory:workingDirectory reporter:self.reporter logger:nil error:&error];
 
   XCTAssertNil(error);
-  XCTAssertTrue(success);
+  XCTAssertNotNil(configuration);
   XCTAssertNotNil(configuration.shims);
-  XCTAssertTrue(configuration.runWithoutSimulator);
-  XCTAssertFalse(configuration.listTestsOnly);
-  XCTAssertNil(configuration.testFilter);
+  XCTAssertTrue([configuration isKindOfClass:FBLogicTestConfiguration.class]);
   XCTAssertEqualObjects(configuration.processUnderTestEnvironment, processEnvironment);
-  XCTAssertNil(configuration.simulatorName);
-  XCTAssertNil(configuration.simulatorOS);
+  XCTAssertNil(configuration.simulatorConfiguration);
+}
+
+- (void)testMacLogicTestsDoesNotExposeSimulatorConfigurationEvenIfOneIsProvided
+{
+  NSError *error = nil;
+  if (![FBXCTestShimConfiguration findShimDirectoryWithError:&error]) {
+    NSLog(@"Could not locate a shim directory, skipping -[%@ %@]. %@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), error);
+    return;
+  }
+
+  NSString *workingDirectory = [FBXCTestKitFixtures createTemporaryDirectory];
+  NSString *testBundlePath = [FBXCTestKitFixtures macUnitTestBundlePath];
+  NSDictionary<NSString *, NSString *> *processEnvironment = @{@"FOO" : @"BAR"};
+  NSArray *arguments = @[ @"run-tests", @"-sdk", @"macosx", @"-destination", @"name=iPhone 6", @"-logicTest", testBundlePath];
+
+  FBXCTestConfiguration *configuration = [FBXCTestConfiguration configurationFromArguments:arguments processUnderTestEnvironment:processEnvironment workingDirectory:workingDirectory reporter:self.reporter logger:nil error:&error];
+
+  XCTAssertNil(error);
+  XCTAssertNotNil(configuration);
+  XCTAssertNotNil(configuration.shims);
+  XCTAssertEqualObjects(configuration.processUnderTestEnvironment, processEnvironment);
+  XCTAssertNil(configuration.simulatorConfiguration);
 }
 
 - (void)testMacTestList
@@ -120,17 +130,13 @@
   NSString *testBundlePath = [FBXCTestKitFixtures macUnitTestBundlePath];
   NSArray *arguments = @[ @"run-tests", @"-sdk", @"macosx", @"-logicTest", testBundlePath, @"-listTestsOnly" ];
 
-  FBXCTestConfiguration *configuration = [[FBXCTestConfiguration alloc] initWithReporter:self.reporter processUnderTestEnvironment:@{}];
-  BOOL success = [configuration loadWithArguments:arguments workingDirectory:workingDirectory error:&error];
+  FBXCTestConfiguration *configuration = [FBXCTestConfiguration configurationFromArguments:arguments processUnderTestEnvironment:@{} workingDirectory:workingDirectory reporter:self.reporter logger:nil error:&error];
 
   XCTAssertNil(error);
-  XCTAssertTrue(success);
+  XCTAssertNotNil(configuration);
   XCTAssertNotNil(configuration.shims);
-  XCTAssertTrue(configuration.runWithoutSimulator);
-  XCTAssertTrue(configuration.listTestsOnly);
-  XCTAssertNil(configuration.testFilter);
-  XCTAssertNil(configuration.simulatorName);
-  XCTAssertNil(configuration.simulatorOS);
+  XCTAssertNil(configuration.simulatorConfiguration);
+  XCTAssertTrue([configuration isKindOfClass:FBListTestConfiguration.class]);
 }
 
 @end

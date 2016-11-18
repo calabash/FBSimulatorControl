@@ -41,7 +41,7 @@
 
 - (void)testLaunchesSingleSimulator:(FBSimulatorConfiguration *)configuration
 {
-  FBSimulatorLaunchConfiguration *launchConfiguration = self.simulatorLaunchConfiguration;
+  FBSimulatorBootConfiguration *launchConfiguration = self.simulatorLaunchConfiguration;
   FBSimulator *simulator = [self assertObtainsBootedSimulatorWithConfiguration:configuration launchConfiguration:self.simulatorLaunchConfiguration];
 
   [self assertSimulatorBooted:simulator];
@@ -70,6 +70,13 @@
 - (void)testLaunchesTV
 {
   [self testLaunchesSingleSimulator:FBSimulatorConfiguration.appleTV1080p];
+}
+
+- (void)testLaunchesPreviousiOSVersionAndAwaitsServices
+{
+  FBSimulatorBootOptions options = self.simulatorLaunchConfiguration.options | FBSimulatorBootOptionsAwaitServices;
+  self.simulatorLaunchConfiguration = [self.simulatorLaunchConfiguration withOptions:options];
+  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.iPhone5.iOS_9_3];
 }
 
 - (void)testLaunchesMultipleSimulators
