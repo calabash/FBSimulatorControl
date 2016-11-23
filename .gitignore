@@ -50,3 +50,6 @@ fbsimctl/Carthage/Checkouts
 *.swp
 output/
 .clang-format
+
+# JetBrains
+.idea
