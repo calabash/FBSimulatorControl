@@ -122,6 +122,19 @@
   XCTAssertTrue(didUpdateTerminationState);
 }
 
+- (void)testAwaitingTerminationOfShortLivedProcess
+{
+  FBTask *task = [[[FBTaskBuilder
+    withLaunchPath:@"/bin/sleep" arguments:@[@"0"]]
+    build]
+    startAsynchronously];
+
+  XCTAssertTrue([task waitForCompletionWithTimeout:1 error:nil]);
+  XCTAssertTrue(task.hasTerminated);
+  XCTAssertTrue(task.wasSuccessful);
+  XCTAssertNil(task.error);
+}
+
 - (void)testCallsHandlerWithAsynchronousTermination
 {
   __block BOOL didCallTerminationHandler = NO;
@@ -136,6 +149,41 @@
     return didCallTerminationHandler;
   }];
   XCTAssertTrue(didCallTerminationHandler);
+}
+
+- (void)testAwaitingTerminationDoesNotTerminateStalledTask
+{
+  __block BOOL didCallTerminationHandler = NO;
+  FBTask *task = [[[FBTaskBuilder
+    withLaunchPath:@"/bin/sleep" arguments:@[@"1000"]]
+    build]
+    startAsynchronouslyWithTerminationHandler:^(FBTask *_) {
+      didCallTerminationHandler = YES;
+    }];
+
+  NSError *error = nil;
+  BOOL waitSuccess = [task waitForCompletionWithTimeout:2 error:&error];
+  XCTAssertFalse(waitSuccess);
+  XCTAssertNotNil(error);
+  XCTAssertFalse(didCallTerminationHandler);
+  XCTAssertFalse(task.hasTerminated);
+
+  [task terminate];
+  [NSRunLoop.currentRunLoop spinRunLoopWithTimeout:FBControlCoreGlobalConfiguration.fastTimeout untilTrue:^ BOOL {
+    return didCallTerminationHandler;
+  }];
+  XCTAssertTrue(didCallTerminationHandler);
+  XCTAssertTrue(task.hasTerminated);
+}
+
+- (void)testWaitingSynchronouslyDoesTerminateStalledTask
+{
+  FBTask *task = [[[FBTaskBuilder
+    withLaunchPath:@"/bin/sleep" arguments:@[@"1000"]]
+    build]
+    startSynchronouslyWithTimeout:1];
+  XCTAssertTrue(task.hasTerminated);
+  XCTAssertNotNil(task.error);
 }
 
 @end
