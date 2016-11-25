@@ -20,6 +20,7 @@
 #import "FBXCTestError.h"
 #import "FBXCTestLogger.h"
 #import "FBXCTestShimConfiguration.h"
+#import "FBXCTestDestination.h"
 
 static NSTimeInterval const CrashLogStartDateFuzz = -10;
 
@@ -57,7 +58,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
 
   [self.configuration.reporter didBeginExecutingTestPlan];
 
-  NSString *xctestPath = self.configuration.xctestPath;
+  NSString *xctestPath = self.configuration.destination.xctestPath;
   NSString *simctlPath = [FBControlCoreGlobalConfiguration.developerDirectory stringByAppendingPathComponent:@"usr/bin/simctl"];
   NSString *otestShimPath = simulator ? self.configuration.shims.iOSSimulatorOtestShimPath : self.configuration.shims.macOtestShimPath;
   NSString *otestShimOutputPath = [self.configuration.workingDirectory stringByAppendingPathComponent:@"shim-output-pipe"];
@@ -102,7 +103,8 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
 
   FBMultiFileReader *multiReader = [FBMultiFileReader new];
 
-  FBLineReader *otestLineReader = [FBLineReader lineReaderWithConsumer:^(NSString *line){
+  dispatch_queue_t consumerQueue = dispatch_get_main_queue();
+  FBLineFileDataConsumer *otestLineReader = [FBLineFileDataConsumer lineReaderWithQueue:consumerQueue consumer:^(NSString *line){
     if ([line length] == 0) {
       return;
     }
@@ -116,7 +118,7 @@ static NSTimeInterval const CrashLogStartDateFuzz = -10;
     return NO;
   }
 
-  FBLineReader *testOutputLineReader = [FBLineReader lineReaderWithConsumer:^(NSString *line){
+  FBLineFileDataConsumer *testOutputLineReader = [FBLineFileDataConsumer lineReaderWithQueue:consumerQueue consumer:^(NSString *line){
     [self.configuration.reporter testHadOutput:[line stringByAppendingString:@"\n"]];
   }];
   if (![multiReader addFileHandle:testOutputPipe.fileHandleForReading withConsumer:testOutputLineReader error:error]) {
