@@ -9,6 +9,7 @@
 
 #import "FBXCTestRunStrategy.h"
 #import <Foundation/Foundation.h>
+#import <XCTestBootstrap/XCTestBootstrap.h>
 #import <FBControlCore/FBControlCore.h>
 #import "FBDeviceOperator.h"
 #import "FBProductBundle.h"
@@ -18,9 +19,6 @@
 #import "FBTestRunnerConfiguration.h"
 #import "FBXCTestPreparationStrategy.h"
 #import "XCTestBootstrapError.h"
-#import <CocoaLumberjack/CocoaLumberjack.h>
-
-static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 @interface FBXCTestRunStrategy ()
 
@@ -61,125 +59,66 @@ static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 {
   NSAssert(self.iosTarget, @"iOS Target is needed to perform meaningful test");
   NSAssert(self.prepareStrategy, @"Test preparation strategy is needed to perform meaningful test");
-
   NSError *innerError;
   FBTestRunnerConfiguration *configuration = [self.prepareStrategy prepareTestWithIOSTarget:self.iosTarget error:&innerError];
   if (!configuration) {
     return [[[XCTestBootstrapError
-      describe:@"Failed to prepare test runner configuration"]
-      causedBy:innerError]
-      fail:error];
+              describe:@"Failed to prepare test runner configuration"]
+             causedBy:innerError]
+            fail:error];
   }
 
   FBApplicationLaunchConfiguration *appLaunch = [FBApplicationLaunchConfiguration
-    configurationWithBundleID:configuration.testRunner.bundleID
-    bundleName:configuration.testRunner.bundleID
-    arguments:[self argumentsFromConfiguration:configuration attributes:attributes]
-    environment:[self environmentFromConfiguration:configuration environment:environment]
-    output:FBProcessOutputConfiguration.outputToDevNull];
+                                                 configurationWithBundleID:configuration.testRunner.bundleID
+                                                 bundleName:configuration.testRunner.bundleID
+                                                 arguments:[self argumentsFromConfiguration:configuration attributes:attributes]
+                                                 environment:[self environmentFromConfiguration:configuration environment:environment]
+                                                 output:FBProcessOutputConfiguration.outputToDevNull];
 
   if (![self.iosTarget launchApplication:appLaunch error:&innerError]) {
     return [[[XCTestBootstrapError describe:@"Failed launch test runner"]
-      causedBy:innerError]
-      fail:error];
+             causedBy:innerError]
+            fail:error];
   }
 
   pid_t testRunnerProcessID = [self.iosTarget.deviceOperator processIDWithBundleID:configuration.testRunner.bundleID error:error];
   if (testRunnerProcessID < 1) {
     return [[XCTestBootstrapError
-      describe:@"Failed to determine test runner process PID"]
-      fail:error];
+             describe:@"Failed to determine test runner process PID"]
+            fail:error];
   }
 
   // Make the Context for the Test Manager.
   FBTestManagerContext *context = [FBTestManagerContext
-    contextWithTestRunnerPID:testRunnerProcessID
-    testRunnerBundleID:configuration.testRunner.bundleID
-    sessionIdentifier:configuration.sessionIdentifier];
+                                   contextWithTestRunnerPID:testRunnerProcessID
+                                   testRunnerBundleID:configuration.testRunner.bundleID
+                                   sessionIdentifier:configuration.sessionIdentifier];
 
   // Attach to the XCTest Test Runner host Process.
   FBTestManager *testManager = [FBTestManager
-    testManagerWithContext:context
-    iosTarget:self.iosTarget
-    reporter:self.reporter
-    logger:self.logger];
+                                testManagerWithContext:context
+                                iosTarget:self.iosTarget
+                                reporter:self.reporter
+                                logger:self.logger];
 
   FBTestManagerResult *result = [testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout];
   if (result) {
     return[[[XCTestBootstrapError
-      describeFormat:@"Test Manager Connection Failed: %@", result.description]
-      causedBy:result.error]
-      fail:error];
+             describeFormat:@"Test Manager Connection Failed: %@", result.description]
+            causedBy:result.error]
+           fail:error];
   }
   return testManager;
 }
 
-
-+ (FBTestManager *)startTestManagerForDeviceOperator:(id<FBDeviceOperator>)deviceOperator
-                                      runnerBundleID:(NSString *)bundleID
-                                           sessionID:(NSUUID *)sessionID
-                                      withAttributes:(NSArray *)attributes
-                                         environment:(NSDictionary *)environment
-                                            reporter:(id<FBTestManagerTestReporter>)reporter
-                                              logger:(id<FBControlCoreLogger>)logger
-                                               error:(NSError *__autoreleasing *)error {
-    NSAssert(bundleID, @"Must provide test runner bundle ID in order to run a test");
-    NSAssert(sessionID, @"Must provide a test session ID in order to run a test");
-    
-    DDLogInfo(@"SessionID: %@", sessionID);
-    DDLogInfo(@"BundleID: %@", bundleID);
-    
-    NSError *innerError;
-    
-    FBApplicationLaunchConfiguration *appLaunch = [FBApplicationLaunchConfiguration
-                                                   configurationWithBundleID:bundleID
-                                                   bundleName:bundleID
-                                                   arguments:attributes ?: @[]
-                                                   environment:environment ?: @{}
-                                                   options:0];
-    
-    if (![deviceOperator launchApplication:appLaunch error:&innerError]) {
-        return [[[XCTestBootstrapError describe:@"Failed launch test runner"]
-                 causedBy:innerError]
-                fail:error];
-    }
-    
-    pid_t testRunnerProcessID = [deviceOperator processIDWithBundleID:bundleID error:error];
-    
-    if (testRunnerProcessID < 1) {
-        return [[XCTestBootstrapError
-                 describe:@"Failed to determine test runner process PID"]
-                fail:error];
-    }
-    
-    FBTestManagerContext *context =
-        [FBTestManagerContext contextWithTestRunnerPID:testRunnerProcessID
-                                    testRunnerBundleID:bundleID
-                                     sessionIdentifier:sessionID];
-    
-    // Attach to the XCTest Test Runner host Process.
-    FBTestManager *testManager = [FBTestManager testManagerWithContext:context
-                                                              operator:deviceOperator
-                                                              reporter:reporter
-                                                                logger:logger];
-    
-    FBTestManagerResult *result = [testManager connectWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout];
-    if (result) {
-        return [[[XCTestBootstrapError
-                 describeFormat:@"Test Manager Connection Failed: %@", result.description]
-                causedBy:result.error]
-               fail:error];
-    }
-    return testManager;
-}
 #pragma mark Private
 
-+ (NSArray<NSString *> *)argumentsFromConfiguration:(FBTestRunnerConfiguration *)configuration attributes:(NSArray<NSString *> *)attributes
+- (NSArray<NSString *> *)argumentsFromConfiguration:(FBTestRunnerConfiguration *)configuration attributes:(NSArray<NSString *> *)attributes
 {
-    return [(configuration.launchArguments ?: @[]) arrayByAddingObjectsFromArray:(attributes ?: @[])];
+  return [(configuration.launchArguments ?: @[]) arrayByAddingObjectsFromArray:(attributes ?: @[])];
 }
 
-+ (NSDictionary<NSString *, NSString *> *)environmentFromConfiguration:(FBTestRunnerConfiguration *)configuration environment:(NSDictionary<NSString *, NSString *> *)environment
+- (NSDictionary<NSString *, NSString *> *)environmentFromConfiguration:(FBTestRunnerConfiguration *)configuration environment:(NSDictionary<NSString *, NSString *> *)environment
 {
   NSMutableDictionary<NSString *, NSString *> *mEnvironment = (configuration.launchEnvironment ?: @{}).mutableCopy;
   if (environment) {
