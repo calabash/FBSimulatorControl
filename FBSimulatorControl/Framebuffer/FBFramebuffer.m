@@ -199,15 +199,10 @@ typedef NS_ENUM(NSUInteger, FBSimulatorFramebufferState) {
 
 - (instancetype)startListeningInBackground
 {
-  return [CalabashUtils doOnMainAndReturn:^id{
-      NSParameterAssert(NSThread.currentThread.isMainThread);
-      NSParameterAssert(self.state == FBSimulatorFramebufferStateNotStarted);
-      self.state = FBSimulatorFramebufferStateStarting;
-      [self.framebufferService registerClient:self onQueue:self.clientQueue];
-      [self.framebufferService resume];
-
-      return self;
-  }];
+  NSParameterAssert(NSThread.currentThread.isMainThread);
+  NSParameterAssert(self.state == FBSimulatorFramebufferStateNotStarted);
+  self.state = FBSimulatorFramebufferStateStarting;
+  return self;
 }
 
 - (instancetype)stopListeningWithTeardownGroup:(dispatch_group_t)teardownGroup
