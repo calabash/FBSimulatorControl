@@ -35,12 +35,17 @@
 #import "FBSimulatorPool.h"
 #import "FBSimulatorResourceManager.h"
 #import "FBSimulatorSet.h"
+#import "FBSimulatorVideoRecordingCommands.h"
+#import "FBSimulatorControlOperator.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wprotocol"
 #pragma clang diagnostic ignored "-Wincomplete-implementation"
 
 @implementation FBSimulator
+
+@synthesize deviceOperator = _deviceOperator;
+@synthesize auxillaryDirectory = _auxillaryDirectory;
 
 #pragma mark Lifecycle
 
@@ -89,13 +94,21 @@
   _historyGenerator = historyGenerator;
   _eventRelay = relay;
   _mutableSink = mutableSink;
-  _diagnostics = diagnosticsSink;
+  _simulatorDiagnostics = diagnosticsSink;
   _resourceSink = resourceSink;
 
   return self;
 }
 
 #pragma mark FBiOSTarget
+
+- (id<FBDeviceOperator>)deviceOperator
+{
+  if (_deviceOperator == nil) {
+    _deviceOperator = [FBSimulatorControlOperator operatorWithSimulator:self];
+  }
+  return _deviceOperator;
+}
 
 - (NSString *)udid
 {
@@ -125,6 +138,11 @@
 - (id<FBControlCoreConfiguration_OS>)osConfiguration
 {
   return self.configuration.os;
+}
+
+- (FBiOSTargetDiagnostics *)diagnostics
+{
+  return self.simulatorDiagnostics;
 }
 
 - (NSComparisonResult)compare:(id<FBiOSTarget>)target
@@ -259,6 +277,7 @@
 {
   return @[
     [FBSimulatorApplicationCommands withSimulator:simulator],
+    [FBSimulatorVideoRecordingCommands withSimulator:simulator],
   ];
 }
 

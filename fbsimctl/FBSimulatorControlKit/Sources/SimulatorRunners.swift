@@ -65,7 +65,7 @@ struct SimulatorActionRunner : Runner {
     case .boot(let maybeBootConfiguration):
       let bootConfiguration = maybeBootConfiguration ?? FBSimulatorBootConfiguration.default()
       return SimulatorInteractionRunner(reporter, EventName.Boot, ControlCoreSubject(bootConfiguration)) { interaction in
-        interaction.prepare(forBoot: bootConfiguration).bootSimulator(bootConfiguration)
+        interaction.bootSimulator(bootConfiguration)
       }
     case .clearKeychain(let maybeBundleID):
       return SimulatorInteractionRunner(reporter, EventName.ClearKeychain, ControlCoreSubject(simulator)) { interaction in
@@ -78,11 +78,13 @@ struct SimulatorActionRunner : Runner {
       return iOSTargetRunner(reporter, EventName.Delete, ControlCoreSubject(simulator)) {
         try simulator.set!.delete(simulator)
       }
-    case .diagnose(let query, let format):
-      return DiagnosticsRunner(reporter, query, query, format)
     case .erase:
       return iOSTargetRunner(reporter, EventName.Erase, ControlCoreSubject(simulator)) {
         try simulator.erase()
+      }
+    case .keyboardOverride:
+      return SimulatorInteractionRunner(reporter, EventName.KeyboardOverride, ControlCoreSubject(simulator)) { interaction in
+        interaction.setupKeyboard()
       }
     case .launchAgent(let launch):
       return SimulatorInteractionRunner(reporter, EventName.Launch, ControlCoreSubject(launch)) { interaction in
@@ -102,22 +104,9 @@ struct SimulatorActionRunner : Runner {
             interaction.waitUntilAllTestRunnersHaveFinishedTesting(withTimeout: configuration.timeout)
         }
       }
-    case .listApps:
-      return iOSTargetRunner(reporter, nil, ControlCoreSubject(simulator)) {
-        let subject = ControlCoreSubject(simulator.installedApplications.map { $0.jsonSerializableRepresentation() } as NSArray)
-        reporter.reporter.reportSimple(EventName.ListApps, EventType.Discrete, subject)
-      }
     case .open(let url):
       return SimulatorInteractionRunner(reporter, EventName.Open, url.bridgedAbsoluteString) { interaction in
         interaction.open(url)
-      }
-    case .record(let start):
-      return SimulatorInteractionRunner(reporter, EventName.Record, start) { interaction in
-        if (start) {
-          interaction.startRecordingVideo()
-        } else {
-          interaction.stopRecordingVideo()
-        }
       }
     case .relaunch(let appLaunch):
       return SimulatorInteractionRunner(reporter, EventName.Relaunch, ControlCoreSubject(appLaunch)) { interaction in
@@ -138,10 +127,6 @@ struct SimulatorActionRunner : Runner {
     case .setLocation(let latitude, let longitude):
       return SimulatorInteractionRunner(reporter, EventName.SetLocation, ControlCoreSubject(simulator)) { interaction in
         interaction.setLocation(latitude, longitude: longitude)
-      }
-    case .uninstall(let bundleID):
-      return SimulatorInteractionRunner(reporter, EventName.Uninstall, bundleID) { interaction in
-        interaction.uninstallApplication(withBundleID: bundleID)
       }
     case .upload(let diagnostics):
       return UploadRunner(reporter, diagnostics)
@@ -177,51 +162,6 @@ private struct SimulatorInteractionRunner : Runner {
       try interact.perform()
     }
     return action.run()
-  }
-}
-
-private struct DiagnosticsRunner : Runner {
-  let reporter: SimulatorReporter
-  let subject: ControlCoreValue
-  let query: FBDiagnosticQuery
-  let format: DiagnosticFormat
-
-  init(_ reporter: SimulatorReporter, _ subject: ControlCoreValue, _ query: FBDiagnosticQuery, _ format: DiagnosticFormat) {
-    self.reporter = reporter
-    self.subject = subject
-    self.query = query
-    self.format = format
-  }
-
-  func run() -> CommandResult {
-    reporter.reportValue(EventName.Diagnose, EventType.Started, query)
-    let diagnostics = self.fetchDiagnostics()
-    reporter.reportValue(EventName.Diagnose, EventType.Ended, query)
-
-    let subjects: [EventReporterSubject] = diagnostics.map { diagnostic in
-      return SimpleSubject(
-        EventName.Diagnostic,
-        EventType.Discrete,
-        ControlCoreSubject(diagnostic)
-      )
-    }
-    return .success(CompositeSubject(subjects))
-  }
-
-  func fetchDiagnostics() -> [FBDiagnostic] {
-    let diagnostics = self.reporter.simulator.diagnostics
-    let format = self.format
-
-    return query.perform(diagnostics).map { diagnostic in
-      switch format {
-      case .CurrentFormat:
-        return diagnostic
-      case .Content:
-        return FBDiagnosticBuilder(diagnostic: diagnostic).readIntoMemory().build()
-      case .Path:
-        return FBDiagnosticBuilder(diagnostic: diagnostic).writeOutToFile().build()
-      }
-    }
   }
 }
 
@@ -284,10 +224,10 @@ private struct UploadRunner : Runner {
 
     if media.count > 0 {
       let paths = media.map { $0.1 }
-      let interaction = SimulatorInteractionRunner(self.reporter, EventName.Upload, StringsSubject(paths)) { interaction in
-        interaction.uploadMedia(paths)
+      let runner = iOSTargetRunner(reporter, EventName.Upload, StringsSubject(paths)) {
+        try FBUploadMediaStrategy(simulator: self.reporter.simulator).uploadMedia(paths)
       }
-      let result = interaction.run()
+      let result = runner.run()
       switch result {
       case .failure: return result
       default: break

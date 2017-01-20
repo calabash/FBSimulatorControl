@@ -14,7 +14,10 @@
 
 #import <XCTestBootstrap/XCTestBootstrap.h>
 
+#import <FBControlCore/FBControlCore.h>
+
 #import "FBiOSDeviceOperator.h"
+#import "FBDeviceVideoRecordingCommands.h"
 #import "FBDeviceSet+Private.h"
 #import "FBAMDevice.h"
 
@@ -39,6 +42,7 @@ void (*FBAMDSetLogLevel)(int32_t level);
 @implementation FBDevice
 
 @synthesize deviceOperator = _deviceOperator;
+@synthesize recordingCommand = _recordingCommand;
 @synthesize dvtDevice = _dvtDevice;
 
 #pragma mark Initializers
@@ -52,7 +56,7 @@ void (*FBAMDSetLogLevel)(int32_t level);
 
   _set = set;
   _amDevice = amDevice;
-  _logger = logger;
+  _logger = [logger withPrefix:[NSString stringWithFormat:@"%@: ", amDevice.udid]];
 
   return self;
 }
@@ -72,6 +76,14 @@ void (*FBAMDSetLogLevel)(int32_t level);
 - (NSString *)name
 {
   return self.amDevice.deviceName;
+}
+
+- (NSString *)auxillaryDirectory
+{
+  return [[[NSHomeDirectory()
+    stringByAppendingPathComponent:@"Library"]
+    stringByAppendingPathComponent:@"FBDeviceControl"]
+    stringByAppendingPathComponent:self.udid];
 }
 
 - (FBSimulatorState)state
@@ -102,6 +114,11 @@ void (*FBAMDSetLogLevel)(int32_t level);
 - (id<FBControlCoreConfiguration_OS>)osConfiguration
 {
   return self.amDevice.osConfiguration;
+}
+
+- (FBiOSTargetDiagnostics *)diagnostics
+{
+  return [[FBiOSTargetDiagnostics alloc] initWithStorageDirectory:self.auxillaryDirectory];
 }
 
 - (NSComparisonResult)compare:(id<FBiOSTarget>)target
@@ -170,10 +187,22 @@ void (*FBAMDSetLogLevel)(int32_t level);
 
 - (id)forwardingTargetForSelector:(SEL)selector
 {
+  // Try the Recording Command first, constructing a DeviceOperator is expensive.
+  if ([self.recordingCommand respondsToSelector:selector]) {
+    return self.recordingCommand;
+  }
   if ([self.deviceOperator respondsToSelector:selector]) {
     return self.deviceOperator;
   }
-  return nil;
+  return [super forwardingTargetForSelector:selector];
+}
+
+- (FBDeviceVideoRecordingCommands *)recordingCommand
+{
+  if (!_recordingCommand) {
+    _recordingCommand = [FBDeviceVideoRecordingCommands withDevice:self];
+  }
+  return _recordingCommand;
 }
 
 @end

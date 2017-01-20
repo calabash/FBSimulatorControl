@@ -62,14 +62,14 @@
 - (BOOL)darwinNotificationGetState:(unsigned long long *)arg1 name:(id)arg2 error:(id *)arg3;
 - (BOOL)postDarwinNotification:(id)arg1 error:(id *)arg2;
 - (BOOL)terminateApplicationWithID:(id)arg1 error:(id *)arg2;
-- (int)launchApplicationWithID:(id)arg1 options:(id)arg2 error:(id *)arg3;
+- (pid_t)launchApplicationWithID:(NSString *)bundleID options:(NSDictionary<NSString *, id> *)options error:(NSError **)error;
 - (void)launchApplicationAsyncWithID:(id)arg1 options:(id)arg2 completionHandler:(CDUnknownBlockType)arg3;
 - (void)launchApplicationAsyncWithID:(id)arg1 options:(id)arg2 completionQueue:(id)arg3 completionHandler:(CDUnknownBlockType)arg4;
 - (id)installedAppsWithError:(id *)arg1;
 - (id)propertiesOfApplication:(id)arg1 error:(id *)arg2;
 - (BOOL)applicationIsInstalled:(id)arg1 type:(id *)arg2 error:(id *)arg3;
-- (BOOL)uninstallApplication:(id)arg1 withOptions:(id)arg2 error:(id *)arg3;
-- (BOOL)installApplication:(id)arg1 withOptions:(id)arg2 error:(id *)arg3;
+- (BOOL)uninstallApplication:(NSString *)bundleID withOptions:(NSDictionary *)options error:(NSError **)error;
+- (BOOL)installApplication:(NSURL *)appURL withOptions:(NSDictionary *)options error:(NSError **)error;
 - (BOOL)setKeyboardLanguage:(id)arg1 error:(id *)arg2;
 - (BOOL)addVideo:(id)arg1 error:(id *)arg2;
 - (BOOL)addPhoto:(id)arg1 error:(id *)arg2;

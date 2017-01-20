@@ -71,26 +71,35 @@
     build]
     startAsynchronously];
 
-  NSFileHandle *otestQueryOutputHandle = [NSFileHandle fileHandleForReadingAtPath:otestQueryOutputPath];
-  if (otestQueryOutputHandle == nil) {
-    return [[FBXCTestError describeFormat:@"Failed to open fifo for reading: %@", otestQueryOutputPath] failBool:error];
+  FBAccumilatingFileDataConsumer *consumer = [FBAccumilatingFileDataConsumer new];
+  FBFileReader *reader = [FBFileReader readerWithFilePath:otestQueryOutputPath consumer:consumer error:error];
+  if (![reader startReadingWithError:error]) {
+    return NO;
   }
-  NSMutableData *queryOutput = [NSMutableData data];
-  otestQueryOutputHandle.readabilityHandler = ^(NSFileHandle *fileHandle) {
-    [queryOutput appendData:fileHandle.availableData];
-  };
 
-  [task waitForCompletionWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout error:nil];
-  [otestQueryOutputHandle closeFile];
+  // Wait for the subprocess to terminate.
+  // Then make sure that the file has finished being read.
+  NSTimeInterval timeout = FBControlCoreGlobalConfiguration.slowTimeout;
+  NSError *innerError = nil;
+  BOOL waitSuccess = [task waitForCompletionWithTimeout:timeout error:&innerError];
+  if (![reader stopReadingWithError:error]) {
+    return NO;
+  }
 
+  if (!waitSuccess) {
+    return [[[FBXCTestError
+      describeFormat:@"Waited %f seconds for list-test task to terminate", timeout]
+      causedBy:innerError]
+      failBool:error];
+  }
   if (!task.wasSuccessful) {
     return [[[FBXCTestError
-      describe:@"Listing of Tests Failed"]
+      describeFormat:@"The Listing of Tests Failed: %@", task.error.localizedDescription]
       causedBy:task.error]
       failBool:error];
   }
 
-  NSArray<NSString *> *testNames = [NSJSONSerialization JSONObjectWithData:queryOutput options:0 error:error];
+  NSArray<NSString *> *testNames = [NSJSONSerialization JSONObjectWithData:consumer.data options:0 error:error];
   if (testNames == nil) {
     return NO;
   }

@@ -59,9 +59,9 @@ static const DDLogLevel ddLogLevel = DDLogLevelInfo;
   return strategy;
 }
 
-- (FBTestRunnerConfiguration *)prepareTestWithDeviceOperator:(id<FBDeviceOperator>)deviceOperator error:(NSError **)error
+- (FBTestRunnerConfiguration *)prepareTestWithIOSTarget:(id<FBiOSTarget>)iosTarget error:(NSError **)error
 {
-  NSAssert(deviceOperator, @"deviceOperator is needed to load bundles");
+  NSAssert(iosTarget, @"iosTarget is needed to load bundles");
   NSAssert(self.applicationPath, @"Path to application is needed to load bundles");
   NSAssert(self.applicationDataPath, @"Path to application data bundle is needed to prepare bundles");
   NSAssert(self.testLaunchConfiguration.testBundlePath, @"Path to test bundle is needed to load bundles");
@@ -80,8 +80,8 @@ static const DDLogLevel ddLogLevel = DDLogLevelInfo;
      fail:error];
   }
 
-  if (![deviceOperator isApplicationInstalledWithBundleID:testRunner.bundleID error:&innerError]) {
-    if (![deviceOperator installApplicationWithPath:testRunner.path error:&innerError]) {
+  if (![iosTarget isApplicationInstalledWithBundleID:testRunner.bundleID error:&innerError]) {
+    if (![iosTarget installApplicationWithPath:testRunner.path error:&innerError]) {
       return
       [[[XCTestBootstrapError describe:@"Failed to install test runner app"]
         causedBy:innerError]
@@ -90,7 +90,7 @@ static const DDLogLevel ddLogLevel = DDLogLevelInfo;
   }
 
   // Get tested app path on device
-  NSString *remotePath = [deviceOperator applicationPathForApplicationWithBundleID:testRunner.bundleID error:&innerError];
+  NSString *remotePath = [iosTarget.deviceOperator applicationPathForApplicationWithBundleID:testRunner.bundleID error:&innerError];
   if (!remotePath) {
     return
     [[[XCTestBootstrapError describe:@"Failed to fetch test runner's path on device"]
@@ -99,7 +99,7 @@ static const DDLogLevel ddLogLevel = DDLogLevelInfo;
   }
 
   // Get tested app document container path
-  NSString *dataContainterDirectory = [deviceOperator containerPathForApplicationWithBundleID:testRunner.bundleID error:&innerError];
+  NSString *dataContainterDirectory = [iosTarget.deviceOperator containerPathForApplicationWithBundleID:testRunner.bundleID error:&innerError];
   if (!dataContainterDirectory) {
     return
     [[[XCTestBootstrapError describe:@"Failed to fetch test runner's data container path"]
@@ -140,7 +140,7 @@ static const DDLogLevel ddLogLevel = DDLogLevelInfo;
   }
 
   // Inastall tested app data package
-  if (![deviceOperator uploadApplicationDataAtPath:dataPackage.path bundleID:testRunner.bundleID error:&innerError]) {
+  if (![iosTarget.deviceOperator uploadApplicationDataAtPath:dataPackage.path bundleID:testRunner.bundleID error:&innerError]) {
     return
     [[[XCTestBootstrapError describe:@"Failed to upload data package to device"]
       causedBy:innerError]
