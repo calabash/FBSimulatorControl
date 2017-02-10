@@ -112,6 +112,16 @@
   return self.framebuffer;
 }
 
+- (nullable FBSimulatorHID *)connectToHID:(NSError **)error
+{
+  if (self.hid) {
+    return [self.hid connect:error] ? self.hid : nil;
+  }
+  return [[FBSimulatorError
+    describe:@"Could not connect to HID, it must be provided on launch"]
+    fail:error];
+}
+
 - (BOOL)terminateWithTimeout:(NSTimeInterval)timeout
 {
   return [[CalabashUtils doOnMainAndReturn:^id{

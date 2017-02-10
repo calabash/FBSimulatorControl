@@ -39,11 +39,16 @@
   return operator;
 }
 
+- (NSString *)udid
+{
+  return self.simulator.udid;
+}
+
 #pragma mark - FBApplicationCommands
 
 - (BOOL)installApplicationWithPath:(NSString *)path error:(NSError **)error
 {
-  FBApplicationDescriptor *application = [FBApplicationDescriptor applicationWithPath:path error:error];
+  FBApplicationDescriptor *application = [FBApplicationDescriptor userApplicationWithPath:path error:error];
   if (![[self.simulator.interact installApplication:application] perform:error]) {
     return NO;
   }
@@ -199,11 +204,11 @@
     return NO;
   }
 
-  FBApplicationLaunchConfiguration *configuration = [FBApplicationLaunchConfiguration new];
-  configuration.bundleName = app.binary.name;
-  configuration.bundleID = bundleID;
-  configuration.arguments = arguments;
-  configuration.environment = environment;
+  FBApplicationLaunchConfiguration *configuration = [FBApplicationLaunchConfiguration
+    configurationWithApplication:app
+    arguments:arguments
+    environment:environment
+    output:FBProcessOutputConfiguration.outputToDevNull];
 
   if (![[self.simulator.interact launchOrRelaunchApplication:configuration] perform:error]) {
     return NO;
@@ -233,7 +238,7 @@
 
 - (nullable FBDiagnostic *)attemptToFindCrashLogForProcess:(pid_t)pid bundleID:(NSString *)bundleID
 {
-  return [[self.simulator.diagnostics userLaunchedProcessCrashesSinceLastLaunchWithProcessIdentifier:pid] firstObject];
+  return [[self.simulator.simulatorDiagnostics userLaunchedProcessCrashesSinceLastLaunchWithProcessIdentifier:pid] firstObject];
 }
 
 #pragma mark - Unsupported FBDeviceOperator protocol method

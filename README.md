@@ -31,7 +31,7 @@ As `FBSimulatorControl` nears a stable version, the API may change but can be co
 The `FBSimulatorControl.xcodeproj` will build the `FBSimulatorControl.framework` and the `FBSimulatorControlTests.xctest` bundles without any additional dependencies. The Project File is checked into the repo and the Framework can be build from this project.
 
 Once you build the `FBSimulatorControl.framework`, it can be linked like any other 3rd-party Framework for your project:
-- Add `FBSimulatorControl.framework` to the [Target's 'Link Binary With Libraries' build phase](Help/link_binary_with_libraries.png).
+- Add `FBSimulatorControl.framework` to the [Target's 'Link Binary With Libraries' build phase](Documentation/link_binary_with_libraries.png).
 - Ensure that `FBSimulatorControl` is copied into the Target's bundle (if your Target is an Application or Framework) or a path relative to the Executable if your project does not have a bundle.
 
 ## Usage
@@ -48,7 +48,7 @@ For a high level overview:
 - `FBSimulator` is a reference type that represents an individual Simulator. It has a number of convenience methods for accessing information about a Simulator.
 - `FBSimulatorInteraction` and it's categories forms the API of possible ways of interacting with a Simulator. These range from booting Simulators, installing & running Applications, uploading photos & videos and more.
 - `FBSimulatorHistory` is a record of all the events that happen to a Simulator. It can be queried in a variety of ways and serialized to file.
-- `FBSimulatorDiagnositcs` is a facade around available diagnostics for a Simulator. It fetches static logs such as the System Log on-demand and receives new logs from components such as `FBFramebufferVideo`.
+- `FBSimulatorDiagnostics` is a facade around available diagnostics for a Simulator. It fetches static logs such as the System Log on-demand and receives new logs from components such as `FBFramebufferVideo`.
 - Configuration objects: `FBApplicationLaunchConfiguration`, `FBAgentLaunchConfiguration`, `FBSimulatorApplication`, `FBSimulatorControlConfiguration`, `FBSimulatorConfiguration` & `FBSimulatorBootConfiguration`.
 
 To launch Safari on an iPhone 5, you can use the following:

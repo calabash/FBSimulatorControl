@@ -14,7 +14,6 @@
 
 #import <FBControlCore/FBControlCore.h>
 
-#import "FBSimDeviceWrapper.h"
 #import "FBSimulator+Private.h"
 #import "FBSimulatorError.h"
 #import "FBSimulatorHistory+Queries.h"
@@ -31,11 +30,6 @@
 - (FBSimulatorInteraction *)interact
 {
   return [FBSimulatorInteraction withSimulator:self];
-}
-
-- (FBSimDeviceWrapper *)simDeviceWrapper
-{
-  return [FBSimDeviceWrapper withSimulator:self configuration:self.set.configuration processFetcher:self.processFetcher];
 }
 
 - (FBSimulatorLaunchCtl *)launchctl
@@ -55,19 +49,6 @@
     return @[];
   }
   return [self.processFetcher.processFetcher subprocessesOf:launchdSim.processIdentifier];
-}
-
-- (NSArray<FBApplicationDescriptor *> *)installedApplications
-{
-  NSMutableArray<FBApplicationDescriptor *> *applications = [NSMutableArray array];
-  for (NSDictionary *appInfo in [[self.device installedAppsWithError:nil] allValues]) {
-    FBApplicationDescriptor *application = [FBApplicationDescriptor applicationWithPath:appInfo[@"Path"] error:nil];
-    if (!application) {
-      continue;
-    }
-    [applications addObject:application];
-  }
-  return [applications copy];
 }
 
 #pragma mark Methods
@@ -130,8 +111,9 @@
   if (!appInfo) {
     return [FBSimulatorError failWithError:innerError errorOut:error];
   }
-  NSString *appPath = appInfo[@"Path"];
-  FBApplicationDescriptor *application = [FBApplicationDescriptor applicationWithPath:appPath error:&innerError];
+  NSString *appPath = appInfo[ApplicationPathKey];
+  NSString *typeString = appInfo[ApplicationTypeKey];
+  FBApplicationDescriptor *application = [FBApplicationDescriptor applicationWithPath:appPath installTypeString:typeString error:&innerError];
   if (!application) {
     return [[[[FBSimulatorError
       describeFormat:@"Failed to get App Path of %@ at %@", bundleID, appPath]
@@ -152,7 +134,7 @@
     return [FBSimulatorError failBoolWithError:innerError errorOut:error];
   }
 
-  return [appInfo[@"ApplicationType"] isEqualToString:@"System"];
+  return [appInfo[ApplicationTypeKey] isEqualToString:@"System"];
 }
 
 - (NSString *)homeDirectoryOfApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error

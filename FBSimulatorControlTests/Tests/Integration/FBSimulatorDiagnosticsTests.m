@@ -43,14 +43,16 @@
   }
 
   FBSimulator *simulator = [self assertObtainsBootedSimulator];
-  FBApplicationLaunchConfiguration *appLaunch = [self.tableSearchAppLaunch.injectingShimulator withEnvironmentAdditions:@{@"SHIMULATOR_CRASH_AFTER" : @"1"}];
+  NSString *path = [[NSBundle bundleForClass: self.class] pathForResource:@"libShimulator" ofType:@"dylib"];
+  FBApplicationLaunchConfiguration *configuration = [self.tableSearchAppLaunch injectingLibrary:path];
+  FBApplicationLaunchConfiguration *appLaunch = [configuration withEnvironmentAdditions:@{@"SHIMULATOR_CRASH_AFTER" : @"1"}];
 
   [self assertInteractionSuccessful:[[simulator.interact installApplication:self.tableSearchApplication] launchApplication:appLaunch]];
 
   // Shimulator sends an unrecognized selector to NSFileManager to cause a crash.
   // The CrashReporter service is a background service as it will symbolicate in a separate process.
   [self assertFindsNeedle:@"-[NSFileManager stringWithFormat:]" fromHaystackBlock:^ NSString * {
-    return [[simulator.diagnostics.userLaunchedProcessCrashesSinceLastLaunch firstObject] asString];
+    return [[simulator.simulatorDiagnostics.userLaunchedProcessCrashesSinceLastLaunch firstObject] asString];
   }];
 }
 
@@ -63,7 +65,7 @@
   FBSimulator *simulator = [self assertObtainsBootedSimulator];
 
   [self assertFindsNeedle:@"syslogd" fromHaystackBlock:^ NSString * {
-    return simulator.diagnostics.syslog.asString;
+    return simulator.simulatorDiagnostics.syslog.asString;
   }];
 }
 
@@ -78,7 +80,7 @@
   [self assertInteractionSuccessful:[[simulator.interact installApplication:self.tableSearchApplication] launchApplication:appLaunch]];
 
   [self assertFindsNeedle:@"Shimulator" fromHaystackBlock:^ NSString * {
-    return [[simulator.diagnostics.launchedProcessLogs.allValues firstObject] asString];
+    return [[simulator.simulatorDiagnostics.launchedProcessLogs.allValues firstObject] asString];
   }];
 }
 

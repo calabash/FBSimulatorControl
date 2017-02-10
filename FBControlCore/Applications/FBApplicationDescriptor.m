@@ -9,42 +9,140 @@
 
 #import "FBApplicationDescriptor.h"
 
-#import "FBControlCoreError.h"
 #import "FBBinaryDescriptor.h"
-#import "FBControlCoreGlobalConfiguration.h"
-#import "FBCollectionInformation.h"
 #import "FBBinaryParser.h"
+#import "FBCollectionInformation.h"
+#import "FBControlCoreError.h"
+#import "FBControlCoreError.h"
+#import "FBControlCoreGlobalConfiguration.h"
+#import "FBTask.h"
+#import "FBTaskBuilder.h"
+
+static BOOL deleteDirectory(NSURL *path)
+{
+  if (path == nil) {
+    return YES;
+  }
+  return [[NSFileManager defaultManager] removeItemAtURL:path error:nil];
+}
+
+static BOOL isApplicationAtPath(NSString *path)
+{
+  BOOL isDirectory = NO;
+  return path != nil
+    && [path hasSuffix:@".app"]
+    && [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory]
+    && isDirectory;
+}
 
 @implementation FBApplicationDescriptor
 
-+ (nullable instancetype)applicationWithPath:(NSString *)path error:(NSError **)error;
+#pragma mark Initializers
+
+- (instancetype)initWithName:(NSString *)name path:(NSString *)path bundleID:(NSString *)bundleID binary:(FBBinaryDescriptor *)binary installType:(FBApplicationInstallType)installType
 {
-  NSMutableDictionary *applicationCache = self.applicationCache;
-  FBApplicationDescriptor *application = applicationCache[path];
-  if (application) {
-    return application;
+  self = [super initWithName:name path:path bundleID:bundleID binary:binary];
+  if (!self) {
+    return nil;
   }
 
+  _installType = installType;
+  return self;
+}
+
+#pragma mark Public Initializer
+
++ (nullable instancetype)applicationWithPath:(NSString *)path installType:(FBApplicationInstallType)installType error:(NSError **)error
+{
   NSError *innerError = nil;
-  application = [FBApplicationDescriptor createApplicationWithPath:path error:&innerError];
+  FBApplicationDescriptor *application = [FBApplicationDescriptor createApplicationWithPath:path installType:installType error:&innerError];
   if (!application) {
     return [FBControlCoreError failWithError:innerError errorOut:error];
   }
-  applicationCache[path] = application;
   return application;
+}
+
++ (nullable instancetype)userApplicationWithPath:(NSString *)path error:(NSError **)error
+{
+  return [self applicationWithPath:path installType:FBApplicationInstallTypeUser error:error];
+}
+
++ (instancetype)remoteApplicationWithName:(NSString *)name path:(NSString *)path bundleID:(NSString *)bundleID
+{
+  return [[FBApplicationDescriptor alloc] initWithName:name path:path bundleID:bundleID binary:nil installType:FBApplicationInstallTypeRemote];
+}
+
++ (nullable instancetype)applicationWithPath:(NSString *)path installTypeString:(nullable NSString *)installTypeString error:(NSError **)error
+{
+  FBApplicationInstallType installType = [FBApplicationDescriptor installTypeFromString:installTypeString];
+  return [self applicationWithPath:path installType:installType error:error];
 }
 
 + (nullable instancetype)systemApplicationNamed:(NSString *)appName error:(NSError **)error
 {
-  return [self applicationWithPath:[self pathForSystemApplicationNamed:appName] error:error];
+  return [self applicationWithPath:[self pathForSystemApplicationNamed:appName] installType:FBApplicationInstallTypeSystem error:error];
 }
 
 + (instancetype)xcodeSimulator;
 {
   NSError *error = nil;
-  FBApplicationDescriptor *application = [self applicationWithPath:self.pathForSimulatorApplication error:&error];
+  FBApplicationDescriptor *application = [self applicationWithPath:self.pathForSimulatorApplication installType:FBApplicationInstallTypeMac error:&error];
   NSAssert(application, @"Expected to be able to build an Application, got an error %@", application);
   return application;
+}
+
+#pragma mark Install Type
+
+static NSString *const FBApplicationInstallTypeStringUser = @"user";
+static NSString *const FBApplicationInstallTypeStringSystem = @"system";
+static NSString *const FBApplicationInstallTypeStringMac = @"mac";
+static NSString *const FBApplicationInstallTypeStringRemote = @"remote";
+static NSString *const FBApplicationInstallTypeStringUnknown = @"unknown";
+
++ (NSString *)stringFromApplicationInstallType:(FBApplicationInstallType)installType
+{
+  switch (installType) {
+    case FBApplicationInstallTypeUser:
+      return FBApplicationInstallTypeStringUser;
+    case FBApplicationInstallTypeSystem:
+      return FBApplicationInstallTypeStringSystem;
+    case FBApplicationInstallTypeMac:
+      return FBApplicationInstallTypeStringMac;
+    case FBApplicationInstallTypeRemote:
+      return FBApplicationInstallTypeStringRemote;
+    default:
+      return FBApplicationInstallTypeStringUnknown;
+  }
+}
+
++ (FBApplicationInstallType)installTypeFromString:(nullable NSString *)installTypeString
+{
+  if (!installTypeString) {
+    return FBApplicationInstallTypeUnknown;
+  }
+  installTypeString = [installTypeString lowercaseString];
+  if ([installTypeString isEqualToString:FBApplicationInstallTypeStringSystem]) {
+    return FBApplicationInstallTypeSystem;
+  }
+  if ([installTypeString isEqualToString:FBApplicationInstallTypeStringUser]) {
+    return FBApplicationInstallTypeUser;
+  }
+  if ([installTypeString isEqualToString:FBApplicationInstallTypeStringMac]) {
+    return FBApplicationInstallTypeMac;
+  }
+  if ([installTypeString isEqualToString:FBApplicationInstallTypeStringRemote]) {
+    return FBApplicationInstallTypeRemote;
+  }
+  return FBApplicationInstallTypeUnknown;
+}
+
+#pragma mark JSON
+
+- (id)jsonSerializableRepresentation
+{
+  NSMutableDictionary<NSString *, id> *parent = [NSMutableDictionary dictionaryWithDictionary:[super jsonSerializableRepresentation]];
+  parent[@"install_type"] = [FBApplicationDescriptor stringFromApplicationInstallType:self.installType];
+  return [parent copy];
 }
 
 #pragma mark Private
@@ -68,7 +166,7 @@
     stringByAppendingPathExtension:@"app"];
 }
 
-+ (instancetype)createApplicationWithPath:(NSString *)path error:(NSError **)error;
++ (instancetype)createApplicationWithPath:(NSString *)path installType:(FBApplicationInstallType)installType error:(NSError **)error;
 {
   if (!path) {
     return [[FBControlCoreError describe:@"Path is nil for Application"] fail:error];
@@ -87,17 +185,7 @@
     return [[[FBControlCoreError describeFormat:@"Could not obtain binary for app at path %@", path] causedBy:innerError] fail:error];
   }
 
-  return [[FBApplicationDescriptor alloc] initWithName:appName path:path bundleID:bundleID binary:binary];
-}
-
-+ (NSMutableDictionary *)applicationCache
-{
-  static dispatch_once_t onceToken;
-  static NSMutableDictionary *cache;
-  dispatch_once(&onceToken, ^{
-    cache = [NSMutableDictionary dictionary];
-  });
-  return cache;
+  return [[FBApplicationDescriptor alloc] initWithName:appName path:path bundleID:bundleID binary:binary installType:installType];
 }
 
 + (FBBinaryDescriptor *)binaryForApplicationPath:(NSString *)applicationPath error:(NSError **)error
@@ -164,6 +252,58 @@
     }
   }
   return nil;
+}
+
++ (nullable NSString *)findOrExtractApplicationAtPath:(NSString *)path extractPathOut:(NSURL **)extractPathOut error:(NSError **)error
+{
+  if (isApplicationAtPath(path)) {
+    return path;
+  }
+
+  NSString *tempDirPath = [NSTemporaryDirectory() stringByAppendingPathComponent:NSProcessInfo.processInfo.globallyUniqueString];
+  NSURL *tempDirURL = [NSURL fileURLWithPath:tempDirPath isDirectory:YES];
+  if (extractPathOut) {
+    *extractPathOut = tempDirURL;
+  }
+
+  NSError *innerError = nil;
+  if (![[NSFileManager defaultManager] createDirectoryAtURL:tempDirURL withIntermediateDirectories:YES attributes:nil error:&innerError]) {
+    return [[[FBControlCoreError
+      describe:@"Could not create temporary directory for IPA extraction"]
+      causedBy:innerError]
+      fail:error];
+  }
+  FBTask *task = [[[[[FBTaskBuilder withLaunchPath:@"/usr/bin/unzip"]
+    withArguments:@[path, @"-d", [tempDirURL path]]]
+    withAcceptableTerminationStatusCodes:[NSSet setWithObject:@0]]
+    build]
+    startSynchronouslyWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout];
+
+  if (task.error) {
+    return [[[FBControlCoreError
+      describeFormat:@"Could not unzip IPA at %@.", path]
+      causedBy:task.error]
+      fail:error];
+  }
+
+  NSDirectoryEnumerator *directoryEnumerator = [NSFileManager.defaultManager
+    enumeratorAtURL:tempDirURL
+    includingPropertiesForKeys:@[NSURLIsDirectoryKey]
+    options:0
+    errorHandler:nil];
+  NSSet *applicationURLs = [NSSet set];
+  for (NSURL *fileURL in directoryEnumerator) {
+    if (isApplicationAtPath([fileURL path])) {
+      applicationURLs = [applicationURLs setByAddingObject:fileURL];
+    }
+  }
+  if ([applicationURLs count] != 1) {
+    deleteDirectory(tempDirURL);
+    return [[FBControlCoreError
+      describeFormat:@"Expected only one Application in IPA, found %lu", [applicationURLs count]]
+      fail:error];
+  }
+  return [[applicationURLs anyObject] path];
 }
 
 @end

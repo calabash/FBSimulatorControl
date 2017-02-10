@@ -16,6 +16,7 @@
 @property (nonatomic, copy, readonly) NSString *testBundlePath;
 @property (nonatomic, copy, readonly) NSString *filePath;
 @property (nonatomic, assign, readonly) NSTimeInterval timeout;
+@property (nonatomic, copy, readonly) NSArray<NSString *> *arguments;
 
 @end
 
@@ -25,23 +26,22 @@
                       testHostPath:(nullable NSString *)testHostPath
                     testBundlePath:(nullable NSString *)testBundlePath
                        withTimeout:(NSTimeInterval)timeout
+                     withArguments:(NSArray<NSString *> *)arguments
 {
-  return [[self alloc] initWithDevice:device testHostPath:testHostPath testBundlePath:testBundlePath withTimeout:timeout];
+  return [[self alloc] initWithDevice:device testHostPath:testHostPath testBundlePath:testBundlePath withTimeout:timeout withArguments:arguments];
 }
 
 - (instancetype)initWithDevice:(FBDevice *)device
                   testHostPath:(nullable NSString *)testHostPath
                 testBundlePath:(nullable NSString *)testBundlePath
                    withTimeout:(NSTimeInterval)timeout
+                 withArguments:(NSArray<NSString *> *)arguments
 {
-  if (timeout <= 0) {
-    timeout = FBControlCoreGlobalConfiguration.slowTimeout;
-  }
-
   _device = device;
   _testHostPath = testHostPath;
   _testBundlePath = testBundlePath;
   _timeout = timeout;
+  _arguments = arguments;
 
   return self;
 }
@@ -53,7 +53,8 @@
         @"TestHostPath" : self.testHostPath,
         @"TestBundlePath" : self.testBundlePath,
         @"UseUITargetAppProvidedByTests" : @YES,
-        @"IsUITestBundle" : @YES
+        @"IsUITestBundle" : @YES,
+        @"CommandLineArguments": self.arguments,
     }
   };
 }
@@ -85,13 +86,13 @@
   [arguments addObject: @"-destination"];
   [arguments addObject: [NSString stringWithFormat:@"id=%@", self.device.udid]];
 
+  NSDictionary<NSString *, NSString *> *env = [[NSProcessInfo processInfo] environment];
 
-  FBTaskBuilder *taskBuilder = [FBTaskBuilder withLaunchPath:@"/usr/bin/xcrun" arguments: arguments];
-
-  taskBuilder = [taskBuilder withStdOutToLogger:self.device.logger];
-  taskBuilder = [taskBuilder withStdErrToLogger:self.device.logger];
-
-  FBTask *task = [taskBuilder build];
+  FBTask *task = [[[[[FBTaskBuilder withLaunchPath:@"/usr/bin/xcrun" arguments: arguments]
+                     withEnvironment:env]
+                    withStdOutToLogger:self.device.logger]
+                   withStdErrToLogger:self.device.logger]
+                  build];
 
   [task startSynchronouslyWithTimeout:self.timeout];
   return task;
@@ -102,7 +103,6 @@
   NSParameterAssert(self.device);
   NSParameterAssert(self.testHostPath);
   NSParameterAssert(self.testBundlePath);
-  NSParameterAssert(self.timeout > 0);
 
   if (![self createXCTestRunFileWithError:error]) {
     if (error) {

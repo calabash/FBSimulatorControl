@@ -92,7 +92,7 @@ extension Parser {
     let desc = PrimitiveDesc(name: "application", desc: "Path to an application.")
     return Parser<FBApplicationDescriptor>.single(desc) { token in
       do {
-        return try FBApplicationDescriptor.application(withPath: token)
+        return try FBApplicationDescriptor.userApplication(withPath: token)
       } catch let error as NSError {
         throw ParseError.custom("Could not get an app \(token) \(error.description)")
       }
@@ -182,7 +182,6 @@ extension FBSimulatorManagementOptions : Parsable {
       self.killSpuriousSimulatorsOnFirstStartParser,
       self.ignoreSpuriousKillFailParser,
       self.killSpuriousCoreSimulatorServicesParser,
-      self.useSimDeviceTimeoutResilianceParser
     ])
       .sectionize("management", "Simulator Management", "")
   }
@@ -210,11 +209,6 @@ extension FBSimulatorManagementOptions : Parsable {
   static var killSpuriousCoreSimulatorServicesParser: Parser<FBSimulatorManagementOptions> {
     return Parser<FBSimulatorManagementOptions>
       .ofFlag("kill-spurious-services", .killSpuriousCoreSimulatorServices, "")
-  }
-
-  static var useSimDeviceTimeoutResilianceParser: Parser<FBSimulatorManagementOptions> {
-    return Parser<FBSimulatorManagementOptions>
-      .ofFlag("timeout-resiliance", .useSimDeviceTimeoutResiliance, "")
   }
 }
 
@@ -334,17 +328,6 @@ extension FBSimulatorState : Parsable {
   }
 }
 
-extension FBProcessLaunchOptions : Parsable {
-  public static var parser: Parser<FBProcessLaunchOptions> {
-    return Parser<FBProcessLaunchOptions>.union([
-      Parser<FBProcessLaunchOptions>.ofFlag(
-        "stdout", FBProcessLaunchOptions.writeStdout, ""),
-      Parser<FBProcessLaunchOptions>.ofFlag(
-        "stderr", FBProcessLaunchOptions.writeStderr, ""),
-    ])
-  }
-}
-
 extension FBiOSTargetType : Parsable {
   public static var parser: Parser<FBiOSTargetType> {
     return Parser<FBiOSTargetType>.alternative([
@@ -380,7 +363,7 @@ extension CLI : Parsable {
       .withExpandedDesc
       .sectionize(
         "fbsimctl", "Help",
-        "fbsimclt is a Mac OS X library for managing and manipulating iOS Simulators")
+        "fbsimctl is a Mac OS X library for managing and manipulating iOS Simulators")
   }
 }
 
@@ -466,6 +449,7 @@ extension Action : Parsable {
         self.diagnoseParser,
         self.eraseParser,
         self.installParser,
+        self.keyboardOverrideParser,
         self.launchAgentParser,
         self.launchAppParser,
         self.launchXCTestParser,
@@ -633,7 +617,11 @@ extension Action : Parsable {
   static var installParser: Parser<Action> {
     return Parser<String>
       .ofCommandWithArg(EventName.Install.rawValue, Parser<String>.ofAny)
-      .fmap { Action.install($0) }
+      .fmap { Action.install($0, false) }
+  }
+
+  static var keyboardOverrideParser: Parser<Action> {
+    return Parser.ofString(EventName.KeyboardOverride.rawValue, Action.keyboardOverride)
   }
 
   static var relaunchParser: Parser<Action> {
@@ -921,7 +909,7 @@ struct FBSimulatorBootConfigurationParser {
   }
 
   static var scaleParser: Parser<FBSimulatorScale> {
-    return Parser.alternative([
+    let subparsers: [Parser<FBSimulatorScale>] = [
       Parser<FBSimulatorScale>
         .ofFlag("scale=25", FBSimulatorScale_25(), ""),
       Parser<FBSimulatorScale>
@@ -930,7 +918,9 @@ struct FBSimulatorBootConfigurationParser {
         .ofFlag("scale=75", FBSimulatorScale_75(), ""),
       Parser<FBSimulatorScale>
         .ofFlag("scale=100", FBSimulatorScale_100(), "")
-    ])
+    ]
+
+    return Parser.alternative(subparsers)
   }
 
   static var optionsParser: Parser<FBSimulatorBootOptions> {
@@ -954,14 +944,14 @@ struct FBProcessLaunchConfigurationParsers {
   static var appLaunchAndApplicationDescriptorParser: Parser<(FBApplicationLaunchConfiguration, FBApplicationDescriptor?)> {
     return Parser
       .ofThreeSequenced(
-        FBProcessLaunchOptions.parser,
+        FBProcessOutputConfigurationParser.parser,
         Parser<Any>.ofBundleIDOrApplicationDescriptor,
         self.argumentParser
       )
-      .fmap { (options, bundleIDOrApplicationDescriptor, arguments) in
+      .fmap { (output, bundleIDOrApplicationDescriptor, arguments) in
         let (bundleId, appDescriptor) = bundleIDOrApplicationDescriptor
         return (
-          FBApplicationLaunchConfiguration(bundleID: bundleId, bundleName: nil, arguments: arguments, environment : [:], options: options),
+          FBApplicationLaunchConfiguration(bundleID: bundleId, bundleName: nil, arguments: arguments, environment : [:], output: output),
           appDescriptor
         )
       }
@@ -974,12 +964,12 @@ struct FBProcessLaunchConfigurationParsers {
   static var agentLaunchParser: Parser<FBAgentLaunchConfiguration> {
     return Parser
       .ofThreeSequenced(
-        FBProcessLaunchOptions.parser,
+        FBProcessOutputConfigurationParser.parser,
         Parser<Any>.ofBinary,
         self.argumentParser
       )
-      .fmap { (options, binary, arguments) in
-        return FBAgentLaunchConfiguration(binary: binary, arguments: arguments, environment : [:], options: options)
+      .fmap { (output, binary, arguments) in
+        return FBAgentLaunchConfiguration(binary: binary, arguments: arguments, environment : [:], output: output)
       }
   }
 
@@ -989,5 +979,26 @@ struct FBProcessLaunchConfigurationParsers {
         Parser<NSNull>.ofDashSeparator,
         Parser<String>.ofAny
       )
+  }
+}
+
+/**
+ A separate struct for FBProcessOutputConfiguration is needed as Parsable protcol conformance cannot be
+ applied to FBProcessOutputConfiguration as it is a non-final class.
+ */
+struct FBProcessOutputConfigurationParser {
+  public static var parser: Parser<FBProcessOutputConfiguration> {
+    return Parser<FBProcessOutputConfiguration>.accumulate(0, [
+      Parser<FBProcessOutputConfiguration>.ofFlag(
+        "stdout",
+        try! FBProcessOutputConfiguration(stdOut: FBProcessOutputToFileDefaultLocation, stdErr: NSNull()),
+        ""
+      ),
+      Parser<FBProcessOutputConfiguration>.ofFlag(
+        "stderr",
+        try! FBProcessOutputConfiguration(stdOut: NSNull(), stdErr: FBProcessOutputToFileDefaultLocation),
+        ""
+      ),
+    ])
   }
 }

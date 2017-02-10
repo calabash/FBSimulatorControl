@@ -23,6 +23,8 @@ public enum EventName : String {
   case Failure = "failure"
   case Help = "help"
   case Install = "install"
+  case Keys = "keys"
+  case KeyboardOverride = "keyboard_override"
   case Launch = "launch"
   case LaunchXCTest = "launch_xctest"
   case List = "list"
