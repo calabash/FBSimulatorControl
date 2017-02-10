@@ -617,7 +617,7 @@ extension Action : Parsable {
   static var installParser: Parser<Action> {
     return Parser<String>
       .ofCommandWithArg(EventName.Install.rawValue, Parser<String>.ofAny)
-      .fmap { Action.install($0) }
+      .fmap { Action.install($0, false) }
   }
 
   static var keyboardOverrideParser: Parser<Action> {
@@ -909,7 +909,7 @@ struct FBSimulatorBootConfigurationParser {
   }
 
   static var scaleParser: Parser<FBSimulatorScale> {
-    return Parser.alternative([
+    let subparsers: [Parser<FBSimulatorScale>] = [
       Parser<FBSimulatorScale>
         .ofFlag("scale=25", FBSimulatorScale_25(), ""),
       Parser<FBSimulatorScale>
@@ -918,7 +918,9 @@ struct FBSimulatorBootConfigurationParser {
         .ofFlag("scale=75", FBSimulatorScale_75(), ""),
       Parser<FBSimulatorScale>
         .ofFlag("scale=100", FBSimulatorScale_100(), "")
-    ])
+    ]
+
+    return Parser.alternative(subparsers)
   }
 
   static var optionsParser: Parser<FBSimulatorBootOptions> {

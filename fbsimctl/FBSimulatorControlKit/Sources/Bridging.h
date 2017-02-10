@@ -71,6 +71,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy, readonly) NSArray<NSString *> *pathComponents;
 
+/**
+ The query dictionary of the request.
+ */
+@property (nonatomic, copy, readonly) NSDictionary<NSString *, NSString *> *query;
+
 @end
 
 /**
@@ -80,23 +85,57 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Creates a Response with the given status code.
+
+ @param statusCode the status code.
+ @param body the body to use.
+ @param contentType the Content Type to use.
+ @return a new Http Response Object.
+ */
++ (instancetype)responseWithStatusCode:(NSInteger)statusCode body:(NSData *)body contentType:(NSString *)contentType;
+
+/**
+ Creates a Response with the given status code.
+
+ @param statusCode the status code.
+ @param body the body to use.
+ @return a new Http Response Object.
  */
 + (instancetype)responseWithStatusCode:(NSInteger)statusCode body:(NSData *)body;
 
 /**
  Creates a 500 Response.
+
+ @param body the body to use.
+ @return a new Http Response Object.
  */
 + (instancetype)internalServerError:(NSData *)body;
 
 /**
  Creates a 200 Response.
+
+ @param body the body to use.
+ @return a new Http Response Object.
  */
 + (instancetype)ok:(NSData *)body;
 
+/**
+ The HTTP Status Code.
+ */
 @property (nonatomic, assign, readonly) NSInteger statusCode;
+
+/**
+ The Binary Data for the Body.
+ */
 @property (nonatomic, strong, readonly) NSData *body;
 
+/**
+ The content-type of the Response.
+ */
+@property (nonatomic, copy, readonly) NSString *contentType;
+
 @end
+
+@protocol HttpResponseHandler;
 
 /**
  A representation of a HTTP Routing.
@@ -111,7 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param handler a handler for the request.
  @return a new HTTP Route.
  */
-+ (instancetype)routeWithMethod:(NSString *)method path:(NSString *)path handler:(HttpResponse *(^)(HttpRequest *))handler;
++ (instancetype)routeWithMethod:(NSString *)method path:(NSString *)path handler:(id<HttpResponseHandler>)handler;
 
 /**
  The HTTP Method.
@@ -126,7 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The Handler to use.
  */
-@property (nonatomic, copy, readonly) HttpResponse *(^handler)(HttpRequest *request);
+@property (nonatomic, copy, readonly) id<HttpResponseHandler> handler;
 
 @end
 
@@ -154,6 +193,21 @@ NS_ASSUME_NONNULL_BEGIN
  Stops the Webserver.
  */
 - (void)stop;
+
+@end
+
+/**
+ A Handler for HTTP Requests.
+ */
+@protocol HttpResponseHandler <NSObject>
+
+/**
+ Handle the HTTP Request, returning a response.
+
+ @param request the request to handle
+ @return a HTTP Response
+ */
+- (HttpResponse *)handleRequest:(HttpRequest *)request;
 
 @end
 

@@ -161,7 +161,7 @@
 
 @implementation HttpRequest
 
-- (instancetype)initWithBody:(NSData *)body pathComponents:(NSArray<NSString *> *)pathComponents
+- (instancetype)initWithBody:(NSData *)body pathComponents:(NSArray<NSString *> *)pathComponents query:(NSDictionary<NSString *, NSString *> *)query
 {
   self = [super init];
   if (!self) {
@@ -170,6 +170,7 @@
 
   _body = body;
   _pathComponents = pathComponents;
+  _query = query;
 
   return self;
 }
@@ -178,22 +179,27 @@
 
 @implementation HttpResponse
 
++ (instancetype)responseWithStatusCode:(NSInteger)statusCode body:(NSData *)body contentType:(NSString *)contentType
+{
+  return [[self alloc] initWithStatusCode:statusCode body:body contentType:contentType];
+}
+
 + (instancetype)responseWithStatusCode:(NSInteger)statusCode body:(NSData *)body
 {
-  return [[self alloc] initWithStatusCode:statusCode body:body];
+  return [self responseWithStatusCode:statusCode body:body contentType:@"application/json"];
 }
 
 + (instancetype)internalServerError:(NSData *)body
 {
-  return [[self alloc] initWithStatusCode:500 body:body];
+  return [self responseWithStatusCode:500 body:body];
 }
 
 + (instancetype)ok:(NSData *)body
 {
-  return [[self alloc] initWithStatusCode:200 body:body];
+  return [self responseWithStatusCode:200 body:body];
 }
 
-- (instancetype)initWithStatusCode:(NSInteger)statusCode body:(NSData *)body
+- (instancetype)initWithStatusCode:(NSInteger)statusCode body:(NSData *)body contentType:(NSString *)contentType
 {
   self = [super init];
   if (!self) {
@@ -202,6 +208,7 @@
 
   _statusCode = statusCode;
   _body = body;
+  _contentType = contentType;
 
   return self;
 }
@@ -257,10 +264,12 @@
   for (HttpRoute *route in routes) {
     [webServer addHandlerForMethod:route.method pathRegex:route.path requestClass:GCDWebServerDataRequest.class processBlock:^ GCDWebServerResponse *(GCDWebServerDataRequest *gcdRequest) {
       NSArray<NSString *> *components = [gcdRequest.path componentsSeparatedByString:@"/"];
-      HttpRequest *request = [[HttpRequest alloc] initWithBody:gcdRequest.data pathComponents:components];
-      HttpResponse *response = route.handler(request);
+      NSDictionary<NSString *, NSString *> *query = [HttpServer queryForRequest:gcdRequest];
 
-      GCDWebServerDataResponse *gcdResponse = [GCDWebServerDataResponse responseWithData:response.body contentType:@"application/json"];
+      HttpRequest *request = [[HttpRequest alloc] initWithBody:gcdRequest.data pathComponents:components query:query];
+      HttpResponse *response = [route.handler handleRequest:request];
+
+      GCDWebServerDataResponse *gcdResponse = [GCDWebServerDataResponse responseWithData:response.body contentType:response.contentType];
       gcdResponse.statusCode = response.statusCode;
       return gcdResponse;
     }];
@@ -268,16 +277,25 @@
   return webServer;
 }
 
++ (NSDictionary<NSString *, NSString *> *)queryForRequest:(GCDWebServerRequest *)request
+{
+  NSMutableDictionary<NSString *, NSString *> *query = [NSMutableDictionary dictionary];
+  for (NSURLQueryItem *item in [NSURLComponents componentsWithURL:request.URL resolvingAgainstBaseURL:NO].queryItems) {
+    query[item.name] = item.value;
+  }
+  return [query copy];
+}
+
 @end
 
 @implementation HttpRoute
 
-+ (instancetype)routeWithMethod:(NSString *)method path:(NSString *)path handler:(HttpResponse *(^)(HttpRequest *))handler
++ (instancetype)routeWithMethod:(NSString *)method path:(NSString *)path handler:(id<HttpResponseHandler>)handler
 {
   return [[self alloc] initWithMethod:method path:path handler:handler];
 }
 
-- (instancetype)initWithMethod:(NSString *)method path:(NSString *)path handler:(HttpResponse *(^)(HttpRequest *))handler
+- (instancetype)initWithMethod:(NSString *)method path:(NSString *)path handler:(id<HttpResponseHandler>)handler
 {
   self = [super init];
   if (!self) {
