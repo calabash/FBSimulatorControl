@@ -22,12 +22,11 @@ else
   XC_PIPE='cat'
 fi
 
+# Legacy directory - remove to avoid confusion.
+rm -rf Products/
+
 BUILD_DIR="build"
-PRODUCTS_DIR="Products/Framworks"
 CONFIGURATION=Release
-
-mkdir -p "${PRODUCTS_DIR}"
-
 XC_PROJECT="FBSimulatorControl.xcodeproj"
 
 function strip_framework() {
@@ -69,5 +68,4 @@ strip_framework "FBDeviceControl.framework/Versions/Current/Frameworks/CocoaLumb
 strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/FBControlCore.framework"
 strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
 strip_framework "FBControlCore.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
-
 
