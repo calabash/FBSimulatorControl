@@ -69,6 +69,8 @@
 #import <FBControlCore/FBTaskBuilder.h>
 #import <FBControlCore/FBTerminationHandle.h>
 #import <FBControlCore/FBVideoRecordingCommands.h>
+#import <FBControlCore/FBDependentDylib+ApplePrivateDylibs.h>
+#import <FBControlCore/FBDependentDylib.h>
 #import <FBControlCore/FBWeakFramework+ApplePrivateFrameworks.h>
 #import <FBControlCore/FBWeakFrameworkLoader.h>
 #import <FBControlCore/NSPredicate+FBControlCore.h>
