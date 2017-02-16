@@ -2,8 +2,6 @@
 
 rm -rf build
 
-set -e
-
 if [[ "${SHELL}" =~ "zsh" ]]; then
   echo "-o pipefail is not available in zsh.  You have been warned."
 else
@@ -21,6 +19,8 @@ if [ ! -z ${USE_XCPRETTY} ]; then
 else
   XC_PIPE='cat'
 fi
+
+set -e
 
 # Legacy directory - remove to avoid confusion.
 rm -rf Products/
