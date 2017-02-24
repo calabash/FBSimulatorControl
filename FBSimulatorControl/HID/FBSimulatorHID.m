@@ -10,6 +10,10 @@
 #import "FBSimulatorHID.h"
 
 #import <CoreSimulator/SimDevice.h>
+#import <CoreSimulator/SimDeviceType.h>
+
+#import <CoreGraphics/CoreGraphics.h>
+
 #import <SimulatorApp/Indigo.h>
 
 #import <mach/mach.h>
@@ -21,6 +25,7 @@
 
 @interface FBSimulatorHID ()
 
+@property (nonatomic, assign, readonly) CGSize mainScreenSize;
 @property (nonatomic, assign, readwrite) mach_port_t registrationPort;
 @property (nonatomic, assign, readwrite) mach_port_t replyPort;
 
@@ -60,10 +65,11 @@
       fail:error];
   }
 
-  return [[FBSimulatorHID alloc] initWithRegistrationPort:registrationPort];
+  CGSize mainScreenSize = simulator.device.deviceType.mainScreenSize;
+  return [[FBSimulatorHID alloc] initWithRegistrationPort:registrationPort mainScreenSize:mainScreenSize];
 }
 
-- (instancetype)initWithRegistrationPort:(mach_port_t)registrationPort
+- (instancetype)initWithRegistrationPort:(mach_port_t)registrationPort mainScreenSize:(CGSize)mainScreenSize
 {
   self = [super init];
   if (!self) {
@@ -71,6 +77,7 @@
   }
 
   _registrationPort = registrationPort;
+  _mainScreenSize = mainScreenSize;
   _replyPort = 0;
 
   return self;
@@ -126,26 +133,142 @@
 
 #pragma mark HID Manipulation
 
-- (BOOL)sendHomeButtonWithError:(NSError **)error
+- (BOOL)sendKeyboardEventWithType:(FBSimulatorHIDEventType)type keyCode:(unsigned int)keycode error:(NSError **)error
 {
   IndigoButtonPayload payload;
-  payload.eventSource = ButtonEventSourceHomeButton;
-  payload.eventType = ButtonEventTypeDown;
+  payload.eventSource = ButtonEventSourceKeyboard;
+  payload.eventClass = ButtonEventClassKeyboard;
+  payload.keyCode = keycode;
+  payload.field5 = 0x000000cc;
+
+  // Then Up/Down.
+  switch (type) {
+    case FBSimulatorHIDEventTypeDown:
+      payload.eventType = ButtonEventTypeDown;
+      break;
+    case FBSimulatorHIDEventTypeUp:
+      payload.eventType = ButtonEventTypeUp;
+      break;
+  }
+  return [self sendButtonEventWithPayload:&payload error:error];
+}
+
+- (BOOL)sendButtonEventWithType:(FBSimulatorHIDEventType)type button:(FBSimulatorHIDButton)button error:(NSError **)error
+{
+  IndigoButtonPayload payload;
   payload.eventClass = ButtonEventClassHardware;
 
-  // Send the button down
-  if (![self sendButtonEventWithPayload:&payload error:error]) {
-    return NO;
+  // Set the Event Source
+  switch (button) {
+    case  FBSimulatorHIDButtonApplePay:
+      payload.eventSource = ButtonEventSourceApplePay;
+      break;
+    case FBSimulatorHIDButtonHomeButton:
+      payload.eventSource = ButtonEventSourceHomeButton;
+      break;
+    case FBSimulatorHIDButtonLock:
+      payload.eventSource = ButtonEventSourceLock;
+      break;
+    case FBSimulatorHIDButtonSideButton:
+      payload.eventSource = ButtonEventSourceSideButton;
+      break;
+    case FBSimulatorHIDButtonSiri:
+      payload.eventSource = ButtonEventSourceSiri;
+      break;
   }
-  // Send the button up
-  payload.eventType = ButtonEventTypeUp;
-  if (![self sendButtonEventWithPayload:&payload error:error]) {
-    return NO;
+  // Then Up/Down.
+  switch (type) {
+    case FBSimulatorHIDEventTypeDown:
+      payload.eventType = ButtonEventTypeDown;
+      break;
+    case FBSimulatorHIDEventTypeUp:
+      payload.eventType = ButtonEventTypeUp;
   }
-  return YES;
+  return [self sendButtonEventWithPayload:&payload error:error];
+}
+
+- (BOOL)sendTouchWithType:(FBSimulatorHIDEventType)type x:(double)x y:(double)y error:(NSError **)error
+{
+  // Convert Screen Offset to Ratio for Indigo.
+  CGPoint point = [self screenRatioFromPoint:CGPointMake(x, y)];
+
+  // Set the Common Values between down-and-up.
+  IndigoDigitizerPayload payload;
+  payload.field1 = 0x00400002;
+  payload.field2 = 0x1;
+  payload.field3 = 0x3;
+
+  // Points are the ratio between the top-left and bottom right.
+  payload.xRatio = point.x;
+  payload.yRatio = point.y;
+
+  // Setting the Values Signifying touch-down.
+  switch (type) {
+    case FBSimulatorHIDEventTypeDown:
+      payload.field9 = 0x1;
+      payload.field10 = 0x1;
+      break;
+    case FBSimulatorHIDEventTypeUp:
+      payload.field9 = 0x0;
+      payload.field10 = 0x0;
+      break;
+    default:
+      break;
+  }
+
+  // Setting some other fields
+  payload.field11 = 0x32;
+  payload.field12 = 0x1;
+  payload.field13 = 0x2;
+
+  // Send the Value
+  return [self sendDigitizerPayload:&payload error:error];
 }
 
 #pragma mark Private
+
+- (BOOL)sendDigitizerPayload:(IndigoDigitizerPayload *)payload error:(NSError **)error
+{
+  // Sizes for the payload.
+  // The size should be 0x140/320.
+  // The stride should be 0x90
+  mach_msg_size_t size = sizeof(IndigoMessage) + sizeof(IndigoInner);
+  size_t stride = sizeof(IndigoInner);
+
+  // Create and set the common values
+  IndigoMessage *message = calloc(0x1, size);
+  message->innerSize = sizeof(IndigoInner);
+  message->eventType = IndigoEventTypeTouch;
+  message->inner.field1 = 0x0000000b;
+  message->inner.timestamp = mach_absolute_time();
+
+  // Copy in the Digitizer Payload from the caller.
+  void *destination = &(message->inner.unionPayload.buttonPayload);
+  void *source = payload;
+  memcpy(destination, source, sizeof(IndigoDigitizerPayload));
+
+  // Duplicate the First IndigoInner Payload.
+  // Also need to set the bits at (0x30 + 0x90) to 0x1.
+  // On 32-Bit Archs this is equivalent this is done with a long to stomp over both fields:
+  // uintptr_t mem = (uintptr_t) message;
+  // mem += 0xc0;
+  // int64_t *val = (int64_t *)mem;
+  // *val = 0x200000001;
+  source = &(message->inner);
+  destination = source;
+  destination += stride;
+  IndigoInner *second = (IndigoInner *) destination;
+  memcpy(destination, source, stride);
+
+  // Adjust the second payload slightly.
+  second->unionPayload.digitizerPayload.field1 = 0x00000001;
+  second->unionPayload.digitizerPayload.field2 = 0x00000002;
+
+  // Send the message, the cleanup.
+  BOOL result = [self sendIndigoMessage:message size:size error:error];
+  free(message);
+  return result;
+}
 
 - (BOOL)sendButtonEventWithPayload:(IndigoButtonPayload *)payload error:(NSError **)error
 {
@@ -192,6 +315,14 @@
       failBool:error];
   }
   return YES;
+}
+
+- (CGPoint)screenRatioFromPoint:(CGPoint)point
+{
+  return CGPointMake(
+    point.x / self.mainScreenSize.width,
+    point.y / self.mainScreenSize.height
+  );
 }
 
 #pragma mark FBDebugDescribeable

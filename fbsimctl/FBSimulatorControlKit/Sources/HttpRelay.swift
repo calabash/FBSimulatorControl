@@ -99,18 +99,7 @@ extension ActionPerformer {
   }
 
   func runWithSingleSimulator<A>(_ query: FBiOSTargetQuery, action: (FBSimulator) throws -> A) throws -> A {
-    let targets = self.commandPerformer.runnerContext(HttpEventReporter()).query(query)
-    if targets.count > 1 {
-      throw QueryError.TooManyMatches(targets, 1)
-    }
-    guard let target = targets.first else {
-      throw QueryError.NoMatches
-    }
-    guard let simulator = target as? FBSimulator else {
-      let expected = FBiOSTargetTypeStringsFromTargetType(FBiOSTargetType.simulator).first!
-      let actual = FBiOSTargetTypeStringsFromTargetType(target.targetType).first!
-      throw QueryError.WrongTarget(expected, actual)
-    }
+    let simulator = try self.commandPerformer.runnerContext(HttpEventReporter()).querySingleSimulator(query)
     var result: A? = nil
     var error: Error? = nil
     DispatchQueue.main.sync {
@@ -310,10 +299,10 @@ class HttpRelay : Relay {
   init(portNumber: in_port_t, performer: ActionPerformer) {
     self.portNumber = portNumber
     self.performer = performer
-
     self.httpServer = HttpServer(
       port: portNumber,
-      routes: HttpRelay.actionRoutes.flatMap { $0.httpRoutes(performer) }
+      routes: HttpRelay.actionRoutes.flatMap { $0.httpRoutes(performer) },
+      logger: FBControlCoreGlobalConfiguration.defaultLogger()
     )
   }
 
@@ -357,16 +346,17 @@ class HttpRelay : Relay {
     }
   }}
 
+  fileprivate static var hidRoute: Route { get {
+    return ActionRoute.post(EventName.Hid) { json in
+      let event = try FBSimulatorHIDEvent.inflate(fromJSON: json.decode())
+      return Action.hid(event)
+    }
+  }}
+
   fileprivate static var installRoute: Route { get {
     return ActionRoute.postFile(EventName.Install, "ipa") { request, file in
       let shouldCodeSign = request.getBoolQueryParam("codesign", false)
       return Action.install(file.path, shouldCodeSign)
-    }
-  }}
-
-  fileprivate static var keysRoute: Route { get {
-    return ActionRoute.post(EventName.Keys) { _ in
-      return Action.keys
     }
   }}
 
@@ -468,8 +458,8 @@ class HttpRelay : Relay {
       self.configRoute,
       self.diagnosticQueryRoute,
       self.diagnosticRoute,
+      self.hidRoute,
       self.installRoute,
-      self.keysRoute,
       self.launchRoute,
       self.listRoute,
       self.openRoute,

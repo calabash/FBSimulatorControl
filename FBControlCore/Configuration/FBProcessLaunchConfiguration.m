@@ -167,14 +167,14 @@ static NSString *const KeyOutput = @"output";
     return [[FBControlCoreError describeFormat:@"%@ is not a bundle_id", bundleID] fail:error];
   }
   NSString *bundleName = json[KeyBundleName];
-  if (![bundleName isKindOfClass:NSString.class]) {
+  if (bundleName && ![bundleName isKindOfClass:NSString.class]) {
     return [[FBControlCoreError describeFormat:@"%@ is not a bundle_name", bundleName] fail:error];
   }
-  NSArray *arguments = json[KeyArguments];
+  NSArray *arguments = json[KeyArguments] ?: @[];
   if (![FBCollectionInformation isArrayHeterogeneous:arguments withClass:NSString.class]) {
     return [[FBControlCoreError describeFormat:@"%@ is not an array of strings for arguments", arguments] fail:error];
   }
-  NSDictionary *environment = json[KeyEnvironment];
+  NSDictionary *environment = json[KeyEnvironment] ?: @{};
   if (![FBCollectionInformation isDictionaryHeterogeneous:environment keyClass:NSString.class valueClass:NSString.class]) {
     return [[FBControlCoreError describeFormat:@"%@ is not an dictionary of <string, strings> for environment", arguments] fail:error];
   }
@@ -201,6 +201,16 @@ static NSString *const KeyOutput = @"output";
   _bundleName = bundleName;
 
   return self;
+}
+
+- (instancetype)withOutput:(FBProcessOutputConfiguration *)output
+{
+    return [[FBApplicationLaunchConfiguration alloc]
+      initWithBundleID:self.bundleID
+      bundleName:self.bundleName
+      arguments:self.arguments
+      environment:self.environment
+      output:output];
 }
 
 #pragma mark Abstract Methods
