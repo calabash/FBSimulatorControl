@@ -7,10 +7,4 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#import "FBArchitecture.h"
-
-FBArchitecture const FBArchitectureI386 = @"i386";
-FBArchitecture const FBArchitectureX86_64 = @"x86_64";
-FBArchitecture const FBArchitectureArmv7 = @"armv7";
-FBArchitecture const FBArchitectureArmv7s = @"armv7s";
-FBArchitecture const FBArchitectureArm64 = @"arm64";
+typedef void (^CoreSimulatorAgentTerminationHandler)(int);

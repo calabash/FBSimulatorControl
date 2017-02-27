@@ -108,11 +108,13 @@ static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 
   // Load XCTest bundle
   NSUUID *sessionIdentifier = [NSUUID UUID];
-  FBTestBundle *testBundle = [[[[[FBTestBundleBuilder builderWithFileManager:self.fileManager]
-                                 withBundlePath:self.testLaunchConfiguration.testBundlePath]
-                                withSessionIdentifier:sessionIdentifier]
-                               withUITesting:self.testLaunchConfiguration.shouldInitializeUITesting]
-                              buildWithError:&innerError];
+  FBTestBundle *testBundle = [[[[[[[FBTestBundleBuilder builderWithFileManager:self.fileManager]
+    withBundlePath:self.testLaunchConfiguration.testBundlePath]
+    withSessionIdentifier:sessionIdentifier]
+    withUITesting:self.testLaunchConfiguration.shouldInitializeUITesting]
+    withTestsToSkip:self.testLaunchConfiguration.testsToSkip]
+    withTestsToRun:self.testLaunchConfiguration.testsToRun]
+    buildWithError:&innerError];
 
   if (!testBundle) {
     return
