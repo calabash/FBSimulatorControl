@@ -195,7 +195,13 @@ static NSString *const ApplicationPathKey = @"Path";
 
 - (BOOL)requiresTestDaemonMediationForTestHostConnection
 {
-  return self.device.dvtDevice.requiresTestDaemonMediationForTestHostConnection;
+  SEL selector = @selector(requiresTestDaemonMediationForTestHostConnection);
+  if ([self.device.dvtDevice respondsToSelector:selector]) {
+    return self.device.dvtDevice.requiresTestDaemonMediationForTestHostConnection;
+  } else {
+    // Xcode >= 8.3
+    return YES;
+  }
 }
 
 - (BOOL)waitForDeviceToBecomeAvailableWithError:(NSError **)error
