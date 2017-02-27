@@ -26,35 +26,6 @@
     self.continueAfterFailure = NO;
 }
 
-- (void)testTheTest {
-    NSError *err;
-    FBDevice *device = [[FBDeviceSet defaultSetWithLogger:nil
-                                                    error:&err] deviceWithUDID:@"718ab8dbee0173b3f9ebfb01c5688b89221702c6"];
-    
-    if (err) {
-        NSLog(@"Error creating device operator: %@", err);
-        return;
-    }
-
-    
-//    setenv("DEVELOPER_DIR", "/Users/chrisf/Xcodes/8.1/Xcode-beta.app/Contents/Developer", 1);
-    
-    Rep *rep = [Rep new];
-    NSUUID *sessionID = [[NSUUID alloc] initWithUUIDString:@"AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"];
-    [FBXCTestRunStrategy startTestManagerForDeviceOperator:device.deviceOperator
-                                            runnerBundleID:@"com.apple.test.DeviceAgent-Runner"
-                                                 sessionID:sessionID
-                                            withAttributes:[FBTestRunnerConfigurationBuilder defaultBuildAttributes]
-                                               environment:[FBTestRunnerConfigurationBuilder defaultBuildEnvironment]
-                                                  reporter:rep
-                                                    logger:FBControlCoreGlobalConfiguration.defaultLogger
-                                                     error:&err];
-     
-    
-    XCTAssertNil(err, @"%@", err);
-    [[NSRunLoop mainRunLoop] run];
-}
-
 + (void)initialize
 {
   if (!NSProcessInfo.processInfo.environment[FBControlCoreStderrLogging]) {
