@@ -49,7 +49,7 @@
 - (BOOL)installApplicationWithPath:(NSString *)path error:(NSError **)error
 {
   FBApplicationDescriptor *application = [FBApplicationDescriptor userApplicationWithPath:path error:error];
-  if (![[self.simulator.interact installApplication:application] perform:error]) {
+  if (![self.simulator installApplication:application error:error]) {
     return NO;
   }
   return YES;
@@ -197,7 +197,7 @@
   return productBundle;
 }
 
-- (BOOL)launchApplicationWithBundleID:(NSString *)bundleID arguments:(NSArray *)arguments environment:(NSDictionary *)environment error:(NSError **)error
+- (BOOL)launchApplicationWithBundleID:(NSString *)bundleID arguments:(NSArray *)arguments environment:(NSDictionary *)environment waitForDebugger:(BOOL)waitForDebugger error:(NSError **)error
 {
   FBApplicationDescriptor *app = [self.simulator installedApplicationWithBundleID:bundleID error:error];
   if (!app) {
@@ -208,9 +208,10 @@
     configurationWithApplication:app
     arguments:arguments
     environment:environment
+    waitForDebugger:waitForDebugger
     output:FBProcessOutputConfiguration.outputToDevNull];
 
-  if (![[self.simulator.interact launchOrRelaunchApplication:configuration] perform:error]) {
+  if (![self.simulator launchOrRelaunchApplication:configuration error:error]) {
     return NO;
   }
   return YES;
@@ -218,7 +219,7 @@
 
 - (BOOL)killApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  return [[self.simulator.interact terminateApplicationWithBundleID:bundleID] perform:error];
+  return [self.simulator killApplicationWithBundleID:bundleID error:error];
 }
 
 - (pid_t)processIDWithBundleID:(NSString *)bundleID error:(NSError **)error

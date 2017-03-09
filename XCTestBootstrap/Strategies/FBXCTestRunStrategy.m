@@ -113,6 +113,7 @@
     bundleName:testRunnerConfiguration.testRunner.bundleID
     arguments:[self argumentsFromConfiguration:testRunnerConfiguration attributes:applicationLaunchConfiguration.arguments]
     environment:[self environmentFromConfiguration:testRunnerConfiguration environment:applicationLaunchConfiguration.environment]
+    waitForDebugger:NO
     output:applicationLaunchConfiguration.output
   ];
 }

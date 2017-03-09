@@ -62,7 +62,7 @@
   NSError *innerError = nil;
   FBFramebuffer *framebuffer = nil;
   if (self.shouldCreateFramebuffer) {
-    FBFramebufferConfiguration *configuration = self.configuration.framebuffer;
+    FBFramebufferConfiguration *configuration = [self.configuration.framebuffer inSimulator:self.simulator];
     if (!configuration) {
       configuration = FBFramebufferConfiguration.defaultConfiguration;
       [self.simulator.logger logFormat:@"No Framebuffer Launch Configuration provided, but required. Using default of %@", configuration];
@@ -293,7 +293,7 @@
 
 @implementation FBSimulatorBootStrategy
 
-+ (instancetype)withConfiguration:(FBSimulatorBootConfiguration *)configuration simulator:(FBSimulator *)simulator
++ (instancetype)strategyWithConfiguration:(FBSimulatorBootConfiguration *)configuration simulator:(FBSimulator *)simulator
 {
   if (configuration.shouldUseDirectLaunch) {
     return FBControlCoreGlobalConfiguration.isXcode8OrGreater

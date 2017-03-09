@@ -32,35 +32,40 @@
 #import "FBFramebufferRenderable.h"
 #import "FBSimulatorError.h"
 #import "FBSurfaceImageGenerator.h"
+#import "FBSimulatorDiagnostics.h"
+#import "FBFramebufferFrameGenerator.h"
 
-@interface FBFramebufferImage_FrameSink ()
-
+@interface FBFramebufferImage_FrameSink () <FBFramebufferFrameSink>
 @property (nonatomic, strong, readonly) dispatch_queue_t writeQueue;
 @property (nonatomic, strong, readwrite) FBFramebufferFrame *lastFrame;
 
+@property (nonatomic, copy, readonly) NSString *filePath;
 @property (nonatomic, strong, readonly) FBDiagnostic *diagnostic;
+@property (nonatomic, strong, readonly) FBFramebufferFrameGenerator *frameGenerator;
 @property (nonatomic, strong, readonly) id<FBSimulatorEventSink> eventSink;
 
 @end
 
 @implementation FBFramebufferImage_FrameSink
 
-+ (instancetype)withDiagnostic:(FBDiagnostic *)diagnostic eventSink:(id<FBSimulatorEventSink>)eventSink
++ (instancetype)imageWithFilePath:(NSString *)filePath frameGenerator:(FBFramebufferFrameGenerator *)frameGenerator eventSink:(id<FBSimulatorEventSink>)eventSink
 {
   dispatch_queue_t queue = dispatch_queue_create("com.facebook.FBSimulatorControl.framebuffer.image", DISPATCH_QUEUE_SERIAL);
-  return [[self alloc] initWithDiagnostic:diagnostic eventSink:eventSink writeQueue:queue];
+  return [[self alloc] initWithFilePath:filePath frameGenerator:frameGenerator eventSink:eventSink writeQueue:queue];
 }
 
-- (instancetype)initWithDiagnostic:(FBDiagnostic *)diagnostic eventSink:(id<FBSimulatorEventSink>)eventSink writeQueue:(dispatch_queue_t)writeQueue
+- (instancetype)initWithFilePath:(NSString *)filePath frameGenerator:(FBFramebufferFrameGenerator *)frameGenerator eventSink:(id<FBSimulatorEventSink>)eventSink writeQueue:(dispatch_queue_t)writeQueue
 {
   self = [super init];
   if (!self) {
     return nil;
   }
 
-  _diagnostic = [diagnostic copy];
+  _filePath = filePath;
+  _frameGenerator = frameGenerator;
   _eventSink = eventSink;
   _writeQueue = writeQueue;
+  [frameGenerator attachSink:self];
 
   return self;
 }
@@ -151,17 +156,21 @@
 
 #pragma mark FBFramebufferCounterDelegate Implementation
 
-- (void)framebuffer:(FBFramebuffer *)framebuffer didUpdate:(FBFramebufferFrame *)frame
+- (void)frameGenerator:(FBFramebufferFrameGenerator *)frameGenerator didUpdate:(FBFramebufferFrame *)frame
 {
   dispatch_async(self.writeQueue, ^{
     self.lastFrame = frame;
   });
 }
 
-- (void)framebuffer:(FBFramebuffer *)framebuffer didBecomeInvalidWithError:(NSError *)error teardownGroup:(dispatch_group_t)teardownGroup
+- (void)frameGenerator:(FBFramebufferFrameGenerator *)frameGenerator didBecomeInvalidWithError:(NSError *)error teardownGroup:(dispatch_group_t)teardownGroup
 {
   dispatch_group_async(teardownGroup, self.writeQueue, ^{
-    FBDiagnostic *diagnostic = [FBFramebufferImage_FrameSink appendImage:self.lastFrame.image toDiagnostic:self.diagnostic];
+    FBDiagnostic *diagnostic = [[[[FBDiagnosticBuilder builder]
+      updatePath:self.filePath]
+      updateShortName:FBDiagnosticNameScreenshot]
+      build];
+    diagnostic = [FBFramebufferImage_FrameSink appendImage:self.lastFrame.image toDiagnostic:diagnostic];
     id<FBSimulatorEventSink> eventSink = self.eventSink;
     dispatch_async(dispatch_get_main_queue(), ^{
       [eventSink diagnosticAvailable:diagnostic];
@@ -171,9 +180,9 @@
 
 @end
 
-@interface FBFramebufferImage_Surface () <SimDisplayDamageRectangleDelegate, SimDisplayIOSurfaceRenderableDelegate, SimDeviceIOPortConsumer>
+@interface FBFramebufferImage_Surface () <FBFramebufferRenderableConsumer>
 
-@property (nonatomic, strong, readonly) FBDiagnostic *diagnostic;
+@property (nonatomic, copy, readonly) NSString *filePath;
 @property (nonatomic, strong, readonly) id<FBSimulatorEventSink> eventSink;
 @property (nonatomic, strong, readonly) FBSurfaceImageGenerator *imageGenerator;
 @property (nonatomic, strong, readonly) FBFramebufferRenderable *renderable;
@@ -184,20 +193,19 @@
 
 @implementation FBFramebufferImage_Surface
 
-+ (instancetype)withDiagnostic:(FBDiagnostic *)diagnostic eventSink:(id<FBSimulatorEventSink>)eventSink ioClient:(SimDeviceIOClient *)ioClient
++ (instancetype)imageWithFilePath:(NSString *)filePath renderable:(FBFramebufferRenderable *)renderable eventSink:(id<FBSimulatorEventSink>)eventSink
 {
-  FBFramebufferRenderable *renderable = [FBFramebufferRenderable mainScreenRenderableForClient:ioClient];
-  return [[self alloc] initWithDiagnostic:diagnostic eventSink:eventSink renderable:renderable];
+  return [[self alloc] initWithFilePath:filePath eventSink:eventSink renderable:renderable];
 }
 
-- (instancetype)initWithDiagnostic:(FBDiagnostic *)diagnostic eventSink:(id<FBSimulatorEventSink>)eventSink renderable:(FBFramebufferRenderable *)renderable
+- (instancetype)initWithFilePath:(NSString *)filePath eventSink:(id<FBSimulatorEventSink>)eventSink renderable:(FBFramebufferRenderable *)renderable
 {
   self = [super init];
   if (!self) {
     return nil;
   }
 
-  _diagnostic = diagnostic;
+  _filePath = filePath;
   _eventSink = eventSink;
   _renderable = renderable;
   _consumerUUID = [NSUUID UUID];
@@ -206,23 +214,21 @@
   return self;
 }
 
-#pragma mark SimDisplay Protocols
+#pragma mark FBFramebufferRenderableConsumer
 
 - (NSString *)consumerIdentifier
 {
   return NSStringFromClass(self.class);
 }
 
-- (void)didChangeIOSurface:(xpc_object_t)surfaceXPC
+- (void)didChangeIOSurface:(IOSurfaceRef)surface
 {
-  IOSurfaceRef surface = IOSurfaceLookupFromXPCObject(surfaceXPC);
-  [self.imageGenerator currentSurfaceChanged:surface];
-  CFRelease(surface);
+  [self.imageGenerator didChangeIOSurface:surface];
 }
 
-- (void)didReceiveDamageRect:(CGRect)rect
+- (void)didRecieveDamageRect:(CGRect)rect
 {
-
+  [self.imageGenerator didRecieveDamageRect:rect];
 }
 
 #pragma mark FBFramebufferImage Implementation
