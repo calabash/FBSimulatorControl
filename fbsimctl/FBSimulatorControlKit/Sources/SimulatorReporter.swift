@@ -69,6 +69,9 @@ open class SimulatorReporter : NSObject, FBSimulatorEventSink, iOSReporter {
 
   open func applicationDidLaunch(_ launchConfig: FBApplicationLaunchConfiguration, didStart applicationProcess: FBProcessInfo) {
     self.reportValue(EventName.Launch, EventType.Discrete, applicationProcess)
+    if launchConfig.waitForDebugger {
+      self.reporter.logInfo("Application launched. To debug, run lldb -p \(applicationProcess.processIdentifier).")
+    }
   }
 
   open func applicationDidTerminate(_ applicationProcess: FBProcessInfo, expected: Bool) {
@@ -83,7 +86,7 @@ open class SimulatorReporter : NSObject, FBSimulatorEventSink, iOSReporter {
     self.reportValue(EventName.StateChange, EventType.Discrete, state.description as NSString)
   }
 
-  open func terminationHandleAvailable(_ terminationHandle: FBTerminationHandleProtocol) {
+  open func terminationHandleAvailable(_ terminationHandle: FBTerminationHandle) {
 
   }
 }
