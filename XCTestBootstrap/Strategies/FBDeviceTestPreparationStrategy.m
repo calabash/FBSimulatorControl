@@ -14,7 +14,6 @@
 #import "FBProductBundle.h"
 #import "FBTestBundle.h"
 #import "FBTestConfiguration.h"
-#import "FBTestLaunchConfiguration.h"
 #import "FBTestRunnerConfiguration.h"
 #import "XCTestBootstrapError.h"
 #import <CocoaLumberjack/CocoaLumberjack.h>

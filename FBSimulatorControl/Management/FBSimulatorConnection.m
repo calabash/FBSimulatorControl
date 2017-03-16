@@ -107,7 +107,7 @@
   }
 
   self.framebuffer = [[FBFramebufferConnectStrategy
-    strategyWithConfiguration:FBFramebufferConfiguration.defaultConfiguration]
+    strategyWithConfiguration:[FBFramebufferConfiguration.defaultConfiguration inSimulator:self.simulator]]
     connect:self.simulator error:error];
   return self.framebuffer;
 }
@@ -124,32 +124,32 @@
 
 - (BOOL)terminateWithTimeout:(NSTimeInterval)timeout
 {
-  return [[CalabashUtils doOnMainAndReturn:^id{
-      // First stop the Framebuffer
-      [self.framebuffer stopListeningWithTeardownGroup:self.teardownGroup];
-      
-      // Disconnect the HID
-      [self.hid disconnect];
-      
-      // Close the connection with the SimulatorBridge and nullify
-      [self.bridge disconnect];
-      
-      // Don't wait if there's no timeout
-      if (timeout <= 0) {
-          return @YES;
-      }
-      
-      int64_t timeoutInt = ((int64_t) timeout) * ((int64_t) NSEC_PER_SEC);
-      BOOL result = dispatch_group_wait(self.teardownGroup, dispatch_time(DISPATCH_TIME_NOW, timeoutInt)) == 0l;
-      
-      // Clean up resources and notify.
-      self.framebuffer = nil;
-      self.hid = nil;
-      self.bridge = nil;
-      [self.simulator.eventSink connectionDidDisconnect:self expected:YES];
-      
-      return @(result);
-  }] boolValue];
+  NSParameterAssert(NSThread.currentThread.isMainThread);
+
+  // Tear Down the Framebuffer
+  [self.framebuffer teardownWithGroup:self.teardownGroup];
+
+  // Disconnect the HID
+  [self.hid disconnect];
+
+  // Close the connection with the SimulatorBridge and nullify
+  [self.bridge disconnect];
+
+  // Don't wait if there's no timeout
+  if (timeout <= 0) {
+    return YES;
+  }
+
+  int64_t timeoutInt = ((int64_t) timeout) * ((int64_t) NSEC_PER_SEC);
+  BOOL result = dispatch_group_wait(self.teardownGroup, dispatch_time(DISPATCH_TIME_NOW, timeoutInt)) == 0l;
+
+  // Clean up resources and notify.
+  self.framebuffer = nil;
+  self.hid = nil;
+  self.bridge = nil;
+  [self.simulator.eventSink connectionDidDisconnect:self expected:YES];
+
+  return result;
 }
 
 @end
