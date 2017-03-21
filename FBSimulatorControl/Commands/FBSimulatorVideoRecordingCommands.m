@@ -14,7 +14,7 @@
 #import "FBSimulator+Connection.h"
 #import "FBSimulator+Framebuffer.h"
 #import "FBFramebuffer.h"
-#import "FBFramebufferVideo.h"
+#import "FBSimulatorVideo.h"
 
 @interface FBSimulatorVideoRecordingCommands ()
 
@@ -42,47 +42,32 @@
 
 #pragma mark FBVideoRecordingCommands Implementation
 
-- (BOOL)startRecordingToFile:(NSString *)filePath error:(NSError **)error
+- (nullable id<FBVideoRecordingSession>)startRecordingToFile:(NSString *)filePath error:(NSError **)error
 {
   NSError *innerError = nil;
-  id<FBFramebufferVideo> video = [self obtainSimulatorVideoWithError:&innerError];
+  FBSimulatorVideo *video = [self obtainSimulatorVideoWithError:&innerError];
   if (!video) {
-    return [FBSimulatorError failBoolWithError:innerError errorOut:error];
+    return [FBSimulatorError failWithError:innerError errorOut:error];
   }
-
-  dispatch_group_t waitGroup = dispatch_group_create();
-  [video startRecordingToFile:filePath group:waitGroup];
-  long fail = dispatch_group_wait(waitGroup, FBControlCoreGlobalConfiguration.regularDispatchTimeout);
-  if (fail) {
-    return [[FBSimulatorError
-      describeFormat:@"Timeout waiting for video to start recording in %f seconds", FBControlCoreGlobalConfiguration.regularTimeout]
-      failBool:error];
+  if (![video startRecordingToFile:filePath timeout:FBControlCoreGlobalConfiguration.regularTimeout error:error]) {
+    return nil;
   }
-  return YES;
+  return video;
 }
 
 - (BOOL)stopRecordingWithError:(NSError **)error
 {
   NSError *innerError = nil;
-  id<FBFramebufferVideo> video = [self obtainSimulatorVideoWithError:&innerError];
+  FBSimulatorVideo *video = [self obtainSimulatorVideoWithError:&innerError];
   if (!video) {
     return [FBSimulatorError failBoolWithError:innerError errorOut:error];
   }
-
-  dispatch_group_t waitGroup = dispatch_group_create();
-  [video stopRecording:waitGroup];
-  long fail = dispatch_group_wait(waitGroup, FBControlCoreGlobalConfiguration.regularDispatchTimeout);
-  if (fail) {
-    return [[FBSimulatorError
-      describeFormat:@"Timeout waiting for video to stop recording in %f seconds", FBControlCoreGlobalConfiguration.regularTimeout]
-      failBool:error];
-  }
-  return YES;
+  return [video stopRecordingWithTimeout:FBControlCoreGlobalConfiguration.regularTimeout error:error];
 }
 
 #pragma mark
 
-- (id<FBFramebufferVideo>)obtainSimulatorVideoWithError:(NSError **)error
+- (FBSimulatorVideo *)obtainSimulatorVideoWithError:(NSError **)error
 {
   FBSimulator *simulator = self.simulator;
   if (simulator.state != FBSimulatorStateBooted) {
@@ -96,10 +81,10 @@
   if (!framebuffer) {
     return [FBSimulatorError failWithError:innerError errorOut:error];
   }
-  id<FBFramebufferVideo> video = framebuffer.video;
+  FBSimulatorVideo *video = framebuffer.video;
   if (!video) {
     return [[[FBSimulatorError
-      describe:@"Simulator Does not have a FBFramebufferVideo instance"]
+      describe:@"Simulator Does not have a FBSimulatorVideo instance"]
       inSimulator:simulator]
       fail:error];
   }

@@ -19,6 +19,7 @@ public enum EventName : String {
   case Delete = "delete"
   case Diagnose = "diagnose"
   case Diagnostic = "diagnostic"
+  case Focus = "focus"
   case Erase = "erase"
   case Failure = "failure"
   case Help = "help"
@@ -46,6 +47,7 @@ public enum EventName : String {
   case Terminate = "terminate"
   case Uninstall = "uninstall"
   case Upload = "upload"
+  case WaitingForDebugger = "waiting_for_debugger"
   case WatchdogOverride = "watchdog_override"
 }
 

@@ -489,6 +489,7 @@ extension Action : Parsable {
         self.deleteParser,
         self.diagnoseParser,
         self.eraseParser,
+        self.focusParser,
         self.installParser,
         self.keyboardOverrideParser,
         self.launchAgentParser,
@@ -570,6 +571,10 @@ extension Action : Parsable {
 
   static var eraseParser: Parser<Action> {
     return Parser.ofString(EventName.Erase.rawValue, Action.erase)
+  }
+
+  static var focusParser: Parser<Action> {
+    return Parser.ofString(EventName.Focus.rawValue, Action.focus)
   }
 
   static var launchAgentParser: Parser<Action> {
@@ -656,9 +661,14 @@ extension Action : Parsable {
   }
 
   static var installParser: Parser<Action> {
-    return Parser<String>
-      .ofCommandWithArg(EventName.Install.rawValue, Parser<String>.ofAny)
-      .fmap { Action.install($0, false) }
+    return Parser
+      .ofTwoSequenced(
+        Parser<String>.ofCommandWithArg(EventName.Install.rawValue, Parser<String>.ofAny),
+        Parser<Bool>.ofFlag("codesign",
+          "Before installing, sign the bundle and all its frameworks with a certificate from the keychain"
+        )
+      )
+      .fmap { (path, shouldCodesign) in Action.install(path, shouldCodesign) }
   }
 
   static var keyboardOverrideParser: Parser<Action> {
@@ -991,12 +1001,13 @@ struct FBSimulatorBootConfigurationParser {
 struct FBProcessLaunchConfigurationParsers {
   static var appLaunchAndApplicationDescriptorParser: Parser<(FBApplicationLaunchConfiguration, FBApplicationDescriptor?)> {
     return Parser
-      .ofThreeSequenced(
+      .ofFourSequenced(
         FBProcessOutputConfigurationParser.parser,
+        self.waitForDebuggerParser,
         Parser<Any>.ofBundleIDOrApplicationDescriptor,
         self.argumentParser
       )
-      .fmap { (output, bundleIDOrApplicationDescriptor, arguments) in
+      .fmap { (output, waitForDebugger, bundleIDOrApplicationDescriptor, arguments) in
         let (bundleId, appDescriptor) = bundleIDOrApplicationDescriptor
         return (
           FBApplicationLaunchConfiguration(
@@ -1004,7 +1015,7 @@ struct FBProcessLaunchConfigurationParsers {
             bundleName: nil,
             arguments: arguments,
             environment: [:],
-            waitForDebugger: false,
+            waitForDebugger: waitForDebugger,
             output: output),
           appDescriptor
         )
@@ -1033,6 +1044,13 @@ struct FBProcessLaunchConfigurationParsers {
         Parser<NSNull>.ofDashSeparator,
         Parser<String>.ofAny
       )
+  }
+
+  static var waitForDebuggerParser: Parser<Bool> {
+    return Parser<Bool>.alternative([
+      Parser<Bool>.ofString("--wait-for-debugger", true),
+      Parser<Bool>.ofString("-w", true)
+      ]).fallback(false)
   }
 }
 
