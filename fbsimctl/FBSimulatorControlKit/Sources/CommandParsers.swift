@@ -251,46 +251,46 @@ extension IndividualCreationConfiguration : Parsable {
     ])
   }
 
-  static var deviceParser: Parser<FBControlCoreConfiguration_Device> {
+  static var deviceParser: Parser<FBDeviceModel> {
     let desc = PrimitiveDesc(name: "device-name", desc: "Device Name.")
 
     return Parser.single(desc) { token in
       let nameToDevice = FBControlCoreConfigurationVariants.nameToDevice
-      let deviceName = FBDeviceName(rawValue: token)
-      guard let device = nameToDevice[deviceName] else {
+      let deviceName = FBDeviceModel(rawValue: token)
+      guard let _ = nameToDevice[deviceName] else {
         throw ParseError.custom("\(token) is not a valid device name")
       }
-      return device
+      return deviceName
     }
   }
 
   static var deviceConfigurationParser: Parser<IndividualCreationConfiguration> {
     return self.deviceParser.fmap { device in
       return IndividualCreationConfiguration(
-        osVersion: nil,
-        deviceType: device,
+        os: nil,
+        model: device,
         auxDirectory: nil
       )
     }
   }
 
-  static var osVersionParser: Parser<FBControlCoreConfiguration_OS> {
+  static var osVersionParser: Parser<FBOSVersionName> {
     let desc = PrimitiveDesc(name: "os-version", desc: "OS Version.")
     return Parser.single(desc) { token in
       let nameToOSVersion = FBControlCoreConfigurationVariants.nameToOSVersion
       let osVersionName = FBOSVersionName(rawValue: token)
-      guard let osVersion = nameToOSVersion[osVersionName] else {
+      guard let _ = nameToOSVersion[osVersionName] else {
         throw ParseError.custom("\(token) is not a valid device name")
       }
-      return osVersion
+      return osVersionName
     }
   }
 
   static var osVersionConfigurationParser: Parser<IndividualCreationConfiguration> {
     return self.osVersionParser.fmap { osVersion in
       return IndividualCreationConfiguration(
-        osVersion: osVersion,
-        deviceType: nil,
+        os: osVersion,
+        model: nil,
         auxDirectory: nil
       )
     }
@@ -304,8 +304,8 @@ extension IndividualCreationConfiguration : Parsable {
   static var auxDirectoryConfigurationParser: Parser<IndividualCreationConfiguration> {
     return self.auxDirectoryParser.fmap { auxDirectory in
       return IndividualCreationConfiguration(
-        osVersion: nil,
-        deviceType: nil,
+        os: nil,
+        model: nil,
         auxDirectory: auxDirectory
       )
     }
@@ -390,7 +390,7 @@ extension Help : Parsable {
         Parser.ofString("help", NSNull())
       )
       .fmap { (output, _) in
-        return Help(outputOptions: output, userInitiated: true, command: nil)
+        return Help(outputOptions: output, error: nil, command: nil)
       }
   }
 }
@@ -433,19 +433,19 @@ extension ListenInterface : Parsable {
 
   static var stdinParser: Parser<ListenInterface> {
     return Parser<ListenInterface>
-      .ofFlag("stdin", ListenInterface(stdin: true, http: nil, hid: nil), "Listen for commands on stdin")
+      .ofFlag("stdin", ListenInterface(stdin: true, http: nil, hid: nil, handle: nil), "Listen for commands on stdin")
   }
 
   static var httpParser:  Parser<ListenInterface> {
     return Parser<ListenInterface>
       .ofFlagWithArg("http", portParser, "The HTTP Port to listen on")
-      .fmap { ListenInterface(stdin: false, http: $0, hid: nil) }
+      .fmap { ListenInterface(stdin: false, http: $0, hid: nil, handle: nil) }
   }
 
   static var hidParser: Parser<ListenInterface> {
     return Parser<ListenInterface>
       .ofFlagWithArg("hid", portParser, "The HID Port to listen on")
-      .fmap { ListenInterface(stdin: false, http: nil, hid: $0) }
+      .fmap { ListenInterface(stdin: false, http: nil, hid: $0, handle: nil) }
   }
 
   private static var portParser: Parser<UInt16> {
@@ -477,6 +477,15 @@ extension Record : Parsable {
   }
 }
 
+extension FileOutput : Parsable {
+  public static var parser: Parser<FileOutput> {
+    return Parser.alternative([
+      Parser.ofString("-", FileOutput.standardOut),
+      Parser<FileOutput>.ofFile.fmap(FileOutput.path),
+    ])
+  }
+}
+
 extension Action : Parsable {
   public static var parser: Parser<Action> {
     return Parser
@@ -505,6 +514,7 @@ extension Action : Parsable {
         self.serviceInfoParser,
         self.setLocationParser,
         self.shutdownParser,
+        self.streamParser,
         self.tapParser,
         self.terminateParser,
         self.uninstallParser,
@@ -730,6 +740,12 @@ extension Action : Parsable {
       .fmap { (latitude, longitude) in
         Action.setLocation(latitude, longitude)
       }
+  }
+
+  static var streamParser: Parser<Action> {
+    return Parser
+      .ofCommandWithArg(EventName.Stream.rawValue, FileOutput.parser.optional())
+      .fmap(Action.stream)
   }
 
   static var terminateParser: Parser<Action> {
@@ -969,13 +985,13 @@ struct FBSimulatorBootConfigurationParser {
   static var scaleParser: Parser<FBSimulatorScale> {
     let subparsers: [Parser<FBSimulatorScale>] = [
       Parser<FBSimulatorScale>
-        .ofFlag("scale=25", FBSimulatorScale_25(), ""),
+        .ofFlag("scale=25", .scale25, ""),
       Parser<FBSimulatorScale>
-        .ofFlag("scale=50", FBSimulatorScale_50(), ""),
+        .ofFlag("scale=50", .scale50, ""),
       Parser<FBSimulatorScale>
-        .ofFlag("scale=75", FBSimulatorScale_75(), ""),
+        .ofFlag("scale=75", .scale75, ""),
       Parser<FBSimulatorScale>
-        .ofFlag("scale=100", FBSimulatorScale_100(), "")
+        .ofFlag("scale=100", .scale100, "")
     ]
 
     return Parser.alternative(subparsers)

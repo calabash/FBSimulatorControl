@@ -137,15 +137,15 @@
 
 - (FBArchitecture)architecture
 {
-  return self.configuration.architecture;
+  return self.configuration.device.simulatorArchitecture;
 }
 
-- (id<FBControlCoreConfiguration_Device>)deviceConfiguration
+- (FBDeviceType *)deviceConfiguration
 {
   return self.configuration.device;
 }
 
-- (id<FBControlCoreConfiguration_OS>)osConfiguration
+- (FBOSVersion *)osConfiguration
 {
   return self.configuration.os;
 }

@@ -9,24 +9,22 @@
 
 #import <Foundation/Foundation.h>
 
-#import <FBControlCore/FBControlCore.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class FBDevice;
+@protocol FBBitmapStream;
 
 /**
- A FBVideoRecordingCommands implementation for devices
+ Bitmap Streaming Commands.
  */
-@interface FBDeviceVideoRecordingCommands : NSObject <FBVideoRecordingCommands, FBBitmapStreamingCommands>
+@protocol FBBitmapStreamingCommands
 
 /**
- Construct a command instance for the given device.
+ Creates a Bitmap Stream for a Simulator.
 
- @param device the device to use.
- @return a new Video Recording Command Instance.
+ @param error an error out for any error that occurs.
+ @return the Video Recording session on success, nil otherwise.
  */
-+ (instancetype)commandsWithDevice:(FBDevice *)device;
+- (nullable id<FBBitmapStream>)createStreamWithError:(NSError **)error;
 
 @end
 

@@ -13,7 +13,7 @@ import FBDeviceControl
 
 extension Configuration {
   func buildSimulatorControl() throws -> FBSimulatorControl {
-    let logger = FBControlCoreGlobalConfiguration.defaultLogger()
+    let logger = FBControlCoreGlobalConfiguration.defaultLogger
     try FBSimulatorControlFrameworkLoader.loadPrivateFrameworks(logger)
     let controlConfiguration = FBSimulatorControlConfiguration(deviceSetPath: self.deviceSetPath, options: self.managementOptions)
     return try FBSimulatorControl.withConfiguration(controlConfiguration, logger: logger)
@@ -23,7 +23,7 @@ extension Configuration {
     if case .some = self.deviceSetPath {
       return nil
     }
-    let logger = FBControlCoreGlobalConfiguration.defaultLogger()
+    let logger = FBControlCoreGlobalConfiguration.defaultLogger
     try FBDeviceControlFrameworkLoader.loadEssentialFrameworks(logger)
     return try FBDeviceSet.defaultSet(with: logger)
   }
@@ -122,8 +122,10 @@ struct HelpRunner : Runner {
   let help: Help
 
   func run() -> CommandResult {
-    reporter.reportSimpleBridge(EventName.Help, EventType.Discrete, self.help.description as NSString)
-    return self.help.userInitiated ? .success(nil) : .failure("")
+    if let error = self.help.error {
+      return .failure(error.description)
+    }
+    return .success(self.help.description)
   }
 }
 
@@ -195,11 +197,12 @@ struct ListenRunner : Runner, CommandPerformer {
 
   func run() -> CommandResult {
     do {
-      let relay = SynchronousRelay(relay: try self.makeBaseRelay(), reporter: self.context.reporter) {
-        self.context.reporter.reportSimple(EventName.Listen, EventType.Started, self.context.value.0)
+      let interface = self.context.value.0
+      let relay = SynchronousRelay(relay: try self.makeBaseRelay(), reporter: self.context.reporter, handle: interface.handle) {
+        self.context.reporter.reportSimple(EventName.Listen, EventType.Started, interface)
       }
       let result = RelayRunner(relay: relay).run()
-      self.context.reporter.reportSimple(EventName.Listen, EventType.Ended, self.context.value.0)
+      self.context.reporter.reportSimple(EventName.Listen, EventType.Ended, interface)
       return result
     } catch let error as CustomStringConvertible {
       return CommandResult.failure(error.description)

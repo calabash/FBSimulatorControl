@@ -11,15 +11,16 @@
 
 #import <FBControlCore/FBApplicationCommands.h>
 #import <FBControlCore/FBArchitecture.h>
+#import <FBControlCore/FBBitmapStreamingCommands.h>
 #import <FBControlCore/FBDebugDescribeable.h>
 #import <FBControlCore/FBJSONConversion.h>
 #import <FBControlCore/FBVideoRecordingCommands.h>
 #import <FBControlCore/FBXCTestCommands.h>
 
+@class FBDeviceType;
+@class FBOSVersion;
 @class FBProcessInfo;
 @class FBiOSTargetDiagnostics;
-@protocol FBControlCoreConfiguration_Device;
-@protocol FBControlCoreConfiguration_OS;
 @protocol FBDeviceOperator;
 
 /**
@@ -50,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Common Properties of Devices & Simulators.
  */
-@protocol FBiOSTarget <NSObject, FBJSONSerializable, FBDebugDescribeable, FBApplicationCommands, FBVideoRecordingCommands, FBXCTestCommands>
+@protocol FBiOSTarget <NSObject, FBJSONSerializable, FBDebugDescribeable, FBApplicationCommands, FBBitmapStreamingCommands, FBVideoRecordingCommands, FBXCTestCommands>
 
 /**
  Device operator used to control device. It provides API for XCTestBoostrap to interact with the device.
@@ -105,12 +106,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The Configuration of the iOS Target's Device.
  */
-@property (nonatomic, copy, readonly) id<FBControlCoreConfiguration_Device> deviceConfiguration;
+@property (nonatomic, copy, readonly) FBDeviceType *deviceConfiguration;
 
 /**
  The Configuration of the iOS Target's OS.
  */
-@property (nonatomic, copy, readonly) id<FBControlCoreConfiguration_OS> osConfiguration;
+@property (nonatomic, copy, readonly) FBOSVersion *osConfiguration;
 
 /**
  A Comparison Method for `sortedArrayUsingSelector:`

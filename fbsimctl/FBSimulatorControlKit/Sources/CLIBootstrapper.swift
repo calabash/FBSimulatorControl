@@ -14,21 +14,7 @@ import FBSimulatorControl
   open static func bootstrap() -> Int32 {
     let arguments = Array(CommandLine.arguments.dropFirst(1))
     let environment = ProcessInfo.processInfo.environment
-
-    // The Parsing of Logging Arguments needs to be processes first, so that the Private Frameworks are not loaded
-    do {
-      let (_, configuration) = try FBSimulatorControlKit.Configuration.parser.parse(arguments)
-      let debugEnabled = configuration.outputOptions.contains(OutputOptions.DebugLogging)
-
-      let reporter = configuration.outputOptions.createReporter(configuration.outputOptions.createLogWriter())
-      let bridge = ControlCoreLoggerBridge(reporter: reporter)
-      let logger = LogReporter(bridge: bridge, debug: debugEnabled)
-      FBControlCoreGlobalConfiguration.setDefaultLogger(logger)
-    } catch {
-      // Parse errors will be handled by the full parse
-    }
-    let cli = CLI.fromArguments(arguments, environment: environment)
-    let reporter = cli.createReporter(FileHandleWriter.stdOutWriter)
+    let (cli, reporter, _) = CLI.fromArguments(arguments, environment: environment).bootstrap()
     return CLIRunner(cli: cli, reporter: reporter).runForStatus()
   }
 }
@@ -63,5 +49,60 @@ struct CLIRunner : Runner {
       default:
         return 0
     }
+  }
+}
+
+extension CLI {
+  struct CLIError : Error, CustomStringConvertible {
+    let description: String
+  }
+
+  public static func fromArguments(_ arguments: [String], environment: [String : String]) -> CLI {
+    do {
+      let (_, cli) = try CLI.parser.parse(arguments)
+      return cli.appendEnvironment(environment)
+    } catch let error as (CustomStringConvertible & Error) {
+      let help = Help(outputOptions: OutputOptions(), error: error, command: nil)
+      return CLI.show(help)
+    } catch {
+      let error = CLIError(description: "An Unknown Error Occurred")
+      let help = Help(outputOptions: OutputOptions(), error: error, command: nil)
+      return CLI.show(help)
+    }
+  }
+
+  public func bootstrap() -> (CLI, EventReporter, FBControlCoreLoggerProtocol)  {
+    let reporter = self.createReporter(self.createWriter())
+    if case .run(let command) = self {
+      let configuration = command.configuration
+      let debugEnabled = configuration.outputOptions.contains(OutputOptions.DebugLogging)
+      let bridge = ControlCoreLoggerBridge(reporter: reporter)
+      let logger = LogReporter(bridge: bridge, debug: debugEnabled)
+      FBControlCoreGlobalConfiguration.defaultLogger = logger
+      return (self, reporter, logger)
+    }
+
+    let logger = FBControlCoreGlobalConfiguration.defaultLogger
+    return (self, reporter, logger)
+  }
+
+  private func createWriter() -> Writer {
+    switch self {
+    case .show:
+      return FileHandleWriter.stdErrWriter
+    case .run(let command):
+      return command.createWriter()
+    }
+  }
+}
+
+extension Command {
+  func createWriter() -> Writer {
+    for action in self.actions {
+      if case .stream = action {
+        return FileHandleWriter.stdErrWriter
+      }
+    }
+    return FileHandleWriter.stdOutWriter
   }
 }

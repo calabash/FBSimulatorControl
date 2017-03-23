@@ -54,38 +54,38 @@
 
 - (void)testLaunchesiPhone
 {
-  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.iPhone5];
+  [self testLaunchesSingleSimulator:[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPhone5]];
 }
 
 - (void)testLaunchesiPad
 {
-  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.iPadRetina];
+  [self testLaunchesSingleSimulator:[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPadRetina]];
 }
 
 - (void)testLaunchesWatch
 {
-  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.watch42mm];
+  [self testLaunchesSingleSimulator:[FBSimulatorConfiguration withDeviceModel:FBDeviceModelAppleWatch42mm]];
 }
 
 - (void)testLaunchesTV
 {
-  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.appleTV1080p];
+  [self testLaunchesSingleSimulator:[FBSimulatorConfiguration withDeviceModel:FBDeviceModelAppleTV1080p]];
 }
 
 - (void)testLaunchesPreviousiOSVersionAndAwaitsServices
 {
   FBSimulatorBootOptions options = self.simulatorLaunchConfiguration.options | FBSimulatorBootOptionsAwaitServices;
   self.simulatorLaunchConfiguration = [self.simulatorLaunchConfiguration withOptions:options];
-  [self testLaunchesSingleSimulator:FBSimulatorConfiguration.iPhone5.iOS_9_3];
+  [self testLaunchesSingleSimulator:[[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPhone5] withOSNamed:FBOSVersionNameiOS_9_3]];
 }
 
 - (void)testLaunchesMultipleSimulators
 {
   // Simulator Pool management is single threaded since it relies on unsynchronised mutable state
   // Create the sessions in sequence, then boot them in paralell.
-  FBSimulator *simulator1 = [self assertObtainsSimulatorWithConfiguration:FBSimulatorConfiguration.iPhone5];
-  FBSimulator *simulator2 = [self assertObtainsSimulatorWithConfiguration:FBSimulatorConfiguration.iPhone5];
-  FBSimulator *simulator3 = [self assertObtainsSimulatorWithConfiguration:FBSimulatorConfiguration.iPadRetina];
+  FBSimulator *simulator1 = [self assertObtainsSimulatorWithConfiguration:[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPhone5]];
+  FBSimulator *simulator2 = [self assertObtainsSimulatorWithConfiguration:[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPhone5]];
+  FBSimulator *simulator3 = [self assertObtainsSimulatorWithConfiguration:[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPadRetina]];
 
   XCTAssertEqual(self.control.pool.allocatedSimulators.count, 3u);
   XCTAssertEqual(([[NSSet setWithArray:@[simulator1.udid, simulator2.udid, simulator3.udid]] count]), 3u);

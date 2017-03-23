@@ -10,6 +10,17 @@
 import Foundation
 import FBSimulatorControl
 
+extension FileOutput {
+  func makeWriter() throws -> FBFileWriter {
+    switch self {
+    case .path(let path):
+      return try FBFileWriter(forFilePath: path, blocking: true)
+    case .standardOut:
+      return FBFileWriter(fileHandle: FileHandle.standardOutput, blocking: true)
+    }
+  }
+}
+
 struct SimulatorCreationRunner : Runner {
   let context: iOSRunnerContext<CreationSpecification>
 

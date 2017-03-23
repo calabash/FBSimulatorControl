@@ -72,8 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
  @param osVersions the OS Versions to match against.
  @return a new Target Query.
  */
-+ (instancetype)osVersions:(NSArray<id<FBControlCoreConfiguration_OS>> *)osVersions;
-- (instancetype)osVersions:(NSArray<id<FBControlCoreConfiguration_OS>> *)osVersions;
++ (instancetype)osVersions:(NSArray<FBOSVersionName> *)osVersions;
+- (instancetype)osVersions:(NSArray<FBOSVersionName> *)osVersions;
 
 /**
  A Query that matches the given Devices.
@@ -81,8 +81,8 @@ NS_ASSUME_NONNULL_BEGIN
  @param devices the Devices to match against.
  @return a new Target Query.
  */
-+ (instancetype)devices:(NSArray<id<FBControlCoreConfiguration_Device>> *)devices;
-- (instancetype)devices:(NSArray<id<FBControlCoreConfiguration_Device>> *)devices;
++ (instancetype)devices:(NSArray<FBDeviceModel> *)devices;
+- (instancetype)devices:(NSArray<FBDeviceModel> *)devices;
 
 /**
  A Query that matches the given Range.
@@ -137,13 +137,13 @@ NS_ASSUME_NONNULL_BEGIN
  The OS Versions to match against.
  An Empty Set means that no OS Version filtering will occur.
  */
-@property (nonatomic, readonly, copy) NSSet<id<FBControlCoreConfiguration_OS>> *osVersions;
+@property (nonatomic, readonly, copy) NSSet<FBOSVersionName> *osVersions;
 
 /**
  The Device Types to match against.
  An Empty Set means that no Device filtering will occur.
  */
-@property (nonatomic, readonly, copy) NSSet<id<FBControlCoreConfiguration_Device>> *devices;
+@property (nonatomic, readonly, copy) NSSet<FBDeviceModel> *devices;
 
 /**
  The Range of Simulators to match against when fetched.

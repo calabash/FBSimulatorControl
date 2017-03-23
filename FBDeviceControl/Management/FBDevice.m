@@ -63,11 +63,6 @@ void (*FBAMDSetLogLevel)(int32_t level);
   return self;
 }
 
-- (CFTypeRef)startTestManagerServiceWithError:(NSError **)error
-{
-  return [self.amDevice startTestManagerServiceWithError:error];
-}
-
 #pragma mark FBiOSTarget
 
 - (NSString *)udid
@@ -113,12 +108,12 @@ void (*FBAMDSetLogLevel)(int32_t level);
   return nil;
 }
 
-- (id<FBControlCoreConfiguration_Device>)deviceConfiguration
+- (FBDeviceType *)deviceConfiguration
 {
   return self.amDevice.deviceConfiguration;
 }
 
-- (id<FBControlCoreConfiguration_OS>)osConfiguration
+- (FBOSVersion *)osConfiguration
 {
   return self.amDevice.osConfiguration;
 }

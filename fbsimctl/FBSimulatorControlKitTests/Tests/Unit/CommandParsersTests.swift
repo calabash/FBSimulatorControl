@@ -133,9 +133,9 @@ let validConfigurations: [([String], Configuration)] = [
 
 let validQueries: [([String], FBiOSTargetQuery)] = [
   (["all"], FBiOSTargetQuery.allTargets()),
-  (["iPhone 5"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPhone5()])),
-  (["iPad 2"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPad2()])),
-  (["iOS 9.0", "iOS 9.1"], FBiOSTargetQuery.osVersions([FBControlCoreConfiguration_iOS_9_0(), FBControlCoreConfiguration_iOS_9_1()])),
+  (["iPhone 5"], FBiOSTargetQuery.devices([.modeliPhone5])),
+  (["iPad 2"], FBiOSTargetQuery.devices([.modeliPad2])),
+  (["iOS 9.0", "iOS 9.1"], FBiOSTargetQuery.osVersions([.nameiOS_9_0, .nameiOS_9_1])),
   (["--state=creating"], FBiOSTargetQuery.simulatorStates([.creating])),
   (["--state=shutdown"], FBiOSTargetQuery.simulatorStates([.shutdown])),
   (["--state=booted"], FBiOSTargetQuery.simulatorStates([.booted])),
@@ -148,15 +148,15 @@ let validQueries: [([String], FBiOSTargetQuery)] = [
   (["--arch=arm64"], FBiOSTargetQuery.architectures([.arm64])),
   (["--simulators"], FBiOSTargetQuery.targetType(FBiOSTargetType.simulator)),
   (["--devices"], FBiOSTargetQuery.targetType(FBiOSTargetType.device)),
-  (["--simulators", "--devices", "iPhone 6s"], FBiOSTargetQuery.targetType(FBiOSTargetType.simulator.union(FBiOSTargetType.device)).devices([FBControlCoreConfiguration_Device_iPhone6S()])),
-  (["--first", "2", "iPhone 6"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPhone6()]).ofCount(2)),
+  (["--simulators", "--devices", "iPhone 6s"], FBiOSTargetQuery.targetType(FBiOSTargetType.simulator.union(FBiOSTargetType.device)).devices([.modeliPhone6S])),
+  (["--first", "2", "iPhone 6"], FBiOSTargetQuery.devices([.modeliPhone6]).ofCount(2)),
   (["B8EEA6C4-841B-47E5-92DE-014E0ECD8139"], FBiOSTargetQuery.udids(["B8EEA6C4-841B-47E5-92DE-014E0ECD8139"])),
   (["0123456789abcdefABCDEFaaaaaaaaaaaaaaaaaa"], FBiOSTargetQuery.udids(["0123456789abcdefABCDEFaaaaaaaaaaaaaaaaaa"])),
-  (["iPhone 5", "iPad 2"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPhone5(), FBControlCoreConfiguration_Device_iPad2()])),
+  (["iPhone 5", "iPad 2"], FBiOSTargetQuery.devices([.modeliPhone5, .modeliPad2])),
   (["--state=creating", "--state=booting", "--state=shutdown"], FBiOSTargetQuery.simulatorStates([.creating, .booting, .shutdown])),
   (["--arch=i386", "--arch=armv7s"], FBiOSTargetQuery.architectures([.I386, .armv7s])),
   (["B8EEA6C4-841B-47E5-92DE-014E0ECD8139", "124DAC9C-4DFF-4F0C-9828-998CCFFCD4C8", "0123456789abcdefABCDEFaaaaaaaaaaaaaaaaaa"], FBiOSTargetQuery.udids(["B8EEA6C4-841B-47E5-92DE-014E0ECD8139", "124DAC9C-4DFF-4F0C-9828-998CCFFCD4C8", "0123456789abcdefABCDEFaaaaaaaaaaaaaaaaaa"])),
-  (["iPhone 6", "124DAC9C-4DFF-4F0C-9828-998CCFFCD4C8"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPhone6()]).udids(["124DAC9C-4DFF-4F0C-9828-998CCFFCD4C8"])),
+  (["iPhone 6", "124DAC9C-4DFF-4F0C-9828-998CCFFCD4C8"], FBiOSTargetQuery.devices([.modeliPhone6]).udids(["124DAC9C-4DFF-4F0C-9828-998CCFFCD4C8"])),
 ]
 
 let invalidQueries: [[String]] = [
@@ -212,12 +212,12 @@ let validActions: [([String], Action)] = [
   (["list"], Action.list),
   (["list_apps"], Action.listApps),
   (["list_device_sets"], Action.listDeviceSets),
-  (["listen", "--stdin"], Action.listen(ListenInterface(stdin: true, http: nil, hid: nil))),
-  (["listen", "--http", "43"], Action.listen(ListenInterface(stdin: false, http: 43, hid: nil))),
-  (["listen", "--hid", "44"], Action.listen(ListenInterface(stdin: false, http: nil, hid: 44))),
-  (["listen", "--http", "43", "--stdin"], Action.listen(ListenInterface(stdin: true, http: 43, hid: nil))),
-  (["listen", "--http", "43", "--hid", "44"], Action.listen(ListenInterface(stdin: false, http: 43, hid: 44))),
-  (["listen"], Action.listen(ListenInterface(stdin: false, http: nil, hid: nil))),
+  (["listen", "--stdin"], Action.listen(ListenInterface(stdin: true, http: nil, hid: nil, handle: nil))),
+  (["listen", "--http", "43"], Action.listen(ListenInterface(stdin: false, http: 43, hid: nil, handle: nil))),
+  (["listen", "--hid", "44"], Action.listen(ListenInterface(stdin: false, http: nil, hid: 44, handle: nil))),
+  (["listen", "--http", "43", "--stdin"], Action.listen(ListenInterface(stdin: true, http: 43, hid: nil, handle: nil))),
+  (["listen", "--http", "43", "--hid", "44"], Action.listen(ListenInterface(stdin: false, http: 43, hid: 44, handle: nil))),
+  (["listen"], Action.listen(ListenInterface(stdin: false, http: nil, hid: nil, handle: nil))),
   (["open", "aoo://bar/baz"], Action.open(URL(string: "aoo://bar/baz")!)),
   (["open", "http://facebook.com"], Action.open(URL(string: "http://facebook.com")!)),
   (["record", "start"], Action.record(.start(nil))),
@@ -229,6 +229,9 @@ let validActions: [([String], Action)] = [
   (["service_info", "com.foo.bar"], Action.serviceInfo("com.foo.bar")),
   (["shutdown"], Action.shutdown),
   (["shutdown"], Action.shutdown),
+  (["stream"], Action.stream(nil)),
+  (["stream", "-"], Action.stream(.standardOut)),
+  (["stream", "/tmp/video.dump"], Action.stream(.path("/tmp/video.dump"))),
   (["terminate", "com.foo.bar"], Action.terminate("com.foo.bar")),
   (["uninstall", "com.foo.bar"], Action.uninstall("com.foo.bar")),
   (["upload", Fixtures.photoPath, Fixtures.videoPath], Action.upload([Fixtures.photoDiagnostic, Fixtures.videoDiagnostic])),
@@ -282,7 +285,7 @@ class CommandParserTests : XCTestCase {
     let compoundComponents = [
       ["list"], ["boot"], ["listen", "--http", "1000"], ["shutdown"],
     ]
-    let actions: [Action] = [Action.list, Action.boot(nil), Action.listen(ListenInterface(stdin: false, http: 1000, hid: nil)), Action.shutdown]
+    let actions: [Action] = [Action.list, Action.boot(nil), Action.listen(ListenInterface(stdin: false, http: 1000, hid: nil, handle: nil)), Action.shutdown]
     self.assertParsesImplodingCompoundActions(actions, compoundComponents: compoundComponents)
   }
 
@@ -294,7 +297,7 @@ class CommandParserTests : XCTestCase {
       .withOptions([.enableDirectLaunch, .awaitServices])
       .withFramebuffer(FBFramebufferConfiguration.default())
     let diagnoseAction = Action.diagnose(FBDiagnosticQuery.all(), DiagnosticFormat.CurrentFormat)
-    let actions: [Action] = [Action.list, Action.create(CreationSpecification.iPhone6Configuration), Action.boot(launchConfiguration), Action.listen(ListenInterface(stdin: false, http: 8090, hid: nil)), Action.shutdown, diagnoseAction]
+    let actions: [Action] = [Action.list, Action.create(CreationSpecification.iPhone6Configuration), Action.boot(launchConfiguration), Action.listen(ListenInterface(stdin: false, http: 8090, hid: nil, handle: nil)), Action.shutdown, diagnoseAction]
     self.assertParsesImplodingCompoundActions(actions, compoundComponents: compoundComponents)
   }
 
@@ -339,10 +342,10 @@ class CommandParserTests : XCTestCase {
     return self.unzipAndAssert(actions, suffix: suffix, extras: [
       ([], nil, nil),
       (["all"], FBiOSTargetQuery.allTargets(), nil),
-      (["iPad 2"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPad2()]), nil),
+      (["iPad 2"], FBiOSTargetQuery.devices([.modeliPad2]), nil),
       (["B8EEA6C4-841B-47E5-92DE-014E0ECD8139"], FBiOSTargetQuery.udids(["B8EEA6C4-841B-47E5-92DE-014E0ECD8139"]), nil),
-      (["iPhone 5", "--state=shutdown", "iPhone 6"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPhone5(), FBControlCoreConfiguration_Device_iPhone6()]).simulatorStates([.shutdown]), nil),
-      (["iPad 2", "--device-name", "--os"], FBiOSTargetQuery.devices([FBControlCoreConfiguration_Device_iPad2()]), FBiOSTargetFormat(fields: [.deviceName, .osVersion])),
+      (["iPhone 5", "--state=shutdown", "iPhone 6"], FBiOSTargetQuery.devices([.modeliPhone5, .modeliPhone6]).simulatorStates([.shutdown]), nil),
+      (["iPad 2", "--device-name", "--os"], FBiOSTargetQuery.devices([.modeliPad2]), FBiOSTargetFormat(fields: [.deviceName, .osVersion])),
       (["B8EEA6C4-841B-47E5-92DE-014E0ECD8139"], FBiOSTargetQuery.udids(["B8EEA6C4-841B-47E5-92DE-014E0ECD8139"]), nil),
     ])
   }

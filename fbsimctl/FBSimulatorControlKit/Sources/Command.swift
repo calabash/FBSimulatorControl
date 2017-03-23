@@ -27,14 +27,15 @@ public struct ListenInterface {
   let stdin: Bool
   let http: in_port_t?
   let hid: in_port_t?
+  let handle: FBTerminationHandle?
 }
 
 /**
  A Configuration for Creating an Individual Simulator.
  */
 public struct IndividualCreationConfiguration {
-  let osVersion: FBControlCoreConfiguration_OS?
-  let deviceType: FBControlCoreConfiguration_Device?
+  let os: FBOSVersionName?
+  let model: FBDeviceModel?
   let auxDirectory : String?
 }
 
@@ -61,6 +62,11 @@ public enum DiagnosticFormat : String {
 public enum Record {
   case start(String?)
   case stop
+}
+
+public enum FileOutput {
+  case path(String)
+  case standardOut
 }
 
 /**
@@ -93,6 +99,7 @@ public enum Action {
   case serviceInfo(String)
   case setLocation(Double,Double)
   case shutdown
+  case stream(FileOutput?)
   case tap(Double, Double)
   case terminate(String)
   case uninstall(String)
@@ -165,6 +172,7 @@ extension ListenInterface : Accumulator {
     self.stdin = false
     self.http = nil
     self.hid = nil
+    self.handle = nil
   }
 
   public static var identity: ListenInterface { get {
@@ -175,7 +183,8 @@ extension ListenInterface : Accumulator {
     return ListenInterface(
       stdin: other.stdin ? other.stdin : self.stdin,
       http: other.http ?? self.http,
-      hid: other.hid ?? self.hid
+      hid: other.hid ?? self.hid,
+      handle: other.handle ?? self.handle
     )
   }
 }
@@ -190,11 +199,16 @@ extension ListenInterface : EventReporterSubject {
     if let portNumber = self.hid {
       hidValue = JSON.number(NSNumber(integerLiteral: Int(portNumber)))
     }
+    var handleValue = JSON.null
+    if let handle = self.handle {
+      handleValue = JSON.string(handle.type().rawValue)
+    }
 
     return JSON.dictionary([
       "stdin" : JSON.bool(self.stdin),
       "http" : httpValue,
-      "hid" : hidValue
+      "hid" : hidValue,
+      "handle" : handleValue,
     ])
   }}
 
@@ -212,6 +226,9 @@ extension ListenInterface : EventReporterSubject {
       description += "No"
     }
     description += " stdin: \(self.stdin)"
+    if let handle = self.handle {
+      description += " due to \(handle.type().rawValue)"
+    }
     return description
   }}
 }
@@ -219,22 +236,22 @@ extension ListenInterface : EventReporterSubject {
 
 extension IndividualCreationConfiguration : Equatable {}
 public func == (left: IndividualCreationConfiguration, right: IndividualCreationConfiguration) -> Bool {
-  return left.osVersion?.name == right.osVersion?.name &&
-         left.deviceType?.deviceName == right.deviceType?.deviceName &&
+  return left.os == right.os &&
+         left.model == right.model &&
          left.auxDirectory == right.auxDirectory
 }
 
 extension IndividualCreationConfiguration : Accumulator {
   public init() {
-    self.osVersion = nil
-    self.deviceType = nil
+    self.os = nil
+    self.model = nil
     self.auxDirectory = nil
   }
 
   public func append(_ other: IndividualCreationConfiguration) -> IndividualCreationConfiguration {
     return IndividualCreationConfiguration(
-      osVersion: other.osVersion ?? self.osVersion,
-      deviceType: other.deviceType ?? self.deviceType,
+      os: other.os ?? self.os,
+      model: other.model ?? self.model,
       auxDirectory: other.auxDirectory ?? self.auxDirectory
     )
   }
@@ -258,6 +275,18 @@ public func == (left: Record, right: Record) -> Bool {
   case (.start(let leftPath), .start(let rightPath)):
     return leftPath == rightPath
   case (.stop, .stop):
+    return true
+  default:
+    return false
+  }
+}
+
+extension FileOutput : Equatable {}
+public func == (left: FileOutput, right: FileOutput) -> Bool {
+  switch (left, right) {
+  case (.path(let leftPath), .path(let rightPath)):
+    return leftPath == rightPath
+  case (.standardOut, .standardOut):
     return true
   default:
     return false
@@ -319,6 +348,8 @@ public func == (left: Action, right: Action) -> Bool {
     return leftLat == rightLat && leftLon == rightLon
   case (.shutdown, .shutdown):
     return true
+  case (.stream(let leftInfo), .stream(let rightInfo)):
+    return leftInfo == rightInfo
   case (.tap(let leftX, let leftY), .tap(let rightX, let rightY)):
     return leftX == rightX && leftY == rightY
   case (.terminate(let leftBundleID), .terminate(let rightBundleID)):
@@ -389,6 +420,8 @@ extension Action {
       return (EventName.SetLocation, nil)
     case .shutdown:
       return (EventName.Shutdown, nil)
+    case .stream:
+      return (EventName.Stream, nil)
     case .tap:
       return (EventName.Tap, nil)
     case .terminate(let bundleID):
