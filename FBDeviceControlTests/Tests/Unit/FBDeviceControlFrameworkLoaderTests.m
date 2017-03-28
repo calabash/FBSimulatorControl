@@ -15,6 +15,7 @@
 
 + (BOOL)macOSVersionIsAtLeastSierra:(NSOperatingSystemVersion)macOSVersion;
 + (BOOL)xcodeVersionIsAtLeast81:(NSDecimalNumber *)xcodeVersion;
++ (BOOL)xcodeVersionIsLessThan83:(NSDecimalNumber *)xcodeVersion;
 + (NSArray<FBWeakFramework *> *)privateFrameworks;
 + (NSArray<FBWeakFramework *> *)privateFrameworkForMacOSVersion:(NSOperatingSystemVersion)macOSVersion
                                                    xcodeVersion:(NSDecimalNumber *)xcodeVersion;
@@ -61,6 +62,35 @@
   version = [NSDecimalNumber decimalNumberWithString:@"9.0"];
   XCTAssertTrue([FBDeviceControlFrameworkLoader xcodeVersionIsAtLeast81:version],
                 @"Expect Xcode 9.0 be at least 8.1");
+}
+
+- (void)testXcodeVersionIsLessThan83
+{
+    NSDecimalNumber *version;
+
+    version = [NSDecimalNumber decimalNumberWithString:@"7.3.1"];
+    XCTAssertTrue([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:version],
+                   @"Expect Xcode 7.3.1 to be less than 8.3");
+
+    version = [NSDecimalNumber decimalNumberWithString:@"8.0"];
+    XCTAssertTrue([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:version],
+                   @"Expect Xcode 8.0 to be less than 8.3");
+
+    version = [NSDecimalNumber decimalNumberWithString:@"8.1"];
+    XCTAssertTrue([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:version],
+                  @"Expect Xcode 8.1 to be less than 8.3");
+
+    version = [NSDecimalNumber decimalNumberWithString:@"8.2.1"];
+    XCTAssertTrue([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:version],
+                  @"Expect Xcode 8.2.1 to be less than 8.3");
+
+    version = [NSDecimalNumber decimalNumberWithString:@"8.3"];
+    XCTAssertFalse([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:version],
+                   @"Expect Xcode 8.3 not be less than 8.3");
+
+    version = [NSDecimalNumber decimalNumberWithString:@"9.0"];
+    XCTAssertFalse([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:version],
+                   @"Expect Xcode 9.0 not to be less than 8.3");
 }
 
 - (void)testPrivateFrameworks

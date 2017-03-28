@@ -90,6 +90,12 @@ static BOOL hasLoadedXcodeFrameworks = NO;
     return YES;
   }
 
+  for (FBDependentDylib *dylib in FBDependentDylib.SwiftDylibs) {
+    if (![dylib loadWithLogger:logger error:error]) {
+      return NO;
+    }
+  }
+
   NSArray<FBWeakFramework *> *frameworks = FBDeviceControlFrameworkLoader.privateFrameworks;
 
   if (![FBWeakFrameworkLoader loadPrivateFrameworks:frameworks logger:logger error:error]) {
@@ -173,12 +179,17 @@ static BOOL hasLoadedXcodeFrameworks = NO;
   return [xcodeVersion compare:xcode81] != NSOrderedAscending;
 }
 
++ (BOOL)xcodeVersionIsLessThan83:(NSDecimalNumber *)xcodeVersion
+{
+  NSDecimalNumber *xcode83 = [NSDecimalNumber decimalNumberWithString:@"8.3"];
+  return [xcodeVersion compare:xcode83] == NSOrderedAscending;
+}
+
 + (NSArray<FBWeakFramework *> *)privateFrameworkForMacOSVersion:(NSOperatingSystemVersion)macOSVersion
                                                    xcodeVersion:(NSDecimalNumber *)xcodeVersion {
   NSArray<FBWeakFramework *> *frameworks =
           @[
                   FBWeakFramework.DTXConnectionServices,
-                  FBWeakFramework.DVTFoundation,
                   FBWeakFramework.IDEFoundation,
                   FBWeakFramework.IDEiOSSupportCore,
                   FBWeakFramework.IBAutolayoutFoundation,
@@ -204,6 +215,13 @@ static BOOL hasLoadedXcodeFrameworks = NO;
     [mutable addObject:FBWeakFramework.DVTKit];
     frameworks = [NSArray arrayWithArray:mutable];
   }
+
+  if ([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:xcodeVersion]) {
+    NSMutableArray *mutable = [NSMutableArray arrayWithArray:frameworks];
+    [mutable addObject:FBWeakFramework.DVTFoundation];
+    frameworks = [NSArray arrayWithArray:mutable];
+  }
+
   return frameworks;
 }
 
