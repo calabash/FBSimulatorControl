@@ -108,12 +108,12 @@ void (*FBAMDSetLogLevel)(int32_t level);
   return nil;
 }
 
-- (FBDeviceType *)deviceConfiguration
+- (FBDeviceType *)deviceType
 {
   return self.amDevice.deviceConfiguration;
 }
 
-- (FBOSVersion *)osConfiguration
+- (FBOSVersion *)osVersion
 {
   return self.amDevice.osConfiguration;
 }

@@ -67,18 +67,6 @@ extension FBiOSTargetType : Accumulator {
 }
 
 extension FBiOSTargetQuery {
-  public static func simulatorStates(_ states: [FBSimulatorState]) -> FBiOSTargetQuery {
-    return self.allTargets().simulatorStates(states)
-  }
-
-  public func simulatorStates(_ states: [FBSimulatorState]) -> FBiOSTargetQuery {
-    let indexSet = states.reduce(NSMutableIndexSet()) { (indexSet, state) in
-      indexSet.add(Int(state.rawValue))
-      return indexSet
-    }
-    return self.states(indexSet as IndexSet)
-  }
-
   public static func ofCount(_ count: Int) -> FBiOSTargetQuery {
     return self.allTargets().ofCount(count)
   }
@@ -90,17 +78,16 @@ extension FBiOSTargetQuery {
 
 extension FBiOSTargetQuery : Accumulator {
   public func append(_ other: FBiOSTargetQuery) -> Self {
-    let osVersions = Array(other.osVersions)
-    let devices = Array(other.devices)
     let targetType = self.targetType.append(other.targetType)
 
     return self
       .udids(Array(other.udids))
+      .names(Array(other.names))
       .states(other.states)
       .architectures(Array(other.architectures))
       .targetType(targetType)
-      .osVersions(osVersions)
-      .devices(devices)
+      .osVersions(Array(other.osVersions))
+      .devices(Array(other.devices))
       .range(other.range)
   }
 }
@@ -110,7 +97,7 @@ extension FBiOSTargetFormatKey {
     return [
       FBiOSTargetFormatKey.UDID,
       FBiOSTargetFormatKey.name,
-      FBiOSTargetFormatKey.deviceName,
+      FBiOSTargetFormatKey.model,
       FBiOSTargetFormatKey.osVersion,
       FBiOSTargetFormatKey.state,
       FBiOSTargetFormatKey.architecture,
@@ -219,8 +206,20 @@ struct LineBufferDataIterator : IteratorProtocol {
   }
 }
 
+struct LineBufferStringIterator : IteratorProtocol {
+  let lineBuffer: FBLineBuffer
+
+  mutating func next() -> String? {
+    return self.lineBuffer.consumeLineString()
+  }
+}
+
 extension FBLineBuffer {
   func dataIterator() -> LineBufferDataIterator {
     return LineBufferDataIterator(lineBuffer: self)
+  }
+
+  func stringIterator() -> LineBufferStringIterator {
+    return LineBufferStringIterator(lineBuffer: self)
   }
 }
