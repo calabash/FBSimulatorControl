@@ -56,8 +56,8 @@
 {
   NSArray<FBSimulatorConfiguration *> *values = @[
     FBSimulatorConfiguration.defaultConfiguration,
-    FBSimulatorConfiguration.iPhone5,
-    FBSimulatorConfiguration.iPad2.iOS_8_3
+    [FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPhone5],
+    [[FBSimulatorConfiguration withDeviceModel:FBDeviceModeliPad2] withOSNamed:FBOSVersionNameiOS_8_3],
   ];
   [self assertEqualityOfCopy:values];
   [self assertUnarchiving:values];
@@ -106,10 +106,10 @@
   XCTAssertNil(launchConfiguration.scale);
 
   launchConfiguration = [launchConfiguration scale75Percent];
-  XCTAssertEqualObjects(launchConfiguration.scale, FBSimulatorScale_75.new);
-  XCTAssertEqualObjects(launchConfiguration.framebuffer.scale, FBSimulatorScale_75.new);
-  XCTAssertNotEqualObjects(launchConfiguration.scale, FBSimulatorScale_50.new);
-  XCTAssertNotEqualObjects(launchConfiguration.framebuffer.scale, FBSimulatorScale_50.new);
+  XCTAssertEqualObjects(launchConfiguration.scale, FBSimulatorScale75);
+  XCTAssertEqualObjects(launchConfiguration.framebuffer.scale, FBSimulatorScale75);
+  XCTAssertNotEqualObjects(launchConfiguration.scale, FBSimulatorScale50);
+  XCTAssertNotEqualObjects(launchConfiguration.framebuffer.scale, FBSimulatorScale50);
 }
 
 - (void)testEncoderConfigurations

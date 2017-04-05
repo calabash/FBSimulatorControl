@@ -14,6 +14,7 @@
 #import <FBControlCore/FBBatchLogSearch.h>
 #import <FBControlCore/FBBinaryDescriptor.h>
 #import <FBControlCore/FBBinaryParser.h>
+#import <FBControlCore/FBBitmapStream.h>
 #import <FBControlCore/FBBundleDescriptor.h>
 #import <FBControlCore/FBCapacityQueue.h>
 #import <FBControlCore/FBCodesignProvider.h>
@@ -61,6 +62,7 @@
 #import <FBControlCore/FBTerminationHandle.h>
 #import <FBControlCore/FBTestLaunchConfiguration.h>
 #import <FBControlCore/FBVideoRecordingCommands.h>
+#import <FBControlCore/FBBitmapStreamingCommands.h>
 #import <FBControlCore/FBDependentDylib+ApplePrivateDylibs.h>
 #import <FBControlCore/FBDependentDylib.h>
 #import <FBControlCore/FBWeakFramework+ApplePrivateFrameworks.h>

@@ -28,28 +28,11 @@ public struct OutputOptions : OptionSet {
  */
 public struct Help {
   let outputOptions: OutputOptions
-  let userInitiated: Bool
+  let error: (Error & CustomStringConvertible)?
   let command: Command?
 }
 
 public enum CLI {
   case show(Help)
   case run(Command)
-}
-
-public extension CLI {
-  public static func fromArguments(_ arguments: [String], environment: [String : String]) -> CLI {
-    let help = Help(outputOptions: OutputOptions(), userInitiated: false, command: nil)
-
-    do {
-      let (_, cli) = try CLI.parser.parse(arguments)
-      return cli.appendEnvironment(environment)
-    } catch let error as ParseError {
-      print("Failed to Parse Command \(error)")
-      return CLI.show(help)
-    } catch let error as NSError {
-      print("Failed to Parse Command \(error)")
-      return CLI.show(help)
-    }
-  }
 }
