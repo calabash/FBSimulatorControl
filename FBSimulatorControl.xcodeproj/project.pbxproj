@@ -120,7 +120,7 @@
 		AA4394E51E731998003532B2 /* FBXCTestCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = AA4394E41E731998003532B2 /* FBXCTestCommands.m */; };
 		AA44AF681E792F7500185844 /* FBSimulatorBitmapStream.h in Headers */ = {isa = PBXBuildFile; fileRef = AA44AF661E792F7500185844 /* FBSimulatorBitmapStream.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA44AF691E792F7500185844 /* FBSimulatorBitmapStream.m in Sources */ = {isa = PBXBuildFile; fileRef = AA44AF671E792F7500185844 /* FBSimulatorBitmapStream.m */; };
-		AA46BF601D6DDC6A00C41DAF /* FBTestManagerContext.h in Headers */ = {isa = PBXBuildFile; fileRef = AA46BF5E1D6DDC6A00C41DAF /* FBTestManagerContext.h */; };
+		AA46BF601D6DDC6A00C41DAF /* FBTestManagerContext.h in Headers */ = {isa = PBXBuildFile; fileRef = AA46BF5E1D6DDC6A00C41DAF /* FBTestManagerContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA46BF611D6DDC6A00C41DAF /* FBTestManagerContext.m in Sources */ = {isa = PBXBuildFile; fileRef = AA46BF5F1D6DDC6A00C41DAF /* FBTestManagerContext.m */; };
 		AA4A7E2D1DD9F4EB001F9D8E /* FBFileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = AA4A7E2B1DD9F4EB001F9D8E /* FBFileReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA4A7E2E1DD9F4EB001F9D8E /* FBFileReader.m in Sources */ = {isa = PBXBuildFile; fileRef = AA4A7E2C1DD9F4EB001F9D8E /* FBFileReader.m */; };
@@ -490,6 +490,29 @@
 		EEBD60951C908F8500298A07 /* FBCollectionInformation.m in Sources */ = {isa = PBXBuildFile; fileRef = EEBD60931C908F8500298A07 /* FBCollectionInformation.m */; };
 		EEBD60971C908FA200298A07 /* FBJSONConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = EEBD60961C908FA200298A07 /* FBJSONConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EEF4497E1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m in Sources */ = {isa = PBXBuildFile; fileRef = EEF4497C1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m */; };
+		F56EED811E9C9A3A0073C4EE /* CalabashUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F56EED851E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED861E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED871E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED881E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED891E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8A1E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8B1E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8C1E9C9A3A0073C4EE /* CalabashUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */; };
+		F56EED8E1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED8F1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED901E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED911E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; };
+		F56EED931E9CC8820073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED941E9CC8900073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED951E9CC8960073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED961E9CC89C0073C4EE /* CocoaLumberjack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F56EED991E9CCF940073C4EE /* FBDependentDylib.h in Headers */ = {isa = PBXBuildFile; fileRef = F56EED971E9CCF940073C4EE /* FBDependentDylib.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F56EED9A1E9CCF940073C4EE /* FBDependentDylib.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED981E9CCF940073C4EE /* FBDependentDylib.m */; };
+		F56EED9B1E9CCF940073C4EE /* FBDependentDylib.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EED981E9CCF940073C4EE /* FBDependentDylib.m */; };
+		F56EEDA21E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.h in Headers */ = {isa = PBXBuildFile; fileRef = F56EEDA01E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F56EEDA31E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EEDA11E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m */; };
+		F56EEDA41E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m in Sources */ = {isa = PBXBuildFile; fileRef = F56EEDA11E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -585,6 +608,7 @@
 			files = (
 				AA98ECAA1D0559D000916AED /* FBControlCore.framework in CopyFiles */,
 				AA98ECAE1D0559E400916AED /* XCTestBootstrap.framework in CopyFiles */,
+				F56EED951E9CC8960073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -596,6 +620,7 @@
 			files = (
 				AA98ECAC1D0559DF00916AED /* FBControlCore.framework in CopyFiles */,
 				AA98ECAD1D0559E100916AED /* XCTestBootstrap.framework in CopyFiles */,
+				F56EED961E9CC89C0073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -606,6 +631,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				AA98ECB01D055A0000916AED /* FBControlCore.framework in CopyFiles */,
+				F56EED941E9CC8900073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -616,6 +642,16 @@
 			dstSubfolderSpec = 10;
 			files = (
 				AAC083781B9FBA7600451648 /* FBSimulatorControl.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F56EED921E9CC8780073C4EE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F56EED931E9CC8820073C4EE /* CocoaLumberjack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1142,11 +1178,11 @@
 		AAC8B2451CEC51520034A865 /* FBDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBDevice.h; sourceTree = "<group>"; };
 		AAC8B2461CEC51520034A865 /* FBDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBDevice.m; sourceTree = "<group>"; };
 		AAC8B2471CEC51520034A865 /* FBiOSDeviceOperator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBiOSDeviceOperator.h; sourceTree = "<group>"; };
-		AAC8B2481CEC51520034A865 /* FBiOSDeviceOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBiOSDeviceOperator.m; sourceTree = "<group>"; };
+		AAC8B2481CEC51520034A865 /* FBiOSDeviceOperator.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; path = FBiOSDeviceOperator.m; sourceTree = "<group>"; tabWidth = 2; };
 		AAC8B24D1CEC51520034A865 /* FBDeviceControlError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBDeviceControlError.h; sourceTree = "<group>"; };
 		AAC8B24E1CEC51520034A865 /* FBDeviceControlError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBDeviceControlError.m; sourceTree = "<group>"; };
 		AAC8B24F1CEC51520034A865 /* FBDeviceControlFrameworkLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBDeviceControlFrameworkLoader.h; sourceTree = "<group>"; };
-		AAC8B2501CEC51520034A865 /* FBDeviceControlFrameworkLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBDeviceControlFrameworkLoader.m; sourceTree = "<group>"; };
+		AAC8B2501CEC51520034A865 /* FBDeviceControlFrameworkLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; path = FBDeviceControlFrameworkLoader.m; sourceTree = "<group>"; tabWidth = 2; usesTabs = 0; };
 		AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = FBDeviceControl.xcconfig; sourceTree = "<group>"; };
 		AAC8B2621CEC55370034A865 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		AACA2C351C2976B100979C45 /* FBAddVideoPolyfill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBAddVideoPolyfill.h; sourceTree = "<group>"; };
@@ -1354,6 +1390,13 @@
 		EEBD60961C908FA200298A07 /* FBJSONConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBJSONConversion.h; sourceTree = "<group>"; };
 		EEF4497B1CE0A22200300C9F /* FBXCTestBootstrapFixtures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBXCTestBootstrapFixtures.h; sourceTree = "<group>"; };
 		EEF4497C1CE0A22200300C9F /* FBXCTestBootstrapFixtures.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBXCTestBootstrapFixtures.m; sourceTree = "<group>"; };
+		F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalabashUtils.h; sourceTree = "<group>"; };
+		F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalabashUtils.m; sourceTree = "<group>"; };
+		F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = Vendor/CocoaLumberjack.framework; sourceTree = "<group>"; };
+		F56EED971E9CCF940073C4EE /* FBDependentDylib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBDependentDylib.h; sourceTree = "<group>"; };
+		F56EED981E9CCF940073C4EE /* FBDependentDylib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBDependentDylib.m; sourceTree = "<group>"; };
+		F56EEDA01E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FBDependentDylib+ApplePrivateDylibs.h"; sourceTree = "<group>"; };
+		F56EEDA11E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FBDependentDylib+ApplePrivateDylibs.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1371,6 +1414,7 @@
 				AA719E4A1D672D6300947611 /* Foundation.framework in Frameworks */,
 				AA3C18421D5DE3BB00419EAA /* IOSurface.framework in Frameworks */,
 				EEBD608A1C90655900298A07 /* FBControlCore.framework in Frameworks */,
+				F56EED901E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				EE1277541C931C5E00DE52A1 /* XCTestBootstrap.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1395,6 +1439,7 @@
 				AAEA171D1E005CD7001BD35A /* CoreMediaIO.framework in Frameworks */,
 				AAC8B2631CEC55370034A865 /* Foundation.framework in Frameworks */,
 				AAC8B2601CEC55270034A865 /* FBControlCore.framework in Frameworks */,
+				F56EED911E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				AAC8B2611CEC552A0034A865 /* XCTestBootstrap.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1412,6 +1457,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA719E491D672D5A00947611 /* Foundation.framework in Frameworks */,
+				F56EED8F1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				EE4F0DDD1C91BA8300608E89 /* FBControlCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1431,6 +1477,7 @@
 			files = (
 				AA719E481D672D5000947611 /* Foundation.framework in Frameworks */,
 				AA1958791D6F4CF90059886F /* Cocoa.framework in Frameworks */,
+				F56EED8E1E9CC8470073C4EE /* CocoaLumberjack.framework in Frameworks */,
 				AA19587C1D6F4D2F0059886F /* CoreGraphics.framework in Frameworks */,
 				AA1958781D6F4CF20059886F /* ServiceManagement.framework in Frameworks */,
 			);
@@ -2321,6 +2368,7 @@
 		B401C97968022A5500000000 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F56EED8D1E9CC8470073C4EE /* CocoaLumberjack.framework */,
 				AAC241231BB3113F0054570C /* AppKit.framework */,
 				AAC241251BB311690054570C /* ApplicationServices.framework */,
 				AAB4AC1D1BB586930046F6A1 /* AVFoundation.framework */,
@@ -2361,6 +2409,7 @@
 		B401C979EFB6AC4600000000 /* mainGroup */ = {
 			isa = PBXGroup;
 			children = (
+				F56EED7E1E9C9A3A0073C4EE /* Calabash */,
 				AA633F8A1CFD788F00A59C5F /* Configuration */,
 				AA48775A1BAC74DC007F7D23 /* PrivateHeaders */,
 				EEBD600F1C90628F00298A07 /* FBControlCore */,
@@ -2681,6 +2730,10 @@
 		EEBD604A1C9062E900298A07 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				F56EEDA01E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.h */,
+				F56EEDA11E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m */,
+				F56EED971E9CCF940073C4EE /* FBDependentDylib.h */,
+				F56EED981E9CCF940073C4EE /* FBDependentDylib.m */,
 				C0B32FC71E4E459700A48CF4 /* FBArchitecture.h */,
 				C0B32FC81E4E459700A48CF4 /* FBArchitecture.m */,
 				EEBD604B1C9062E900298A07 /* FBBinaryParser.h */,
@@ -2751,6 +2804,15 @@
 				05F1823E1D59B48600DBD35C /* junitResult1.xml */,
 			);
 			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		F56EED7E1E9C9A3A0073C4EE /* Calabash */ = {
+			isa = PBXGroup;
+			children = (
+				F56EED7F1E9C9A3A0073C4EE /* CalabashUtils.h */,
+				F56EED801E9C9A3A0073C4EE /* CalabashUtils.m */,
+			);
+			path = Calabash;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2875,7 +2937,6 @@
 				AA7414F01CE3102F00C9641D /* FBTestBundleConnection.h in Headers */,
 				05E1E34E1E3DBA87004F67B8 /* FBTestManagerJUnitGenerator.h in Headers */,
 				3E14994C1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h in Headers */,
-				AA46BF601D6DDC6A00C41DAF /* FBTestManagerContext.h in Headers */,
 				EE4F0D771C91B82700608E89 /* FBProductBundle.h in Headers */,
 				AA0DC7561CE3A29F0037A8A7 /* FBTestDaemonConnection.h in Headers */,
 				EE4F0D821C91B82700608E89 /* FBDeviceTestPreparationStrategy.h in Headers */,
@@ -2895,6 +2956,7 @@
 				AA7414EC1CE2555E00C9641D /* FBTestDaemonConnection.h in Headers */,
 				EE4F0D871C91B82700608E89 /* FBXCTestRunStrategy.h in Headers */,
 				AAB05EA31D6DE63D005E05F4 /* FBTestBundleResult.h in Headers */,
+				AA46BF601D6DDC6A00C41DAF /* FBTestManagerContext.h in Headers */,
 				EE4F0D791C91B82700608E89 /* FBTestBundle.h in Headers */,
 				EE1277621C9338D700DE52A1 /* FBTestManagerAPIMediator.h in Headers */,
 				AA12D5441CE1086300CCD944 /* FBTestReporterForwarder.h in Headers */,
@@ -2977,6 +3039,9 @@
 				AAB123821DB4B16900F20555 /* FBDispatchSourceNotifier.h in Headers */,
 				AA7728AE1E5238A6008FCF7C /* FBFileWriter.h in Headers */,
 				AA58F8921D959593006F8D81 /* FBCodesignProvider.h in Headers */,
+				F56EEDA21E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.h in Headers */,
+				F56EED991E9CCF940073C4EE /* FBDependentDylib.h in Headers */,
+				F56EED811E9C9A3A0073C4EE /* CalabashUtils.h in Headers */,
 				AA5CB9161E8A45200099F048 /* FBApplicationLaunchConfiguration.h in Headers */,
 				EEBD60801C9062E900298A07 /* FBControlCoreGlobalConfiguration.h in Headers */,
 			);
@@ -3113,6 +3178,7 @@
 				EEBD600A1C90628F00298A07 /* Frameworks */,
 				EEBD600B1C90628F00298A07 /* Headers */,
 				EEBD600C1C90628F00298A07 /* Resources */,
+				F56EED921E9CC8780073C4EE /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -3156,18 +3222,28 @@
 					};
 					AAC8B22A1CEC51120034A865 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = FYD86LA7RE;
+						ProvisioningStyle = Manual;
 					};
 					AAC8B2331CEC51120034A865 = {
 						CreatedOnToolsVersion = 7.3.1;
 					};
+					E66DC04E390C419500000000 = {
+						DevelopmentTeam = FYD86LA7RE;
+						ProvisioningStyle = Manual;
+					};
 					EE4F0D2F1C91B7DA00608E89 = {
 						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = FYD86LA7RE;
+						ProvisioningStyle = Manual;
 					};
 					EE4F0D381C91B7DB00608E89 = {
 						CreatedOnToolsVersion = 7.2.1;
 					};
 					EEBD600D1C90628F00298A07 = {
 						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = FYD86LA7RE;
+						ProvisioningStyle = Manual;
 					};
 					EEBD60161C90628F00298A07 = {
 						CreatedOnToolsVersion = 7.2.1;
@@ -3520,6 +3596,7 @@
 				AA8E937F1E96267A0002F614 /* FBiOSActionRouter.m in Sources */,
 				EE2EC7AD1CAC3F97009A7BB1 /* FBWeakFramework.m in Sources */,
 				EE9E1E4C1D6CB2CC00860830 /* FBProcessLaunchConfiguration+Helpers.m in Sources */,
+				F56EEDA31E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m in Sources */,
 				AADDED331D6D87D30011EE15 /* FBServiceManagement.m in Sources */,
 				EEBD60671C9062E900298A07 /* FBProcessFetcher+Helpers.m in Sources */,
 				EEBD60811C9062E900298A07 /* FBControlCoreGlobalConfiguration.m in Sources */,
@@ -3536,6 +3613,7 @@
 				EEBD605E1C9062E900298A07 /* FBCrashLogInfo.m in Sources */,
 				EEBD605C1C9062E900298A07 /* FBASLParser.m in Sources */,
 				AAD0DE041CEB064200C28B58 /* FBSubstringUtilities.m in Sources */,
+				F56EED9A1E9CCF940073C4EE /* FBDependentDylib.m in Sources */,
 				AAD414AB1E4E2F3100815112 /* FBSocketReader.m in Sources */,
 				AA6D511E1E96BE68003B5582 /* FBiOSActionReader.m in Sources */,
 				AA4A7E2E1DD9F4EB001F9D8E /* FBFileReader.m in Sources */,
@@ -3549,6 +3627,7 @@
 				AA4394E51E731998003532B2 /* FBXCTestCommands.m in Sources */,
 				AABD72A71E64A5DF004D6EBE /* FBTestLaunchConfiguration.m in Sources */,
 				EEBD60771C9062E900298A07 /* FBBinaryParser.m in Sources */,
+				F56EED851E9C9A3A0073C4EE /* CalabashUtils.m in Sources */,
 				AA0F6F2B1CA3DCF700926518 /* FBWeakFrameworkLoader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3566,12 +3645,14 @@
 				AA72084C1DEC1CBE00020293 /* FBProcessLaunchConfigurationTests.m in Sources */,
 				AAEA3AA91C90BB73004F8409 /* FBLogSearchTests.m in Sources */,
 				AAFCE9EB1DAD5650008090B6 /* FBTaskTests.m in Sources */,
+				F56EED9B1E9CCF940073C4EE /* FBDependentDylib.m in Sources */,
 				AAEA3A941C90B5E4004F8409 /* FBControlCoreFixtures.m in Sources */,
 				AA98351C1CEF55C20038F432 /* FBLocalizationOverrideTests.m in Sources */,
 				AAB68D7B1C90C2F200D20416 /* FBControlCoreValueTestCase.m in Sources */,
 				AA3B92B11DD1C716000C045B /* FBControlCoreLoggerDouble.m in Sources */,
 				AA7FDA151C981318009F7828 /* FBCrashLogInfoTests.m in Sources */,
 				AA6D511A1E96B09F003B5582 /* FBiOSActionRouterTests.m in Sources */,
+				F56EEDA41E9CD0CA0073C4EE /* FBDependentDylib+ApplePrivateDylibs.m in Sources */,
 				AA72084E1DEC1E0700020293 /* FBProcessOutputConfigurationTests.m in Sources */,
 				AA0EE6701D06AB5600422361 /* FBiOSTargetDescriptionTests.m in Sources */,
 			);
@@ -3637,6 +3718,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA46E431C0CB92A009D6452 /* FBSimulatorControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -3656,6 +3744,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA46E431C0CB92A009D6452 /* FBSimulatorControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
 		};
@@ -3672,6 +3767,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAA46E431C0CB92A009D6452 /* FBSimulatorControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -3709,6 +3811,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -3716,6 +3825,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
 		};
@@ -3723,6 +3839,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC8B25B1CEC52540034A865 /* FBDeviceControl.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -3754,6 +3877,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE4F0DDA1C91B88500608E89 /* XCTestBootstrap.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -3761,6 +3891,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE4F0DDA1C91B88500608E89 /* XCTestBootstrap.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
 		};
@@ -3768,6 +3905,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE4F0DDA1C91B88500608E89 /* XCTestBootstrap.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -3820,6 +3964,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEBD60341C9062E900298A07 /* FBControlCore.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -3827,6 +3978,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEBD60341C9062E900298A07 /* FBControlCore.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
 		};
@@ -3834,6 +3992,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEBD60341C9062E900298A07 /* FBControlCore.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = FYD86LA7RE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor",
+				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};

@@ -144,7 +144,6 @@ typedef NS_ENUM(NSUInteger, FBTestBundleConnectionState) {
 
 - (nullable FBTestBundleResult *)connectWithTimeout:(NSTimeInterval)timeout
 {
-  NSAssert(NSThread.isMainThread, @"-[%@ %@] should be called from the main thread", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
   if (self.state != FBTestBundleConnectionStateNotConnected) {
     XCTestBootstrapError *error = [XCTestBootstrapError
       describeFormat:@"Cannot connect, state must be %@ but is %@", [FBTestBundleConnection stateStringForState:FBTestBundleConnectionStateNotConnected], [FBTestBundleConnection stateStringForState:self.state]];
@@ -472,6 +471,13 @@ typedef NS_ENUM(NSUInteger, FBTestBundleConnectionState) {
   }
 }
 
+
+- (BOOL)hasFinishedExecution
+{
+    FBTestBundleConnectionState state = self.state;
+    return (state == FBTestBundleConnectionStateEndedTestPlan ||
+            state == FBTestBundleConnectionStateResultAvailable);
+}
 @end
 
 #pragma clang diagnostic pop

@@ -8,8 +8,11 @@
  */
 
 #import "FBControlCoreLogger.h"
-
+#import "CalabashUtils.h"
 #import <asl.h>
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 @interface FBASLClientWrapper : NSObject
 
@@ -79,7 +82,11 @@
     if (self.fileDescriptor >= STDIN_FILENO) {
       int result = asl_add_output_file(client, self.fileDescriptor, ASL_MSG_FMT_STD, ASL_TIME_FMT_LCL, filterLimit, ASL_ENCODE_SAFE);
       if (result != 0) {
+        DDLogError(@"Failed to add File Descriptor %@ to client with error %@",
+              @(self.fileDescriptor), @(result));
+        /*
         asl_log(client, NULL, ASL_LEVEL_ERR, "Failed to add File Descriptor %d to client with error %d", self.fileDescriptor, result);
+        */
       }
     }
 
@@ -120,7 +127,8 @@
 - (id<FBControlCoreLogger>)log:(NSString *)string
 {
   string = self.prefix ? [self.prefix stringByAppendingFormat:@" %@", string] : string;
-  asl_log(self.client, NULL, self.currentLevel, string.UTF8String, NULL);
+  DDLogDebug(@"%@", string);
+  //asl_log(self.client, NULL, self.currentLevel, string.UTF8String, NULL);
   return self;
 }
 
@@ -166,16 +174,16 @@
 
 + (id<FBControlCoreLogger>)systemLoggerWritingToStderrr:(BOOL)writeToStdErr withDebugLogging:(BOOL)debugLogging
 {
-  int fileDescriptor = writeToStdErr ? STDERR_FILENO : 0;
-  return [self systemLoggerWritingToFileDescriptor:fileDescriptor withDebugLogging:debugLogging];
+    int fileDescriptor = writeToStdErr ? STDERR_FILENO : 0;
+    return [self systemLoggerWritingToFileDescriptor:fileDescriptor withDebugLogging:debugLogging];
 }
 
 + (id<FBControlCoreLogger>)systemLoggerWritingToFileDescriptor:(int)fileDescriptor withDebugLogging:(BOOL)debugLogging
 {
-  FBASLClientManager *clientManager = [[FBASLClientManager alloc] initWithWritingToFileDescriptor:fileDescriptor debugLogging:debugLogging];
-  asl_object_t client = [clientManager clientHandleForQueue:dispatch_get_main_queue()];
-  FBControlCoreLogger_ASL *logger = [[FBControlCoreLogger_ASL alloc] initWithClientManager:clientManager client:client currentLevel:ASL_LEVEL_INFO prefix:nil];
-  return logger;
+    FBASLClientManager *clientManager = [[FBASLClientManager alloc] initWithWritingToFileDescriptor:fileDescriptor debugLogging:debugLogging];
+    asl_object_t client = [clientManager clientHandleForQueue:dispatch_get_main_queue()];
+    FBControlCoreLogger_ASL *logger = [[FBControlCoreLogger_ASL alloc] initWithClientManager:clientManager client:client currentLevel:ASL_LEVEL_INFO prefix:nil];
+    return logger;
 }
 
 @end
