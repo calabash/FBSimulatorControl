@@ -30,3 +30,6 @@ You can see this strategy at work in our xamarin/appium fork:
 
 * [master](https://github.com/xamarin/appium)
 * [tags](https://github.com/xamarin/appium/tags)
+
+The `develop` branch is where we make incremental changes prior to
+creating a release tag and it is where we make new tags from.
