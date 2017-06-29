@@ -112,21 +112,29 @@
                                                                   xcodeVersion:xcodeVersion];
 
   XCTAssertTrue(frameworks.count == 7,
-                @"Expected exactly 7 frameworks for ElCap for any Xcode version");
+                @"Expected exactly 7 frameworks for ElCap for Xcode < 8.3");
 
   xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"8.2"];
   frameworks = [FBDeviceControlFrameworkLoader privateFrameworkForMacOSVersion:elCap
                                                                   xcodeVersion:xcodeVersion];
 
   XCTAssertTrue(frameworks.count == 7,
-                @"Expected exactly 7 frameworks for ElCap for any Xcode version");
+                @"Expected exactly 7 frameworks for ElCap for Xcode < 8.3");
 
-  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"10.0"];
+  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"8.3"];
   frameworks = [FBDeviceControlFrameworkLoader privateFrameworkForMacOSVersion:elCap
                                                                   xcodeVersion:xcodeVersion];
 
-  XCTAssertTrue(frameworks.count == 7,
-                @"Expected exactly 7 frameworks for ElCap for any Xcode version");
+  XCTAssertTrue(frameworks.count == 6,
+                @"Expected exactly 6 frameworks for ElCap for any Xcode >= 8.3");
+
+  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"8.3.3"];
+  frameworks = [FBDeviceControlFrameworkLoader privateFrameworkForMacOSVersion:elCap
+                                                                  xcodeVersion:xcodeVersion];
+
+  XCTAssertTrue(frameworks.count == 6,
+                @"Expected exactly 6 frameworks for ElCap for any Xcode >= 8.3");
+
 };
 
 - (void)testPrivateFrameworkSierraXcodeLT80
@@ -155,16 +163,28 @@
                                                                   xcodeVersion:xcodeVersion];
 
   XCTAssertTrue(frameworks.count == 9,
-                @"Expected exactly 9 frameworks for Sierra for Xcode >= 8.1");
+                @"Expected exactly 9 frameworks for Sierra for 8.1 <= Xcode < 8.3");
 
-
-  // It is likely that the Xcode 9 will be the last support Xcode on Sierra
-  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"9.0"];
+  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"8.2"];
   frameworks = [FBDeviceControlFrameworkLoader privateFrameworkForMacOSVersion:sierra
                                                                   xcodeVersion:xcodeVersion];
 
   XCTAssertTrue(frameworks.count == 9,
-                @"Expected exactly 9 frameworks for Sierra for Xcode >= 8.1");
+                @"Expected exactly 9 frameworks for Sierra for 8.2 <= Xcode < 8.3");
+
+  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"8.3"];
+  frameworks = [FBDeviceControlFrameworkLoader privateFrameworkForMacOSVersion:sierra
+                                                                  xcodeVersion:xcodeVersion];
+
+  XCTAssertTrue(frameworks.count == 8,
+                @"Expected exactly 8 frameworks for Sierra for Xcode >= 8.3");
+
+  xcodeVersion = [NSDecimalNumber decimalNumberWithString:@"9.0"];
+  frameworks = [FBDeviceControlFrameworkLoader privateFrameworkForMacOSVersion:sierra
+                                                                  xcodeVersion:xcodeVersion];
+
+  XCTAssertTrue(frameworks.count == 8,
+                @"Expected exactly 8 frameworks for Sierra for Xcode >= 8.3");
 }
 
 @end
