@@ -35,6 +35,9 @@
 #import "FBAMDevice+Private.h"
 #import "FBDeviceControlError.h"
 #import "FBDeviceControlFrameworkLoader.h"
+#import "CalabashUtils.h"
+
+#import <FBControlCore/FBControlCore.h>
 
 @protocol DVTApplication <NSObject>
 - (NSString *)installedPath;
@@ -193,7 +196,13 @@ static NSString *const ApplicationPathKey = @"Path";
 
 - (BOOL)requiresTestDaemonMediationForTestHostConnection
 {
-  return self.device.dvtDevice.requiresTestDaemonMediationForTestHostConnection;
+  SEL selector = @selector(requiresTestDaemonMediationForTestHostConnection);
+  if ([self.device.dvtDevice respondsToSelector:selector]) {
+    return self.device.dvtDevice.requiresTestDaemonMediationForTestHostConnection;
+  } else {
+    // Xcode >= 8.3
+    return YES;
+  }
 }
 
 - (BOOL)waitForDeviceToBecomeAvailableWithError:(NSError **)error
@@ -301,17 +310,25 @@ static NSString *const ApplicationPathKey = @"Path";
 
 - (NSArray<NSDictionary<NSString *, id> *> *)installedApplicationsData
 {
-  [self fetchApplications];
-
   NSMutableArray *applications = [[NSMutableArray alloc] init];
 
-  for(NSObject *app in self.device.dvtDevice.applications) {
-    NSDictionary *dict = [app valueForKey:@"plist"];
-    if (!dict) {
-      continue;
-    }
-    [applications addObject:dict];
+  __block CFDictionaryRef cf_apps;
+
+  NSNumber *return_code = [self.device.amDevice handleWithBlockDeviceSession:^id(CFTypeRef device) {
+    return @(FBAMDeviceLookupApplications(device, 0, &cf_apps));
+  } error: nil];
+
+  NSDictionary *apps = CFBridgingRelease(cf_apps);
+
+  if (return_code == nil || [return_code intValue] != 0) {
+    return
+    [[FBDeviceControlError
+      describe:@"Failed to get list of applications"]
+     fail:nil];
   }
+
+  [applications addObjectsFromArray:[apps allValues]];
+
   return applications;
 }
 
@@ -460,21 +477,24 @@ static NSString *const ApplicationPathKey = @"Path";
 
 - (NSArray<FBApplicationDescriptor *> *)installedApplications
 {
-  NSMutableArray<FBApplicationDescriptor *> *installedApplications = [[NSMutableArray alloc] init];
+  return [CalabashUtils doOnMainAndReturn:^id{
+		NSMutableArray<FBApplicationDescriptor *> *installedApplications = [[NSMutableArray alloc] init];
 
-  for(NSDictionary *app in [self installedApplicationsData]) {
-    if (app == nil) {
-      continue;
-    }
-    FBApplicationDescriptor *appData = [FBApplicationDescriptor
-      remoteApplicationWithName:app[ApplicationNameKey]
-      path:app[ApplicationPathKey]
-      bundleID:app[ApplicationIdentifierKey]];
+		for(NSDictionary *app in [self installedApplicationsData]) {
+			if (app == nil) {
+				continue;
+			}
+			FBApplicationDescriptor *appData = [FBApplicationDescriptor
+				applicationWithName:app[ApplicationNameKey]
+											 path:app[ApplicationPathKey]
+									 bundleID:app[ApplicationIdentifierKey]
+								installType:[FBApplicationDescriptor installTypeFromString:app[ApplicationTypeKey]]];
 
-    [installedApplications addObject:appData];
-  }
+			[installedApplications addObject:appData];
+		}
 
-  return [installedApplications copy];
+		return [installedApplications copy];
+	}];
 }
 
 #pragma mark - Helpers

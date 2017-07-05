@@ -23,6 +23,8 @@
 #import "FBDeviceControlError.h"
 #import "FBAMDevice.h"
 
+#import "CalabashUtils.h"
+
 static BOOL hasLoadedEssentialFrameworks = NO;
 static BOOL hasLoadedXcodeFrameworks = NO;
 
@@ -34,14 +36,16 @@ static BOOL hasLoadedXcodeFrameworks = NO;
 
 + (void)initializeEssentialFrameworks
 {
-  NSError *error = nil;
-  id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
-  BOOL success = [self loadEssentialFrameworks:logger error:&error];
-  if (success) {
-    return;
-  }
-  [logger.error logFormat:@"Failed to load the Essential frameworks for FBDeviceControl with error %@", error];
-  abort();
+    [CalabashUtils doOnMain:^{
+        NSError *error = nil;
+        id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
+        BOOL success = [self loadEssentialFrameworks:logger error:&error];
+        if (success) {
+            return;
+        }
+        [logger.error logFormat:@"Failed to load the Essential frameworks for FBDeviceControl with error %@", error];
+        abort();
+    }];
 }
 
 + (BOOL)loadEssentialFrameworks:(id<FBControlCoreLogger>)logger error:(NSError **)error
@@ -68,20 +72,28 @@ static BOOL hasLoadedXcodeFrameworks = NO;
 
 + (void)initializeXCodeFrameworks
 {
-  NSError *error = nil;
-  id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
-  BOOL success = [self loadXcodeFrameworks:logger error:&error];
-  if (success) {
-    return;
-  }
-  [logger.error logFormat:@"Failed to load the Xcode frameworks for FBDeviceControl with error %@", error];
-  abort();
+    [CalabashUtils doOnMain:^{
+        NSError *error = nil;
+        id<FBControlCoreLogger> logger = FBControlCoreGlobalConfiguration.defaultLogger;
+        BOOL success = [self loadXcodeFrameworks:logger error:&error];
+        if (success) {
+            return;
+        }
+        [logger.error logFormat:@"Failed to load the Xcode frameworks for FBDeviceControl with error %@", error];
+        abort();
+    }];
 }
 
 + (BOOL)loadXcodeFrameworks:(id<FBControlCoreLogger>)logger error:(NSError **)error
 {
   if (hasLoadedXcodeFrameworks) {
     return YES;
+  }
+
+  for (FBDependentDylib *dylib in FBDependentDylib.SwiftDylibs) {
+    if (![dylib loadWithLogger:logger error:error]) {
+      return NO;
+    }
   }
 
   NSArray<FBWeakFramework *> *frameworks = FBDeviceControlFrameworkLoader.privateFrameworks;
@@ -167,12 +179,17 @@ static BOOL hasLoadedXcodeFrameworks = NO;
   return [xcodeVersion compare:xcode81] != NSOrderedAscending;
 }
 
++ (BOOL)xcodeVersionIsLessThan83:(NSDecimalNumber *)xcodeVersion
+{
+  NSDecimalNumber *xcode83 = [NSDecimalNumber decimalNumberWithString:@"8.3"];
+  return [xcodeVersion compare:xcode83] == NSOrderedAscending;
+}
+
 + (NSArray<FBWeakFramework *> *)privateFrameworkForMacOSVersion:(NSOperatingSystemVersion)macOSVersion
                                                    xcodeVersion:(NSDecimalNumber *)xcodeVersion {
   NSArray<FBWeakFramework *> *frameworks =
           @[
                   FBWeakFramework.DTXConnectionServices,
-                  FBWeakFramework.DVTFoundation,
                   FBWeakFramework.IDEFoundation,
                   FBWeakFramework.IDEiOSSupportCore,
                   FBWeakFramework.IBAutolayoutFoundation,
@@ -198,6 +215,13 @@ static BOOL hasLoadedXcodeFrameworks = NO;
     [mutable addObject:FBWeakFramework.DVTKit];
     frameworks = [NSArray arrayWithArray:mutable];
   }
+
+  if ([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:xcodeVersion]) {
+    NSMutableArray *mutable = [NSMutableArray arrayWithArray:frameworks];
+    [mutable addObject:FBWeakFramework.DVTFoundation];
+    frameworks = [NSArray arrayWithArray:mutable];
+  }
+
   return frameworks;
 }
 
