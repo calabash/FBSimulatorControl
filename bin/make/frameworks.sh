@@ -69,3 +69,4 @@ strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/FBControl
 strip_framework "XCTestBootstrap.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
 strip_framework "FBControlCore.framework/Versions/Current/Frameworks/CocoaLumberjack.framework"
 
+osascript -e 'display notification "Finished building FBSimulatorControl" with title "iOSDeviceManager" subtitle "Make"'
