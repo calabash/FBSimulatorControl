@@ -41,7 +41,7 @@ function framework_build() {
   xcrun xcodebuild \
     DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
     ENABLE_TESTABILITY=NO \
-    GCC_OPTIMIZATION_LEVEL=s \
+    GCC_OPTIMIZATION_LEVEL=0 \
     -SYMROOT="${BUILD_DIR}" \
     -OBJROOT="${BUILD_DIR}" \
     -project "${XC_PROJECT}" \
