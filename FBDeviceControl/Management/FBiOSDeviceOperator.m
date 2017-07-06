@@ -85,45 +85,50 @@ static NSString *const ApplicationPathKey = @"Path";
 
 - (NSString *)containerPathForApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> app = [self installedApplicationWithBundleIdentifier:bundleID];
-  return [app containerPath];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app[@"Container"];
+    }
+  }
+  return nil;
 }
 
 - (NSString *)applicationPathForApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> app = [self installedApplicationWithBundleIdentifier:bundleID];
-  return [app installedPath];
-}
-
-- (void)fetchApplications
-{
-  if (!self.device.dvtDevice.applications) {
-    [FBRunLoopSpinner spinUntilBlockFinished:^id{
-      DVTFuture *future = self.device.dvtDevice.token.fetchApplications;
-      [future waitUntilFinished];
-      return nil;
-    }];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app[@"Path"];
+    }
   }
+  return nil;
 }
 
-- (id<DVTApplication>)installedApplicationWithBundleIdentifier:(NSString *)bundleID
+- (NSDictionary *)installedApplicationWithBundleIdentifier:(NSString *)bundleID
 {
-  [self fetchApplications];
-  return [self.device.dvtDevice installedApplicationWithBundleIdentifier:bundleID];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app;
+    }
+  }
+  return nil;
 }
 
 - (FBProductBundle *)applicationBundleWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> application = [self installedApplicationWithBundleIdentifier:bundleID];
+
+  NSDictionary *application = [self installedApplicationWithBundleIdentifier:bundleID];
   if (!application) {
     return nil;
   }
 
   FBProductBundle *productBundle =
   [[[[[FBProductBundleBuilder builder]
-      withBundlePath:[application installedPath]]
-     withBundleID:[application identifier]]
-    withBinaryName:[application executableName]]
+      withBundlePath:application[@"Path"]]
+     withBundleID:application[@"CFBundleIdentifier"]]
+    withBinaryName:application[@"CFBundleExecutable"]]
    buildWithError:error];
 
   return productBundle;
