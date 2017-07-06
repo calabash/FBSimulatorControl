@@ -82,14 +82,24 @@ static NSString *const ApplicationIdentifierKey = @"CFBundleIdentifier";
 
 - (NSString *)containerPathForApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> app = [self installedApplicationWithBundleIdentifier:bundleID];
-  return [app containerPath];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app[@"Container"];
+    }
+  }
+  return nil;
 }
 
 - (NSString *)applicationPathForApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> app = [self installedApplicationWithBundleIdentifier:bundleID];
-  return [app installedPath];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app[@"Path"];
+    }
+  }
+  return nil;
 }
 
 - (void)fetchApplications
@@ -109,18 +119,30 @@ static NSString *const ApplicationIdentifierKey = @"CFBundleIdentifier";
   return [self.device.dvtDevice installedApplicationWithBundleIdentifier:bundleID];
 }
 
+- (NSDictionary *)AMDinstalledApplicationWithBundleIdentifier:(NSString *)bundleID
+{
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app;
+    }
+  }
+  return nil;
+}
+
 - (FBProductBundle *)applicationBundleWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> application = [self installedApplicationWithBundleIdentifier:bundleID];
+
+  NSDictionary *application = [self AMDinstalledApplicationWithBundleIdentifier:bundleID];
   if (!application) {
     return nil;
   }
 
   FBProductBundle *productBundle =
   [[[[[FBProductBundleBuilder builder]
-      withBundlePath:[application installedPath]]
-     withBundleID:[application identifier]]
-    withBinaryName:[application executableName]]
+      withBundlePath:application[@"Path"]]
+     withBundleID:application[@"CFBundleIdentifier"]]
+    withBinaryName:application[@"CFBundleExecutable"]]
    buildWithError:error];
 
   return productBundle;
@@ -333,7 +355,11 @@ static NSString *const ApplicationIdentifierKey = @"CFBundleIdentifier";
 
 - (BOOL)isApplicationInstalledWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  return [self installedApplicationWithBundleIdentifier:bundleID] != nil;
+  if ([self AMDinstalledApplicationWithBundleIdentifier:bundleID]) {
+    return YES;
+  } else {
+    return NO;
+  }
 }
 
 - (BOOL)launchApplication:(FBApplicationLaunchConfiguration *)configuration error:(NSError **)error
