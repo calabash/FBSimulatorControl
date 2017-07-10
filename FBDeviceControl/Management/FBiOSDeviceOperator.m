@@ -50,6 +50,8 @@ static NSString *const ApplicationNameKey = @"CFBundleName";
 static NSString *const ApplicationIdentifierKey = @"CFBundleIdentifier";
 static NSString *const ApplicationTypeKey = @"ApplicationType";
 static NSString *const ApplicationPathKey = @"Path";
+static NSString *const ApplicationContainerKey = @"Container";
+static NSString *const ApplicationExecutableKey = @"CFBundleExecutable";
 
 @interface FBiOSDeviceOperator ()
 
@@ -87,8 +89,8 @@ static NSString *const ApplicationPathKey = @"Path";
 {
   NSArray<NSDictionary *> *apps = [self installedApplicationsData];
   for (NSDictionary *app in apps) {
-    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
-      return app[@"Container"];
+    if ([app[ApplicationIdentifierKey] isEqualToString:bundleID]) {
+      return app[ApplicationContainerKey];
     }
   }
   return nil;
@@ -98,8 +100,8 @@ static NSString *const ApplicationPathKey = @"Path";
 {
   NSArray<NSDictionary *> *apps = [self installedApplicationsData];
   for (NSDictionary *app in apps) {
-    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
-      return app[@"Path"];
+    if ([app[ApplicationIdentifierKey] isEqualToString:bundleID]) {
+      return app[ApplicationPathKey];
     }
   }
   return nil;
@@ -109,7 +111,7 @@ static NSString *const ApplicationPathKey = @"Path";
 {
   NSArray<NSDictionary *> *apps = [self installedApplicationsData];
   for (NSDictionary *app in apps) {
-    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+    if ([app[ApplicationIdentifierKey] isEqualToString:bundleID]) {
       return app;
     }
   }
@@ -126,9 +128,9 @@ static NSString *const ApplicationPathKey = @"Path";
 
   FBProductBundle *productBundle =
   [[[[[FBProductBundleBuilder builder]
-      withBundlePath:application[@"Path"]]
-     withBundleID:application[@"CFBundleIdentifier"]]
-    withBinaryName:application[@"CFBundleExecutable"]]
+      withBundlePath:application[ApplicationPathKey]]
+     withBundleID:application[ApplicationIdentifierKey]]
+    withBinaryName:application[ApplicationExecutableKey]]
    buildWithError:error];
 
   return productBundle;
