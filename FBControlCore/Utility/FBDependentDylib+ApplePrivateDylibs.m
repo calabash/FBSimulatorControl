@@ -33,21 +33,39 @@
   NSDecimalNumber *xcode83 = [NSDecimalNumber decimalNumberWithString:@"8.3"];
   BOOL atLeastXcode83 = [xcodeVersion compare:xcode83] != NSOrderedAscending;
 
+  NSDecimalNumber *xcode90 = [NSDecimalNumber decimalNumberWithString:@"9.0"];
+  BOOL atLeastXcode90 = [xcodeVersion compare:xcode90] != NSOrderedAscending;
+
   if (atLeastXcode83) {
-    return @[
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCore.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftDarwin.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftObjectiveC.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftDispatch.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftIOKit.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreGraphics.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftFoundation.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftXPC.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreImage.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftQuartzCore.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreData.dylib"],
-             [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftAppKit.dylib"],
-             ];
+    NSArray *dylibs =
+    @[
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCore.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftDarwin.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftObjectiveC.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftDispatch.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftIOKit.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreGraphics.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftFoundation.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftXPC.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreImage.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftQuartzCore.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreData.dylib"],
+      [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftAppKit.dylib"]
+      ];
+    if (atLeastXcode90) {
+      NSMutableArray *mutable = [NSMutableArray arrayWithArray:dylibs];
+      FBDependentDylib *dylib = [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftCoreFoundation.dylib"];
+      [mutable insertObject:dylib atIndex:4];
+
+      dylib = [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftMetal.dylib"];
+      [mutable insertObject:dylib atIndex:7];
+
+      dylib = [FBDependentDylib dependentWithRelativePath:@"../Frameworks/libswiftos.dylib"];
+      [mutable insertObject:dylib atIndex:7];
+
+      dylibs = [NSArray arrayWithArray:mutable];
+    }
+    return dylibs;
   } else {
     // No swift dylibs are required.
     return @[];
