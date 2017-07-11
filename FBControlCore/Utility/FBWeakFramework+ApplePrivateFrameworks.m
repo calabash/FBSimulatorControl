@@ -97,6 +97,16 @@
   return [FBWeakFramework xcodeFrameworkWithRelativePath:@"../SharedFrameworks/DVTKit.framework"];
 }
 
++ (nonnull instancetype)DebugHierarchyFoundation
+{
+  return [FBWeakFramework xcodeFrameworkWithRelativePath:@"../SharedFrameworks/DebugHierarchyFoundation.framework"];
+}
+
++ (instancetype)DebugHierarchyKit
+{
+  return [FBWeakFramework xcodeFrameworkWithRelativePath:@"../SharedFrameworks/DebugHierarchyKit.framework"];
+}
+
 + (instancetype)ConfigurationUtilityKit
 {
   return [FBWeakFramework
