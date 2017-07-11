@@ -352,6 +352,38 @@ static NSString *const ApplicationExecutableKey = @"CFBundleExecutable";
   return (*error == nil);
 }
 
++ (NSDictionary *)applicationReturnAttributesDictionary
+{
+  static NSDictionary *attributes = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    NSArray *attrs =  @[@"CFBundleIdentifier",
+                        @"ApplicationType",
+                        @"CFBundleExecutable",
+                        @"CFBundleDisplayName",
+                        @"CFBundleName",
+                        @"CFBundleNumericVersion",
+                        @"CFBundleVersion",
+                        @"CFBundleShortVersionString",
+                        @"CFBundleURLTypes",
+                        @"CFBundleDevelopmentRegion",
+                        @"Entitlements",
+                        @"SignerIdentity",
+                        @"ProfileValidated",
+                        @"Path",
+                        @"Container",
+                        @"UIStatusBarTintParameters",
+                        @"UIDeviceFamily",
+                        @"UISupportedInterfaceOrientations",
+                        @"DTPlatformVersion",
+                        @"DTXcode",
+                        @"MinimumOSVersion"
+                        ];
+    attributes = @{@"ReturnAttributes" : attrs};
+  });
+  return attributes;
+}
+
 - (NSArray<NSDictionary<NSString *, id> *> *)installedApplicationsData
 {
   NSMutableArray *applications = [[NSMutableArray alloc] init];
