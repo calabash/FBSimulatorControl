@@ -129,17 +129,29 @@
   return [xcodeVersion compare:xcode81] != NSOrderedAscending;
 }
 
++ (BOOL)xcodeVersionIsLessThan83:(NSDecimalNumber *)xcodeVersion
+{
+  NSDecimalNumber *xcode83 = [NSDecimalNumber decimalNumberWithString:@"8.3"];
+  return [xcodeVersion compare:xcode83] == NSOrderedAscending;
+}
+
++ (BOOL)xcodeVersionIsAtLeast90:(NSDecimalNumber *)xcodeVersion
+{
+  NSDecimalNumber *xcode90 = [NSDecimalNumber decimalNumberWithString:@"9.0"];
+  return [xcodeVersion compare:xcode90] != NSOrderedAscending;
+}
+
 + (NSArray<FBWeakFramework *> *)privateFrameworkForMacOSVersion:(NSOperatingSystemVersion)macOSVersion
                                                    xcodeVersion:(NSDecimalNumber *)xcodeVersion {
   NSArray<FBWeakFramework *> *frameworks = @[
     FBWeakFramework.DTXConnectionServices,
-    FBWeakFramework.DVTFoundation,
     FBWeakFramework.IDEFoundation,
     FBWeakFramework.IDEiOSSupportCore,
     FBWeakFramework.IBAutolayoutFoundation,
     FBWeakFramework.IDEKit,
     FBWeakFramework.IDESourceEditor
   ];
+
   if ([FBDeviceControlFrameworkLoader macOSVersionIsAtLeastSierra:macOSVersion] &&
       [FBDeviceControlFrameworkLoader xcodeVersionIsAtLeast81:xcodeVersion]) {
     /*
@@ -159,6 +171,20 @@
     [mutable addObject:FBWeakFramework.DVTKit];
     frameworks = [NSArray arrayWithArray:mutable];
   }
+
+  if ([FBDeviceControlFrameworkLoader xcodeVersionIsLessThan83:xcodeVersion]) {
+    NSMutableArray *mutable = [NSMutableArray arrayWithArray:frameworks];
+    [mutable addObject:FBWeakFramework.DVTFoundation];
+    frameworks = [NSArray arrayWithArray:mutable];
+  }
+
+  if ([FBDeviceControlFrameworkLoader xcodeVersionIsAtLeast90:xcodeVersion]) {
+    NSMutableArray *mutable = [NSMutableArray arrayWithArray:frameworks];
+    [mutable addObject:FBWeakFramework.DebugHierarchyFoundation];
+    [mutable addObject:FBWeakFramework.DebugHierarchyKit];
+    frameworks = [NSArray arrayWithArray:mutable];
+  }
+
   return frameworks;
 }
 
@@ -181,6 +207,13 @@
   if (self.hasLoadedFrameworks) {
     return YES;
   }
+
+  for (FBDependentDylib *dylib in FBDependentDylib.SwiftDylibs) {
+    if (![dylib loadWithLogger:logger error:error]) {
+      return NO;
+    }
+  }
+
   BOOL result = [super loadPrivateFrameworks:logger error:error];
   if (result) {
     [FBAMDevice loadFBAMDeviceSymbols];

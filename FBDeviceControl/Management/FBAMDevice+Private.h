@@ -27,11 +27,15 @@ extern int (*FBAMDeviceSecureStartService)(CFTypeRef device, CFStringRef service
 extern int (*FBAMDeviceSecureTransferPath)(int arg0, CFTypeRef arg1, CFURLRef arg2, CFDictionaryRef arg3, void *_Nullable arg4, int arg5);
 extern int (*FBAMDeviceSecureInstallApplication)(int arg0, CFTypeRef arg1, CFURLRef arg2, CFDictionaryRef arg3, void *_Nullable arg4, int arg5);
 extern int (*FBAMDeviceSecureUninstallApplication)(int arg0, CFTypeRef arg1, CFStringRef arg2, int arg3, void *_Nullable arg4, int arg5);
-extern int (*FBAMDeviceLookupApplications)(CFTypeRef arg0, int arg1, CFDictionaryRef _Nonnull * _Nonnull arg2);
+extern int (*FBAMDeviceLookupApplications)(CFTypeRef arg0, CFDictionaryRef options, CFDictionaryRef _Nonnull * _Nonnull arg2);
 
 // Getting Properties of a Device.
 extern _Nullable CFStringRef (*_Nonnull FBAMDeviceGetName)(CFTypeRef device);
 extern _Nullable CFStringRef (*_Nonnull FBAMDeviceCopyValue)(CFTypeRef device, _Nullable CFStringRef domain, CFStringRef name);
+
+// Installing provisioning profiles
+extern int (*FBAMDeviceInstallProvisioningProfile)(CFTypeRef device, CFTypeRef profile, void *_Nullable handle);
+extern _Nullable CFTypeRef (*_Nonnull FBMISProfileCreateWithFile)(int arg0, CFStringRef profilePath);
 
 // Debugging
 extern void (*FBAMDSetLogLevel)(int32_t level);

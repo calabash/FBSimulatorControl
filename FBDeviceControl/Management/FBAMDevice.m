@@ -58,21 +58,26 @@ typedef struct afc_connection {
   FBAMDeviceSecureTransferPath = (int(*)(int, CFTypeRef, CFURLRef, CFDictionaryRef, void *, int))FBGetSymbolFromHandle(handle, "AMDeviceSecureTransferPath");
   FBAMDeviceSecureInstallApplication = (int(*)(int, CFTypeRef, CFURLRef, CFDictionaryRef, void *, int))FBGetSymbolFromHandle(handle, "AMDeviceSecureInstallApplication");
   FBAMDeviceSecureUninstallApplication = (int(*)(int, CFTypeRef, CFStringRef, int, void *, int))FBGetSymbolFromHandle(handle, "AMDeviceSecureUninstallApplication");
-  FBAMDeviceLookupApplications = (int(*)(CFTypeRef, int, CFDictionaryRef*))FBGetSymbolFromHandle(handle, "AMDeviceLookupApplications");
+  FBAMDeviceLookupApplications = (int(*)(CFTypeRef, CFDictionaryRef, CFDictionaryRef*))FBGetSymbolFromHandle(handle, "AMDeviceLookupApplications");
+  FBAMDeviceInstallProvisioningProfile = (int (*)(CFTypeRef, CFTypeRef, void *))FBGetSymbolFromHandle(handle, "AMDeviceInstallProvisioningProfile");
+  FBMISProfileCreateWithFile = (CFTypeRef(*)(int, CFStringRef))FBGetSymbolFromHandle(handle, "MISProfileCreateWithFile");
 }
+
 + (NSArray<FBAMDevice *> *)allDevices
 {
   NSMutableArray<FBAMDevice *> *devices = [NSMutableArray array];
   CFArrayRef array = FBAMDCreateDeviceList();
-  for (NSInteger index = 0; index < CFArrayGetCount(array); index++) {
-    CFTypeRef value = CFArrayGetValueAtIndex(array, index);
-    FBAMDevice *device = [[FBAMDevice alloc] initWithAMDevice:value];
-    if (![device cacheAllValues]) {
-      continue;
+  if (array) {
+    for (NSInteger index = 0; index < CFArrayGetCount(array); index++) {
+      CFTypeRef value = CFArrayGetValueAtIndex(array, index);
+      FBAMDevice *device = [[FBAMDevice alloc] initWithAMDevice:value];
+      if (![device cacheAllValues]) {
+        continue;
+      }
+      [devices addObject:device];
     }
-    [devices addObject:device];
+    CFRelease(array);
   }
-  CFRelease(array);
   return [devices copy];
 }
 

@@ -79,14 +79,24 @@
 
 - (NSString *)containerPathForApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> app = [self installedApplicationWithBundleIdentifier:bundleID];
-  return [app containerPath];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app[@"Container"];
+    }
+  }
+  return nil;
 }
 
 - (NSString *)applicationPathForApplicationWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> app = [self installedApplicationWithBundleIdentifier:bundleID];
-  return [app installedPath];
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app[@"Path"];
+    }
+  }
+  return nil;
 }
 
 - (void)fetchApplications
@@ -106,21 +116,70 @@
   return [self.device.dvtDevice installedApplicationWithBundleIdentifier:bundleID];
 }
 
+- (NSDictionary *)AMDinstalledApplicationWithBundleIdentifier:(NSString *)bundleID
+{
+  NSArray<NSDictionary *> *apps = [self installedApplicationsData];
+  for (NSDictionary *app in apps) {
+    if ([app[@"CFBundleIdentifier"] isEqualToString:bundleID]) {
+      return app;
+    }
+  }
+  return nil;
+}
+
 - (FBProductBundle *)applicationBundleWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  id<DVTApplication> application = [self installedApplicationWithBundleIdentifier:bundleID];
+
+  NSDictionary *application = [self AMDinstalledApplicationWithBundleIdentifier:bundleID];
   if (!application) {
     return nil;
   }
 
   FBProductBundle *productBundle =
   [[[[[FBProductBundleBuilder builder]
-      withBundlePath:[application installedPath]]
-     withBundleID:[application identifier]]
-    withBinaryName:[application executableName]]
+      withBundlePath:application[@"Path"]]
+     withBundleID:application[@"CFBundleIdentifier"]]
+    withBinaryName:application[@"CFBundleExecutable"]]
    buildWithError:error];
 
   return productBundle;
+}
+
+- (BOOL)DVTinstallProvisioningProfileAtPath:(NSString *)path error:(NSError **)error
+{
+  __block NSError *innerError = nil;
+  BOOL result = [[FBRunLoopSpinner spinUntilBlockFinished:^id{
+    NSURL *url = [NSURL fileURLWithPath:path];
+    return @([self.device.dvtDevice installProvisioningProfileAtURL:url error:&innerError]);
+  }] boolValue];
+
+  if (*error) { *error = innerError; }
+  return result;
+}
+
+- (BOOL)AMDinstallProvisioningProfileAtPath:(NSString *)path error:(NSError **)error
+{
+  NSNumber *returnCode = [self.device.amDevice handleWithBlockDeviceSession:^id (CFTypeRef device) {
+    NSURL *url = [NSURL fileURLWithPath:path];
+    NSString *encoded = [NSString stringWithUTF8String:[url fileSystemRepresentation]];
+    CFStringRef stringRef = (__bridge CFStringRef)encoded;
+    CFTypeRef profile = FBMISProfileCreateWithFile(0, stringRef);
+    return @(FBAMDeviceInstallProvisioningProfile(device, profile, 0));
+  } error:error];
+
+  if (!returnCode) {
+    [[FBDeviceControlError
+      describe:@"Failed to install application"]
+     failBool:error];
+  }
+
+  if ([returnCode intValue] != 0) {
+    [[FBDeviceControlError
+      describe:@"Failed to install application"]
+     failBool:error];
+  }
+
+  return YES;
 }
 
 - (BOOL)uploadApplicationDataAtPath:(NSString *)path bundleID:(NSString *)bundleID error:(NSError **)error
@@ -190,7 +249,13 @@
 
 - (BOOL)requiresTestDaemonMediationForTestHostConnection
 {
-  return self.device.dvtDevice.requiresTestDaemonMediationForTestHostConnection;
+  SEL selector = @selector(requiresTestDaemonMediationForTestHostConnection);
+  if ([self.device.dvtDevice respondsToSelector:selector]) {
+    return self.device.dvtDevice.requiresTestDaemonMediationForTestHostConnection;
+  } else {
+    // Xcode >= 8.3
+    return YES;
+  }
 }
 
 - (BOOL)waitForDeviceToBecomeAvailableWithError:(NSError **)error
@@ -296,14 +361,47 @@
   return (*error == nil);
 }
 
++ (NSDictionary *)applicationReturnAttributesDictionary
+{
+  static NSDictionary *attributes = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    NSArray *attrs =  @[@"CFBundleIdentifier",
+                        @"ApplicationType",
+                        @"CFBundleExecutable",
+                        @"CFBundleDisplayName",
+                        @"CFBundleName",
+                        @"CFBundleNumericVersion",
+                        @"CFBundleVersion",
+                        @"CFBundleShortVersionString",
+                        @"CFBundleURLTypes",
+                        @"CFBundleDevelopmentRegion",
+                        @"Entitlements",
+                        @"SignerIdentity",
+                        @"ProfileValidated",
+                        @"Path",
+                        @"Container",
+                        @"UIStatusBarTintParameters",
+                        @"UIDeviceFamily",
+                        @"UISupportedInterfaceOrientations",
+                        @"DTPlatformVersion",
+                        @"DTXcode",
+                        @"MinimumOSVersion"
+                        ];
+    attributes = @{@"ReturnAttributes" : attrs};
+  });
+  return attributes;
+}
+
 - (NSArray<NSDictionary<NSString *, id> *> *)installedApplicationsData
 {
   NSMutableArray *applications = [[NSMutableArray alloc] init];
 
   __block CFDictionaryRef cf_apps;
 
+  CFDictionaryRef attrs = (__bridge CFDictionaryRef)[FBiOSDeviceOperator applicationReturnAttributesDictionary];
   NSNumber *return_code = [self.device.amDevice handleWithBlockDeviceSession:^id(CFTypeRef device) {
-    return @(FBAMDeviceLookupApplications(device, 0, &cf_apps));
+    return @(FBAMDeviceLookupApplications(device, attrs, &cf_apps));
   } error: nil];
 
   NSDictionary *apps = CFBridgingRelease(cf_apps);
@@ -324,7 +422,11 @@
 
 - (BOOL)isApplicationInstalledWithBundleID:(NSString *)bundleID error:(NSError **)error
 {
-  return [self installedApplicationWithBundleIdentifier:bundleID] != nil;
+  if ([self AMDinstalledApplicationWithBundleIdentifier:bundleID]) {
+    return YES;
+  } else {
+    return NO;
+  }
 }
 
 - (BOOL)launchApplication:(FBApplicationLaunchConfiguration *)configuration error:(NSError **)error

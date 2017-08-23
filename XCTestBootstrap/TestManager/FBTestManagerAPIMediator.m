@@ -38,6 +38,9 @@
 #import "FBTestBundleResult.h"
 #import "FBTestManagerResult.h"
 #import "FBTestDaemonResult.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 
 const NSInteger FBProtocolVersion = 0x16;
 const NSInteger FBProtocolMinimumVersion = 0x8;
@@ -153,6 +156,10 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
     return self.result;
   }
   return [self concludeWithResult:FBTestManagerResult.clientRequestedDisconnect];
+}
+
+- (BOOL)testingHasFinished {
+    return self.daemonConnection.hasFinishedExecution && self.bundleConnection.hasFinishedExecution;
 }
 
 #pragma mark Reporting
@@ -312,6 +319,8 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 
 - (id)_XCT_testCaseDidFailForTestClass:(NSString *)testClass method:(NSString *)method withMessage:(NSString *)message file:(NSString *)file line:(NSNumber *)line
 {
+  DDLogInfo(@"Test failed: %@", message);
+  DDLogInfo(@"File: %@:%@", file, line);
   return nil;
 }
 
@@ -351,12 +360,12 @@ const NSInteger FBProtocolMinimumVersion = 0x8;
 
 - (id)_XCT_testCase:(NSString *)arg1 method:(NSString *)arg2 didFinishActivity:(XCActivityRecord *)arg3
 {
-  return [self handleUnimplementedXCTRequest:_cmd];
+  return nil;
 }
 
 - (id)_XCT_testCase:(NSString *)arg1 method:(NSString *)arg2 willStartActivity:(XCActivityRecord *)arg3
 {
-  return [self handleUnimplementedXCTRequest:_cmd];
+  return nil;
 }
 
 - (id)_XCT_recordedOrientationChange:(NSString *)arg1
