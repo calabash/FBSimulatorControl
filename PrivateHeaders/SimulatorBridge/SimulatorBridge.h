@@ -40,7 +40,6 @@
 - (_Bool)performIncrementAction:(id)arg1;
 - (_Bool)performPressAction:(id)arg1;
 - (struct __AXUIElement *)_elementFromElementDictionary:(id)arg1;
-- (void)enableAccessibility;
 - (void)_initializeAccessibility;
 - (void)handleScreenChange;
 - (void)pasteWebArchiveData:(in bycopy id)arg1;

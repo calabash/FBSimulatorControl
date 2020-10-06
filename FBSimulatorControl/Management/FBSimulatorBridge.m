@@ -55,7 +55,6 @@
   }
 
   // Load Accessibility, return early if this fails
-  [bridge enableAccessibility];
   SEL knownSelector = @selector(setLocationScenarioWithPath:);
   if (![bridge respondsToSelector:knownSelector]) {
     return [[FBSimulatorError
