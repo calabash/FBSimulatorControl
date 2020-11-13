@@ -77,7 +77,6 @@ extern FBDeviceModel const FBDeviceModeliPadPro_10_5_Inch;
 extern FBDeviceModel const FBDeviceModeliPad_6thGeneration;
 extern FBDeviceModel const FBDeviceModeliPad_7thGeneration;
 extern FBDeviceModel const FBDeviceModeliPad_8thGeneration;
-extern FBDeviceModel const FBDeviceModeliPadAir_4thGeneration;
 extern FBDeviceModel const FBDeviceModeliPadPro_11_Inch;
 extern FBDeviceModel const FBDeviceModeliPadPro_11_Inch_2ndGeneration;
 extern FBDeviceModel const FBDeviceModeliPadPro_12_9_Inch_3rdGeneration;

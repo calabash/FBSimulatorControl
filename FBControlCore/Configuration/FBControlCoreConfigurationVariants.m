@@ -58,7 +58,6 @@ FBDeviceModel const FBDeviceModeliPadPro_10_5_Inch = @"iPad Pro (10.5-inch)";
 FBDeviceModel const FBDeviceModeliPad_6thGeneration = @"iPad (6th generation)";
 FBDeviceModel const FBDeviceModeliPad_7thGeneration = @"iPad (7th generation)";
 FBDeviceModel const FBDeviceModeliPad_8thGeneration = @"iPad (8th generation)";
-FBDeviceModel const FBDeviceModeliPadAir_4thGeneration = @"iPad Air (4th generation)";
 FBDeviceModel const FBDeviceModeliPadPro_11_Inch = @"iPad Pro (11-inch)";
 FBDeviceModel const FBDeviceModeliPadPro_11_Inch_2ndGeneration = @"iPad Pro (11-inch) (2nd generation)";
 FBDeviceModel const FBDeviceModeliPadPro_12_9_Inch_3rdGeneration = @"iPad Pro (12.9-inch) (3rd generation)";
