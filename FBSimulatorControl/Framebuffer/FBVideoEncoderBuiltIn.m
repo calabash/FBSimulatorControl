@@ -20,6 +20,9 @@
 #import "FBSimulatorError.h"
 #import "FBVideoEncoderConfiguration.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 typedef NS_ENUM(NSUInteger, FBVideoEncoderState) {
   FBVideoEncoderStateNotStarted = 0,
   FBVideoEncoderStateWaitingForFirstFrame = 1,
@@ -258,7 +261,7 @@ static const OSType FBVideoEncoderPixelFormat = kCVPixelFormatType_32ARGB;
 
   // Create a Timebase to construct the time of the first frame.
   CMTimebaseRef timebase = NULL;
-    CMTimebaseCreateWithSourceClock(
+    CMTimebaseCreateWithMasterClock(
     kCFAllocatorDefault,
     CMClockGetHostTimeClock(),
     &timebase
