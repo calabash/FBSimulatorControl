@@ -17,6 +17,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @class CLSimulationManager;
 
 @interface SimulatorBridge : NSObject <SimulatorBridge>

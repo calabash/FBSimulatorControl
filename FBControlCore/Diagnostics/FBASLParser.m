@@ -14,6 +14,9 @@
 #import "FBDiagnostic.h"
 #import "FBProcessInfo.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 static BOOL WriteOutputToFilePath(const char *filePath, asl_object_t aslFile, pid_t processIdentifier)
 {
   char pidString[10];

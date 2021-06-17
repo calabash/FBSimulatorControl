@@ -18,6 +18,9 @@ static const DDLogLevel ddLogLevel = DDLogLevelDebug;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @interface FBControlCoreLogger_Composite : NSObject <FBControlCoreLogger>
 
 @property (nonatomic, strong, readonly) NSArray<id<FBControlCoreLogger>> *loggers;

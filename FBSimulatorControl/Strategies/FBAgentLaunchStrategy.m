@@ -23,6 +23,8 @@
 #import "FBSimulatorEventSink.h"
 #import "FBSimulatorProcessFetcher.h"
 
+#import <stdatomic.h>
+
 @interface FBAgentLaunchStrategy ()
 
 @property (nonatomic, strong, readonly) FBSimulator *simulator;
@@ -181,9 +183,9 @@
 
 - (pid_t)spawnShortRunningWithPath:(NSString *)launchPath options:(nullable NSDictionary<NSString *, id> *)options timeout:(NSTimeInterval)timeout error:(NSError **)error
 {
-  __block volatile uint32_t hasTerminated = 0;
+  __block volatile atomic_bool hasTerminated = false;
   FBAgentTerminationHandler terminationHandler = ^(int stat_loc) {
-    OSAtomicOr32Barrier(1, &hasTerminated);
+    atomic_fetch_or(&hasTerminated, true);
   };
 
   pid_t processIdentifier = [self.simulator.device spawnWithPath:launchPath options:options terminationHandler:terminationHandler error:error];
@@ -192,7 +194,7 @@
   }
 
   BOOL successfulWait = [NSRunLoop.currentRunLoop spinRunLoopWithTimeout:timeout untilTrue:^BOOL{
-    return hasTerminated == 1;
+    return hasTerminated;
   }];
   if (!successfulWait) {
     return [[FBSimulatorError
