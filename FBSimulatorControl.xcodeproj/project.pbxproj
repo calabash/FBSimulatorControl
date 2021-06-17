@@ -751,6 +751,7 @@
 		3E1499471D4C5838005A5C8F /* FBTestManagerTestReporterTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBTestManagerTestReporterTestCase.m; sourceTree = "<group>"; };
 		3E14994A1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBTestManagerTestReporterTestCaseFailure.h; sourceTree = "<group>"; };
 		3E14994B1D4C5D49005A5C8F /* FBTestManagerTestReporterTestCaseFailure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBTestManagerTestReporterTestCaseFailure.m; sourceTree = "<group>"; };
+		4744A9C2267A5B3B0033F174 /* AccessibilityPlatformTranslation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AccessibilityPlatformTranslation; sourceTree = "<group>"; };
 		7352B4D81F44BE4100B6D0EA /* FBXcodeConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBXcodeConfiguration.h; sourceTree = "<group>"; };
 		7352B4D91F44BE4100B6D0EA /* FBXcodeConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBXcodeConfiguration.m; sourceTree = "<group>"; };
 		7352B4DC1F44C16C00B6D0EA /* FBControlCoreError+Process.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FBControlCoreError+Process.h"; sourceTree = "<group>"; };
@@ -1983,6 +1984,7 @@
 		AA48775A1BAC74DC007F7D23 /* PrivateHeaders */ = {
 			isa = PBXGroup;
 			children = (
+				4744A9C2267A5B3B0033F174 /* AccessibilityPlatformTranslation */,
 				AA39D7EF1D5B0B2600A0840F /* CoreSimulator */,
 				EE4F0D9F1C91B85800608E89 /* DTXConnectionServices */,
 				EE4F0DC31C91B85800608E89 /* DVTFoundation */,
@@ -4081,6 +4083,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				OTHER_LDFLAGS = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -4097,6 +4100,7 @@
 				ENABLE_TESTABILITY = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
@@ -4111,6 +4115,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				OTHER_LDFLAGS = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -4125,6 +4130,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
 				GCC_OPTIMIZATION_LEVEL = s;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Profile;
 		};
@@ -4138,6 +4144,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				OTHER_LDFLAGS = "$(inherited)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -4152,6 +4159,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = FYD86LA7RE;
 				GCC_OPTIMIZATION_LEVEL = s;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
 		};
@@ -4186,6 +4194,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -4200,6 +4209,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -4214,6 +4224,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
@@ -4256,6 +4267,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Shims/Binaries",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -4274,6 +4286,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Shims/Binaries",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -4292,6 +4305,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Shims/Binaries",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
@@ -4351,6 +4365,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -4365,6 +4380,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Profile;
@@ -4379,6 +4395,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Vendor",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;

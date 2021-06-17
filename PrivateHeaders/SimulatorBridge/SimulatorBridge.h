@@ -8,6 +8,15 @@
 
 #import "SimulatorBridge-Protocol.h"
 
+#import <AccessibilityPlatformTranslation/AXPTranslator.h>
+#import <AccessibilityPlatformTranslation/AXPTranslationObject.h>
+#import <AccessibilityPlatformTranslation/AXPTranslatorResponse.h>
+#import <AccessibilityPlatformTranslation/AXPTranslatorRequest.h>
+#import <AccessibilityPlatformTranslation/AXPMacPlatformElement.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 @class CLSimulationManager;
 
 @interface SimulatorBridge : NSObject <SimulatorBridge>

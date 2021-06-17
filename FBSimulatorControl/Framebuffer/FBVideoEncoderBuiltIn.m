@@ -258,7 +258,7 @@ static const OSType FBVideoEncoderPixelFormat = kCVPixelFormatType_32ARGB;
 
   // Create a Timebase to construct the time of the first frame.
   CMTimebaseRef timebase = NULL;
-  CMTimebaseCreateWithMasterClock(
+    CMTimebaseCreateWithSourceClock(
     kCFAllocatorDefault,
     CMClockGetHostTimeClock(),
     &timebase

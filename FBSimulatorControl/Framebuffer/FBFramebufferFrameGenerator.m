@@ -165,7 +165,7 @@ static const uint64_t FBSimulatorFramebufferFrameTimeInterval = NSEC_PER_MSEC * 
   NSParameterAssert(self.timebase == NULL);
 
   CMTimebaseRef timebase = NULL;
-  CMTimebaseCreateWithMasterClock(
+    CMTimebaseCreateWithSourceClock(
     kCFAllocatorDefault,
     CMClockGetHostTimeClock(),
     &timebase
