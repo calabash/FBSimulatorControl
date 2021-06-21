@@ -21,6 +21,9 @@
 #import "FBFramebufferFrame.h"
 #import "FBSurfaceImageGenerator.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 /**
  Enumeration to keep track of internal state.
  */
@@ -165,7 +168,7 @@ static const uint64_t FBSimulatorFramebufferFrameTimeInterval = NSEC_PER_MSEC * 
   NSParameterAssert(self.timebase == NULL);
 
   CMTimebaseRef timebase = NULL;
-  CMTimebaseCreateWithMasterClock(
+    CMTimebaseCreateWithMasterClock(
     kCFAllocatorDefault,
     CMClockGetHostTimeClock(),
     &timebase

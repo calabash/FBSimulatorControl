@@ -11,6 +11,7 @@
 
 #import <libkern/OSAtomic.h>
 #import <objc/runtime.h>
+#import <stdatomic.h>
 
 #import "FBControlCoreError.h"
 
@@ -25,11 +26,11 @@
 
 + (id)spinUntilBlockFinished:(id (^)(void))block
 {
-  __block volatile uint32_t didFinish = 0;
+  __block volatile atomic_bool didFinish = false;
   __block id returnObject;
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     returnObject = block();
-    OSAtomicOr32Barrier(1, &didFinish);
+    atomic_fetch_or(&didFinish, true);
   });
   while (!didFinish) {
     [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
@@ -128,9 +129,9 @@
 
 - (BOOL)spinRunLoopWithTimeout:(NSTimeInterval)timeout notifiedBy:(dispatch_group_t)group onQueue:(dispatch_queue_t)queue
 {
-  __block volatile uint32_t didFinish = 0;
+  __block volatile atomic_bool didFinish = false;
   dispatch_group_notify(group, queue, ^{
-    OSAtomicOr32Barrier(1, &didFinish);
+    atomic_fetch_or(&didFinish, true);
   });
 
   return [self spinRunLoopWithTimeout:timeout untilTrue:^ BOOL {
